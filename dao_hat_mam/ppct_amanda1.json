@@ -1,0 +1,632 @@
+[
+{
+"tuan": "1",
+"buoi": "1",
+"unit": "Welcome",
+"nd": "Chào hỏi, nhận biết Amanda/George/Alfie",
+"tu": "Amanda, George, Alfie, teacher; hello",
+"cau": "Hello. / Bye-bye.",
+"hd": "Bài mới"
+},
+{
+"tuan": "1",
+"buoi": "2",
+"unit": "Welcome",
+"nd": "Tên, tuổi và ngôn ngữ lớp học",
+"tu": "name, three years old; clap, stand up, sit down",
+"cau": "What’s your name? / How old are you?",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "2",
+"buoi": "1",
+"unit": "Unit 1 School",
+"nd": "Nhận biết bag, book",
+"tu": "bag, book",
+"cau": "What’s this? – It’s a …",
+"hd": "Bài mới"
+},
+{
+"tuan": "2",
+"buoi": "2",
+"unit": "Unit 1 School",
+"nd": "Nhận biết crayon, pencil",
+"tu": "crayon, pencil",
+"cau": "What’s this? – It’s a …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "3",
+"buoi": "1",
+"unit": "Unit 1 School",
+"nd": "Ôn tập và thực hành câu hỏi về đồ dùng/màu sắc",
+"tu": "bag, book, crayon, pencil; red, yellow",
+"cau": "What’s this? / What colour is the …?",
+"hd": "Bài mới"
+},
+{
+"tuan": "3",
+"buoi": "2",
+"unit": "Unit 1 School",
+"nd": "Ôn tập – thực hành ôn tập và thực hành câu hỏi về đồ dùng/màu sắc",
+"tu": "bag, book, crayon, pencil; red, yellow",
+"cau": "What’s this? / What colour is the …?",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "4",
+"buoi": "1",
+"unit": "Unit 1 School",
+"nd": "Củng cố Unit 1",
+"tu": "Toàn bộ từ vựng Unit 1",
+"cau": "It’s a … / It’s red/yellow.",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "4",
+"buoi": "2",
+"unit": "Unit 1 School",
+"nd": "Ôn tập – thực hành củng cố unit 1",
+"tu": "Toàn bộ từ vựng Unit 1",
+"cau": "It’s a … / It’s red/yellow.",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "5",
+"buoi": "1",
+"unit": "Unit 2 Family",
+"nd": "Thành viên gia đình",
+"tu": "daddy, mummy, brother, sister",
+"cau": "Who’s this? – My …",
+"hd": "Bài mới"
+},
+{
+"tuan": "5",
+"buoi": "2",
+"unit": "Unit 2 Family",
+"nd": "Ôn tập – thực hành thành viên gia đình",
+"tu": "daddy, mummy, brother, sister",
+"cau": "Who’s this? – My …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "6",
+"buoi": "1",
+"unit": "Unit 2 Family",
+"nd": "Số 1 và gia đình",
+"tu": "one; family members",
+"cau": "What number is it? – Number one.",
+"hd": "Bài mới"
+},
+{
+"tuan": "6",
+"buoi": "2",
+"unit": "Unit 2 Family",
+"nd": "Ôn tập – thực hành số 1 và gia đình",
+"tu": "one; family members",
+"cau": "What number is it? – Number one.",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "7",
+"buoi": "1",
+"unit": "Unit 2 Family",
+"nd": "Luyện nói và truyện",
+"tu": "family members; one",
+"cau": "Who’s this? – My …",
+"hd": "Kể chuyện – đóng vai"
+},
+{
+"tuan": "7",
+"buoi": "2",
+"unit": "Unit 2 Family",
+"nd": "Ôn tập – thực hành luyện nói và truyện",
+"tu": "family members; one",
+"cau": "Who’s this? – My …",
+"hd": "Kể chuyện – đóng vai"
+},
+{
+"tuan": "8",
+"buoi": "1",
+"unit": "Unit 2 Family",
+"nd": "Ôn tập Unit 2",
+"tu": "daddy, mummy, brother, sister, one",
+"cau": "Who’s this? / What number is it?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "8",
+"buoi": "2",
+"unit": "Unit 2 Family",
+"nd": "Ôn tập – thực hành ôn tập unit 2",
+"tu": "daddy, mummy, brother, sister, one",
+"cau": "Who’s this? / What number is it?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "9",
+"buoi": "1",
+"unit": "Unit 3 Toys",
+"nd": "Đồ chơi",
+"tu": "ball, car, doll, teddy",
+"cau": "What’s this? – It’s a …",
+"hd": "Bài mới"
+},
+{
+"tuan": "9",
+"buoi": "2",
+"unit": "Unit 3 Toys",
+"nd": "Ôn tập – thực hành đồ chơi",
+"tu": "ball, car, doll, teddy",
+"cau": "What’s this? – It’s a …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "10",
+"buoi": "1",
+"unit": "Unit 3 Toys",
+"nd": "Màu sắc của đồ chơi",
+"tu": "blue, green",
+"cau": "What colour is it? – It’s …",
+"hd": "Bài mới"
+},
+{
+"tuan": "10",
+"buoi": "2",
+"unit": "Unit 3 Toys",
+"nd": "Ôn tập – thực hành màu sắc của đồ chơi",
+"tu": "blue, green",
+"cau": "What colour is it? – It’s …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "11",
+"buoi": "1",
+"unit": "Unit 3 Toys",
+"nd": "Ôn màu và đồ chơi",
+"tu": "ball, car, doll, teddy; red, yellow, blue, green",
+"cau": "What’s this? / What colour is it?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "11",
+"buoi": "2",
+"unit": "Unit 3 Toys",
+"nd": "Ôn tập – thực hành ôn màu và đồ chơi",
+"tu": "ball, car, doll, teddy; red, yellow, blue, green",
+"cau": "What’s this? / What colour is it?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "12",
+"buoi": "1",
+"unit": "Unit 3 Toys",
+"nd": "Củng cố Unit 3",
+"tu": "Toàn bộ Unit 3",
+"cau": "It’s a … / It’s …",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "12",
+"buoi": "2",
+"unit": "Unit 3 Toys",
+"nd": "Ôn tập – thực hành củng cố unit 3",
+"tu": "Toàn bộ Unit 3",
+"cau": "It’s a … / It’s …",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "13",
+"buoi": "1",
+"unit": "Unit 4 Body",
+"nd": "Các bộ phận khuôn mặt",
+"tu": "ear, eye, mouth, nose",
+"cau": "What is it? – It’s a …",
+"hd": "Bài mới"
+},
+{
+"tuan": "13",
+"buoi": "2",
+"unit": "Unit 4 Body",
+"nd": "Ôn tập – thực hành các bộ phận khuôn mặt",
+"tu": "ear, eye, mouth, nose",
+"cau": "What is it? – It’s a …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "14",
+"buoi": "1",
+"unit": "Unit 4 Body",
+"nd": "Số 1–2 và hình tròn",
+"tu": "one, two, circle",
+"cau": "How many circles? – One/Two.",
+"hd": "Bài mới"
+},
+{
+"tuan": "14",
+"buoi": "2",
+"unit": "Unit 4 Body",
+"nd": "Ôn tập – thực hành số 1–2 và hình tròn",
+"tu": "one, two, circle",
+"cau": "How many circles? – One/Two.",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "15",
+"buoi": "1",
+"unit": "Unit 4 Body",
+"nd": "Ôn và kể chuyện",
+"tu": "face, ear, eye, mouth, nose",
+"cau": "What is it? / How many …?",
+"hd": "Kể chuyện – đóng vai"
+},
+{
+"tuan": "15",
+"buoi": "2",
+"unit": "Unit 4 Body",
+"nd": "Ôn tập – thực hành ôn và kể chuyện",
+"tu": "face, ear, eye, mouth, nose",
+"cau": "What is it? / How many …?",
+"hd": "Kể chuyện – đóng vai"
+},
+{
+"tuan": "16",
+"buoi": "1",
+"unit": "Unit 4 Body",
+"nd": "Củng cố Unit 4",
+"tu": "Body vocabulary; 1–2; circle",
+"cau": "It’s a … / … circles.",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "16",
+"buoi": "2",
+"unit": "Unit 4 Body",
+"nd": "Ôn tập – thực hành củng cố unit 4",
+"tu": "Body vocabulary; 1–2; circle",
+"cau": "It’s a … / … circles.",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "17",
+"buoi": "1",
+"unit": "Unit 5 Pets",
+"nd": "Thú cưng",
+"tu": "cat, dog, fish, mouse",
+"cau": "Is this a …? – Yes, it is.",
+"hd": "Bài mới"
+},
+{
+"tuan": "17",
+"buoi": "2",
+"unit": "Unit 5 Pets",
+"nd": "Ôn tập – thực hành thú cưng",
+"tu": "cat, dog, fish, mouse",
+"cau": "Is this a …? – Yes, it is.",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "18",
+"buoi": "1",
+"unit": "Unit 5 Pets",
+"nd": "To – nhỏ",
+"tu": "big, little",
+"cau": "Is it big or little? – It’s …",
+"hd": "Bài mới"
+},
+{
+"tuan": "18",
+"buoi": "2",
+"unit": "Unit 5 Pets",
+"nd": "Ôn tập – thực hành to – nhỏ",
+"tu": "big, little",
+"cau": "Is it big or little? – It’s …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "19",
+"buoi": "1",
+"unit": "Unit 5 Pets",
+"nd": "Nói về thú cưng",
+"tu": "cat, dog, fish, mouse",
+"cau": "What pets do you have? – A …",
+"hd": "Luyện nói – giao tiếp"
+},
+{
+"tuan": "19",
+"buoi": "2",
+"unit": "Unit 5 Pets",
+"nd": "Ôn tập – thực hành nói về thú cưng",
+"tu": "cat, dog, fish, mouse",
+"cau": "What pets do you have? – A …",
+"hd": "Luyện nói – giao tiếp"
+},
+{
+"tuan": "20",
+"buoi": "1",
+"unit": "Unit 5 Pets",
+"nd": "Củng cố Unit 5",
+"tu": "Pets; big/little",
+"cau": "Do you have a pet?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "20",
+"buoi": "2",
+"unit": "Unit 5 Pets",
+"nd": "Ôn tập – thực hành củng cố unit 5",
+"tu": "Pets; big/little",
+"cau": "Do you have a pet?",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "21",
+"buoi": "1",
+"unit": "Unit 6 Food",
+"nd": "Trái cây",
+"tu": "apple, banana, orange, pear",
+"cau": "What is it? – An/A …",
+"hd": "Bài mới"
+},
+{
+"tuan": "21",
+"buoi": "2",
+"unit": "Unit 6 Food",
+"nd": "Ôn tập – thực hành trái cây",
+"tu": "apple, banana, orange, pear",
+"cau": "What is it? – An/A …",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "22",
+"buoi": "1",
+"unit": "Unit 6 Food",
+"nd": "Số và đếm",
+"tu": "one, two, three",
+"cau": "How many? – One/Two/Three.",
+"hd": "Bài mới"
+},
+{
+"tuan": "22",
+"buoi": "2",
+"unit": "Unit 6 Food",
+"nd": "Ôn tập – thực hành số và đếm",
+"tu": "one, two, three",
+"cau": "How many? – One/Two/Three.",
+"hd": "Ôn tập – thực hành"
+},
+{
+"tuan": "23",
+"buoi": "1",
+"unit": "Unit 6 Food",
+"nd": "Nhu cầu đơn giản",
+"tu": "apple, banana, orange, pear",
+"cau": "I want …",
+"hd": "Luyện nói – giao tiếp"
+},
+{
+"tuan": "23",
+"buoi": "2",
+"unit": "Unit 6 Food",
+"nd": "Ôn tập – thực hành nhu cầu đơn giản",
+"tu": "apple, banana, orange, pear",
+"cau": "I want …",
+"hd": "Luyện nói – giao tiếp"
+},
+{
+"tuan": "24",
+"buoi": "1",
+"unit": "Unit 6 Food",
+"nd": "Ôn tập Unit 6",
+"tu": "Food + numbers 1–3",
+"cau": "Let’s count!",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "24",
+"buoi": "2",
+"unit": "Unit 6 Food",
+"nd": "Ôn tập – thực hành ôn tập unit 6",
+"tu": "Food + numbers 1–3",
+"cau": "Let’s count!",
+"hd": "Củng cố – ôn tập unit"
+},
+{
+"tuan": "25",
+"buoi": "1",
+"unit": "Festivals",
+"nd": "Halloween",
+"tu": "witch, cat, spider",
+"cau": "Who is this? – It’s a …",
+"hd": "Lễ hội"
+},
+{
+"tuan": "25",
+"buoi": "2",
+"unit": "Festivals",
+"nd": "Ôn tập – thực hành halloween",
+"tu": "witch, cat, spider",
+"cau": "Who is this? – It’s a …",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "26",
+"buoi": "1",
+"unit": "Festivals",
+"nd": "Ôn Halloween",
+"tu": "ghost/witch/cat/spider (theo tài liệu lễ hội)",
+"cau": "Who is this?",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "26",
+"buoi": "2",
+"unit": "Festivals",
+"nd": "Ôn tập – thực hành ôn halloween",
+"tu": "ghost/witch/cat/spider (theo tài liệu lễ hội)",
+"cau": "Who is this?",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "27",
+"buoi": "1",
+"unit": "Festivals",
+"nd": "Christmas",
+"tu": "Santa Claus, tree, star, gift, candy",
+"cau": "Is this Santa Claus? – Yes/No.",
+"hd": "Lễ hội"
+},
+{
+"tuan": "27",
+"buoi": "2",
+"unit": "Festivals",
+"nd": "Ôn tập – thực hành christmas",
+"tu": "Santa Claus, tree, star, gift, candy",
+"cau": "Is this Santa Claus? – Yes/No.",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "28",
+"buoi": "1",
+"unit": "Festivals",
+"nd": "Ôn Christmas",
+"tu": "Santa Claus, tree, star, gift, candy",
+"cau": "What did you get?",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "28",
+"buoi": "2",
+"unit": "Festivals",
+"nd": "Ôn tập – thực hành ôn christmas",
+"tu": "Santa Claus, tree, star, gift, candy",
+"cau": "What did you get?",
+"hd": "Ôn lễ hội"
+},
+{
+"tuan": "29",
+"buoi": "1",
+"unit": "Course Review",
+"nd": "Ôn nửa đầu chương trình",
+"tu": "Welcome + Units 1–3",
+"cau": "Các mẫu câu đã học",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "29",
+"buoi": "2",
+"unit": "Course Review",
+"nd": "Ôn tập – thực hành ôn nửa đầu chương trình",
+"tu": "Welcome + Units 1–3",
+"cau": "Các mẫu câu đã học",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "30",
+"buoi": "1",
+"unit": "Course Review",
+"nd": "Ôn nửa sau chương trình",
+"tu": "Units 4–6 + Festivals",
+"cau": "Các mẫu câu đã học",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "30",
+"buoi": "2",
+"unit": "Course Review",
+"nd": "Ôn tập – thực hành ôn nửa sau chương trình",
+"tu": "Units 4–6 + Festivals",
+"cau": "Các mẫu câu đã học",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "31",
+"buoi": "1",
+"unit": "Assessment",
+"nd": "Đánh giá từ vựng – nghe hiểu",
+"tu": "Từ vựng trọng tâm",
+"cau": "Nhận biết và phản hồi câu hỏi",
+"hd": "Đánh giá"
+},
+{
+"tuan": "31",
+"buoi": "2",
+"unit": "Assessment",
+"nd": "Ôn tập – thực hành đánh giá từ vựng – nghe hiểu",
+"tu": "Từ vựng trọng tâm",
+"cau": "Nhận biết và phản hồi câu hỏi",
+"hd": "Đánh giá"
+},
+{
+"tuan": "32",
+"buoi": "1",
+"unit": "Assessment",
+"nd": "Đánh giá nói và phản xạ",
+"tu": "Ngôn ngữ trọng tâm",
+"cau": "Trả lời câu hỏi đơn giản",
+"hd": "Đánh giá"
+},
+{
+"tuan": "32",
+"buoi": "2",
+"unit": "Assessment",
+"nd": "Ôn tập – thực hành đánh giá nói và phản xạ",
+"tu": "Ngôn ngữ trọng tâm",
+"cau": "Trả lời câu hỏi đơn giản",
+"hd": "Đánh giá"
+},
+{
+"tuan": "33",
+"buoi": "1",
+"unit": "Consolidation",
+"nd": "Ôn tổng hợp",
+"tu": "All key vocabulary",
+"cau": "What’s this? / Who’s this? / What colour?",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "33",
+"buoi": "2",
+"unit": "Consolidation",
+"nd": "Ôn tập – thực hành ôn tổng hợp",
+"tu": "All key vocabulary",
+"cau": "What’s this? / Who’s this? / What colour?",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "34",
+"buoi": "1",
+"unit": "Consolidation",
+"nd": "Tổng kết cuối khóa",
+"tu": "All key vocabulary",
+"cau": "Giao tiếp theo khả năng trẻ",
+"hd": "Tổng kết – trải nghiệm"
+},
+{
+"tuan": "34",
+"buoi": "2",
+"unit": "Consolidation",
+"nd": "Ôn tập – thực hành tổng kết cuối khóa",
+"tu": "All key vocabulary",
+"cau": "Giao tiếp theo khả năng trẻ",
+"hd": "Tổng kết – trải nghiệm"
+},
+{
+"tuan": "35",
+"buoi": "1",
+"unit": "Course Review",
+"nd": "Ôn tập cuối năm",
+"tu": "Toàn bộ chương trình",
+"cau": "Mẫu câu trọng tâm",
+"hd": "Ôn tập tổng hợp"
+},
+{
+"tuan": "35",
+"buoi": "2",
+"unit": "Course Review",
+"nd": "Ôn tập – thực hành ôn tập cuối năm",
+"tu": "Toàn bộ chương trình",
+"cau": "Mẫu câu trọng tâm",
+"hd": "Ôn tập tổng hợp"
+}
+]
