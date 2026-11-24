@@ -157,7 +157,6 @@ button:focus-visible, .wpick:focus-within { outline: 4px solid #2E6FD8; outline-
             <label><input type="checkbox" id="optSpeak" checked> Máy đọc mẫu từ</label>
             <label><input type="checkbox" id="optAuto" checked> Đọc mẫu xong tự bật nghe</label>
             <label><input type="checkbox" id="optMic" checked> Máy nghe để chấm</label>
-            <label title="Tiếng nói trong lớp được Chrome gửi lên Google (Edge: Microsoft) để nhận dạng"><input type="checkbox" id="optConsent"> Phụ huynh đã đồng ý cho máy nghe</label>
             <label><input type="checkbox" id="optShuffle"> Đảo thứ tự các bé</label>
           </div>
         </div>
@@ -275,7 +274,6 @@ function listen() {
   if (state !== 'turn') return;
   stopListen(); $('micBtn').classList.remove('ok', 'no'); lastHeard = '';
   const lbl = t => $('heard').firstElementChild.textContent = t;
-  if (cfg.mic && SR && !consent()) { lbl('CÔ CHẤM'); $('heardTxt').textContent = 'Máy nghe chưa bật cho lớp này (chưa có đồng ý của phụ huynh). Bé đọc đúng thì cô bấm Enter.'; return; }
   if (!cfg.mic || !SR || !window.MayNghe) { lbl('CÔ CHẤM'); $('heardTxt').textContent = SR ? 'Máy nghe đang tắt. Bé đọc đúng thì cô bấm Enter.' : 'Máy này chưa nghe được. Bé đọc đúng thì cô bấm Enter.'; return; }
   const me = cur;
   MayNghe.start({ word: cur.word, others: WORDS.map(W => W.w), ms: 8000,
@@ -429,7 +427,6 @@ function buildSetup() {
   $('names').value = cfg.names;
   $('wordPick').innerHTML = WORDS.map(W => `<label class="wpick ${cfg.words.includes(W.w) ? 'on' : ''}"><input type="checkbox" value="${W.w}" ${cfg.words.includes(W.w) ? 'checked' : ''}><img src="hinh/${W.img}.webp" alt=""><span>${W.w}</span></label>`).join('');
   $('wordPick').querySelectorAll('input').forEach(inp => inp.onchange = () => { inp.parentElement.classList.toggle('on', inp.checked); cfg.words = [...$('wordPick').querySelectorAll('input:checked')].map(i => i.value); saveCfg(); });
-  $('optConsent').checked = consent(); $('optConsent').onchange = () => { try { localStorage.setItem('songkim_dongy_mic', $('optConsent').checked ? '1' : '0'); } catch (e) {} };
   [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
   if (!SR) { $('micNote').textContent = 'Trình duyệt này chưa có máy nghe. Hãy mở bằng Chrome hoặc Edge (file "Mo tro choi.bat"). Tạm thời cô bấm Enter khi bé đọc đúng.'; $('micNote').classList.add('warn'); }
 }
