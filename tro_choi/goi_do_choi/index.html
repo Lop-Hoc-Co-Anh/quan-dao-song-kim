@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gọi đồ chơi ra hang</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Gọi đồ chơi ra hang" – Hang đồ chơi, Unit 2 Toys */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.dark { position: absolute; left: 470px; top: 30px; width: 520px; height: 330px; border-radius: 50% 50% 0 0; background: radial-gradient(ellipse at 50% 60%, rgba(10, 5, 0, .55), rgba(10, 5, 0, 0) 70%); pointer-events: none; transition: opacity .6s; }
+.glow { position: absolute; width: 160px; height: 160px; margin: -80px 0 0 -80px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 210, 110, .55), rgba(255, 210, 110, 0) 70%); pointer-events: none; animation: flick 2.4s ease-in-out infinite alternate; }
+@keyframes flick { 30% { opacity: .75; } 60% { opacity: 1; } to { opacity: .85; } }
+.toy { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
+.eyes { position: absolute; transform: translate(-50%, -50%); pointer-events: none; display: flex; gap: 18px; }
+.eyes i { width: 16px; height: 22px; border-radius: 50%; background: #FFF6C8; box-shadow: 0 0 12px 4px rgba(255, 230, 140, .8); animation: blink 3s infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.shelfToy { position: absolute; transform: translate(-50%, -100%); text-align: center; pointer-events: none; }
+.shelfToy img { display: block; margin: 0 auto; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .35)); }
+.shelfToy span { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 4px); background: rgba(255, 248, 228, .95); border-radius: 8px; padding: 0 7px 2px; font: 800 13px/1.2 var(--display); color: var(--ink); white-space: nowrap; }
+.shelfToy.hop img { animation: hop .5s ease-in-out 3; }
+@keyframes hop { 50% { transform: translateY(-14px); } }
+.shadow { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(ellipse, rgba(40, 20, 5, .45), rgba(40, 20, 5, 0) 70%); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .glow, .eyes i, .shelfToy.hop img { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const WORDS = [
+  { w: 'car', img: H('xe_o_to'), alt: ['cars', 'ka', 'kar', 'carl'] },
+  { w: 'ball', img: H('qua_bong'), alt: ['balls', 'bowl', 'bull', 'bol', 'paul'] },
+  { w: 'doll', img: H('bup_be'), alt: ['dolls', 'dull', 'dahl', 'dole', 'tall'] },
+  { w: 'teddy', img: H('gau_bong'), alt: ['teddies', 'teddy bear', 'tatty', 'eddie', 'teddi'] },
+  { w: 'train', img: H('tau_hoa'), alt: ['trains', 'trane', 'rain', 'chain', 'train train'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'chair', img: H('cai_ghe'), alt: ['chairs', 'share', 'cheer', 'chain'], g: 'school' },
+  { w: 'table', img: H('cai_ban'), alt: ['tables', 'label', 'tabel'], g: 'school' },
+  { w: 'window', img: H('cua_so'), alt: ['windows', 'windo', 'when do'], g: 'school' },
+  { w: 'door', img: H('cai_cua'), alt: ['doors', 'more', 'dor', 'the door'], g: 'school' },
+  { w: 'bag', img: H('cap_sach'), alt: ['bags', 'back', 'bad', 'beg'], g: 'school' },
+  { w: 'book', img: H('quyen_sach'), alt: ['books', 'look', 'boo', 'buck'], g: 'school' },
+  { w: 'crayon', img: H('but_sap'), alt: ['crayons', 'crown', 'cray on'], g: 'school' },
+  { w: 'pencil', img: H('but_chi'), alt: ['pencils', 'pensil', 'pence'], g: 'school' },
+];
+const SIZE = { car: 190, ball: 190, doll: 240, teddy: 230, train: 170 };
+const SHELF = { x0: 1270, x1: 1590, ys: [254, 404, 590] };
+let onShelf = [], toy = null;
+
+function slot(n, total) {
+  const per = Math.max(2, Math.ceil(total / 3)), w = (SHELF.x1 - SHELF.x0) / per;
+  return { x: SHELF.x0 + w * (n % per) + w / 2, y: SHELF.ys[Math.floor(n / per)] || SHELF.ys[2], h: Math.min(104, w * .82) };
+}
+
+TroChoi.run({
+  id: 'goi_do_choi', title: 'Gọi đồ chơi ra hang', unit: 'Unit 2 Toys', icon: H('gau_bong'), progressLabel: 'đồ chơi',
+  story: 'Trong hang tối có các bạn đồ chơi đang trốn. Một cái bóng lăn ra, cả lớp đoán xem là đồ chơi gì. Bé gọi đúng tên thì đèn bật sáng, bạn đồ chơi nhảy lên kệ.',
+  doneSmall: 'Kệ đồ chơi đã đầy', doneTitle: 'Gọi được hết rồi!',
+  words: WORDS, defaultWords: ['car', 'ball', 'doll', 'teddy', 'train'], guessFirst: true,
+  cardPos: { x: 800, y: 150 }, micPos: { x: 800, y: 700 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_hang.jpg" alt=""><div class="dark" id="dark"></div>
+      <div class="glow" style="left:268px;top:96px"></div><div class="glow" style="left:1104px;top:96px;animation-delay:-1.2s"></div>
+      <div id="shelfBox"></div><div id="toyLayer"></div>`;
+    api.sprite('anh', C('co_anh_vay_tay'), 130, 870, 300);
+    api.sprite('ben', C('ben_three_quarter'), 290, 862, 165);
+    api.sprite('mia', C('mia_three_quarter'), 395, 866, 158);
+    api.sprite('pip', C('pip_hoi'), 350, 470, 100, 'bob');
+    api.say('Trong hang có ai đang trốn nhỉ?', 30, 250);
+  },
+  onStart(api) { onShelf = []; api.$('shelfBox').innerHTML = ''; api.$('toyLayer').innerHTML = ''; },
+  progress(api) { return [onShelf.length, api.kids.length]; },
+  async onTurn(api, ctx) {
+    const h1 = SIZE[ctx.word.w] || 200, x0 = 730, y0 = 330, x1 = 800, y1 = 660;
+    api.$('toyLayer').innerHTML = `<div class="shadow" id="tsh"></div><img class="toy" id="toy" src="${ctx.word.img}" alt="" style="left:${x0}px;top:${y0}px;height:40px;filter:brightness(0) opacity(.92)"><div class="eyes" id="eyes"><i></i><i></i></div>`;
+    toy = { el: api.$('toy'), sh: api.$('tsh'), eyes: api.$('eyes'), x: x1, y: y1, h: h1 };
+    api.pose('anh', C('co_anh_lang_nghe')); api.pose('pip', C('pip_hoi'));
+    api.say(`Suỵt! ${ctx.kid} ơi, có tiếng lạch cạch trong hang…`, 30, 250);
+    api.sfx.rustle(); await api.wait(500);
+    const roll = ctx.word.w === 'ball';
+    await api.tween(1700, (k, e) => {
+      const x = x0 + (x1 - x0) * e, y = y0 + (y1 - y0) * e, h = 40 + (h1 - 40) * e, bob = Math.abs(Math.sin(k * Math.PI * 4)) * 10 * (1 - k);
+      toy.el.style.left = x + 'px'; toy.el.style.top = y - bob + 'px'; toy.el.style.height = h + 'px';
+      toy.el.style.transform = `translate(-50%, -100%) rotate(${roll ? k * 540 : Math.sin(k * 20) * 4}deg)`;
+      toy.sh.style.left = x + 'px'; toy.sh.style.top = y + 'px'; toy.sh.style.width = h * 1.1 + 'px'; toy.sh.style.height = h * .18 + 'px';
+      toy.eyes.style.left = x + 'px'; toy.eyes.style.top = y - h * .62 + 'px'; toy.eyes.style.opacity = e;
+    });
+    if (roll) toy.el.style.transform = 'translate(-50%, -100%)';
+    api.sfx.thunk();
+    api.say('Bạn đồ chơi nào đây? Cả lớp đoán xem!', 30, 250);
+    await api.speak('What is this?', .9); await api.wait(1800);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
+    api.say(`${praise} ${ctx.kid} gọi đúng rồi!`, 30, 250);
+    api.hideCard(); toy.eyes.remove();
+    // bật đèn: bóng đen hiện màu thật
+    await api.tween(700, (k, e) => { toy.el.style.filter = `brightness(${e}) drop-shadow(0 0 ${30 * (1 - e)}px rgba(255,230,140,${1 - e}))`; });
+    api.sparkle(toy.x, toy.y - toy.h / 2, 40); api.sfx.boing();
+    await api.tween(450, (k) => { toy.el.style.top = toy.y - Math.sin(Math.PI * k) * 60 + 'px'; });
+    const n = onShelf.length, s = slot(n, api.kids.length), h0 = toy.h;
+    toy.sh.remove();
+    await api.tween(1000, (k, e) => { toy.el.style.left = toy.x + (s.x - toy.x) * e + 'px'; toy.el.style.top = toy.y + (s.y - toy.y) * e - Math.sin(Math.PI * k) * 200 + 'px'; toy.el.style.height = h0 + (s.h - h0) * e + 'px'; toy.el.style.transform = `translate(-50%, -100%) rotate(${Math.sin(Math.PI * k) * -14}deg)`; });
+    api.sfx.thunk(); api.sparkle(s.x, s.y - s.h / 2);
+    onShelf.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'shelfToy'; d.style.left = s.x + 'px'; d.style.top = s.y + 'px';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${s.h}px"><span>${api.esc(ctx.kid)}</span>`; api.$('shelfBox').appendChild(d);
+    api.$('toyLayer').innerHTML = ''; api.pose('ben', C('ben_three_quarter')); await api.wait(300);
+  },
+  async onSkip(api) {
+    if (toy) { const y = parseFloat(toy.el.style.top), h = parseFloat(toy.el.style.height); await api.tween(700, (k, e) => { toy.el.style.top = y - 330 * e + 'px'; toy.el.style.left = toy.x - 70 * e + 'px'; toy.el.style.height = h - (h - 40) * e + 'px'; toy.el.style.opacity = 1 - e * .8; toy.eyes.style.opacity = 1 - e; toy.sh.style.opacity = 1 - e; }); }
+    api.$('toyLayer').innerHTML = '';
+  },
+  async onFinish(api) {
+    api.$('dark').style.opacity = 0;
+    api.say('Các bạn đồ chơi về kệ đủ cả rồi! Cả lớp giỏi quá!', 30, 250);
+    api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('mia', C('mia_reo')); api.pose('pip', C('pip_reo'));
+    document.querySelectorAll('.shelfToy').forEach((f, i) => setTimeout(() => f.classList.add('hop'), i * 120));
+    await api.wait(2200);
+  },
+});
+</script>
+</body>
+</html>
