@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quần đảo Song Kim</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Bản đồ quần đảo: ba đảo trên một vùng biển, mỗi khóa một đảo; xong đảo này đi tàu / bay sang đảo sau */
+:root { --ink: #1F2D4A; --soft: #56637F; --paper: #FFFDF6; --teal: #14998F; --coral: #F2675A; --gold: #FFD23F; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; background: #0E1A2E; overflow: hidden; font-family: 'Nunito', Arial, sans-serif; color: var(--ink); }
+.stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 50% 50%; overflow: hidden; font-family: 'Baloo 2', sans-serif; }
+#sea { position: absolute; inset: 0; }
+.world { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+.isl { position: absolute; transform: translate(-50%, -50%); cursor: pointer; transition: filter .2s; }
+.isl img { display: block; width: 100%; filter: drop-shadow(0 18px 18px rgba(0, 40, 70, .28)); pointer-events: none; }
+.isl:hover img, .isl:focus-visible img { filter: drop-shadow(0 0 18px rgba(255, 240, 160, .95)) drop-shadow(0 18px 18px rgba(0, 40, 70, .28)); }
+.isl:focus-visible { outline: none; }
+.tag { position: absolute; transform: translate(-50%, 0); background: var(--paper); border-radius: 18px; padding: 8px 16px 10px; text-align: center; box-shadow: 0 6px 0 rgba(31, 45, 74, .2); white-space: nowrap; pointer-events: none; }
+.tag b { display: block; font: 800 28px/1 'Baloo 2'; }
+.tag small { display: block; font: 700 15px/1.3 'Nunito'; color: var(--soft); margin-top: 3px; }
+.tag .bar { height: 10px; border-radius: 6px; background: #E3EAF1; margin-top: 7px; overflow: hidden; }
+.tag .bar i { display: block; height: 100%; background: linear-gradient(90deg, #FFD23F, #F2A33A); border-radius: 6px; }
+.tag.here { background: var(--coral); color: #fff; box-shadow: 0 6px 0 #B5463B; }
+.tag.here small { color: #FFE1DC; }
+.tag .done { color: #2E9A4E; font-weight: 800; }
+.tag.here .done { color: #fff; }
+.who { position: absolute; transform: translate(-50%, -100%); pointer-events: none; display: flex; align-items: flex-end; }
+.who img { display: block; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .3)); }
+.trip { position: absolute; transform: translate(-50%, -100%); pointer-events: none; z-index: 5; }
+.trip img { position: absolute; bottom: 0; }
+.route { position: absolute; inset: 0; pointer-events: none; }
+.hud { position: absolute; left: 22px; right: 22px; top: 18px; display: flex; gap: 12px; align-items: center; z-index: 6; }
+.chip { background: rgba(255, 253, 246, .95); border-radius: 22px; padding: 9px 20px 11px; box-shadow: 0 6px 0 rgba(31, 45, 74, .16); font: 800 30px/1 'Baloo 2'; color: var(--ink); }
+.chip small { font: 700 16px/1 'Nunito'; color: var(--soft); margin-left: 8px; }
+.spacer { flex: 1; }
+.bar2 { position: absolute; left: 22px; right: 22px; bottom: 16px; display: flex; gap: 12px; justify-content: center; z-index: 6; }
+.btn { font: 800 24px/1 'Baloo 2'; border: 0; border-radius: 20px; padding: 13px 22px 15px; cursor: pointer; background: var(--paper); color: var(--ink); box-shadow: 0 6px 0 rgba(31, 45, 74, .22); display: flex; align-items: center; gap: 9px; }
+.btn kbd { font: 700 13px/1 'Nunito'; background: #E6EEF3; color: var(--soft); border-radius: 6px; padding: 4px 7px; }
+.btn.go { background: var(--teal); color: #fff; box-shadow: 0 6px 0 #0D7068; font-size: 28px; padding-inline: 30px; }
+.btn.go kbd { background: rgba(255, 255, 255, .22); color: #fff; }
+.btn.quit { background: var(--coral); color: #fff; box-shadow: 0 6px 0 #B5463B; } .btn.quit kbd { background: rgba(255, 255, 255, .25); color: #fff; }
+.btn:focus-visible { outline: 4px solid #2E6FD8; outline-offset: 3px; }
+.say { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); z-index: 6; background: rgba(31, 45, 74, .82); color: #fff; font: 800 24px/1.2 'Baloo 2'; padding: 12px 22px 14px; border-radius: 16px; transition: opacity .3s; white-space: nowrap; }
+.toast { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); background: var(--ink); color: #fff; font: 800 23px/1 'Baloo 2'; padding: 16px 24px; border-radius: 18px; z-index: 8; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .isl { transition: none; } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <canvas id="sea" width="1600" height="900"></canvas>
+  <div class="world" id="world">
+    <svg class="route" viewBox="0 0 1600 900" aria-hidden="true"><g id="routes"></g></svg>
+    <div id="isles"></div>
+    <div class="who" id="who"><img src="hinh/co_anh_vay_tay.webp" alt="Cô Anh" style="height:62px"><img src="hinh/ben_three_quarter.webp" alt="Ben" style="height:46px"><img src="hinh/mia_three_quarter.webp" alt="Mia" style="height:47px"></div>
+    <div id="tripLayer"></div>
+  </div>
+  <div class="hud"><div class="chip">Quần đảo Song Kim<small>Amanda and Friends 1 · 2 · 3</small></div><div class="chip" id="hLop" style="font-size:24px"></div><div class="spacer"></div><div class="chip" id="hNote" style="font-size:22px"></div></div>
+  <div class="say" id="say" hidden></div>
+  <div class="bar2">
+    <button class="btn go" id="bGo">Vào đảo <kbd>Space</kbd></button>
+    <button class="btn" id="bPrev">← Đảo trước</button><button class="btn" id="bNext">Đảo sau →</button>
+    <button class="btn" id="bCheck">Kiểm tra <kbd>K</kbd></button>
+    <button class="btn quit" id="bQuit">Thoát <kbd>Q</kbd></button>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+</div>
+<script src="lop.js"></script>
+<script src="bang_lop.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const stage = $('stage'), fit = () => { const k = Math.min(innerWidth / 1600, innerHeight / 900); stage.style.transform = `translate(-50%, -50%) scale(${k})`; };
+addEventListener('resize', fit); fit();
+// ba đảo theo thứ tự khóa học
+const ISLES = [
+  { key: 'daohatmam', img: 'dao_hat_mam', name: 'Đảo Hạt Mầm', book: 'Amanda 1 · 3–4 tuổi', page: '../dao_hat_mam/dao-hat-mam.html', x: 360, y: 600, w: 580, token: 'giot_nuoc', tokenName: 'giọt nước', landmark: 'Cây Thần' },
+  { key: 'daocauvong', img: 'dao_cau_vong', name: 'Đảo Cầu Vồng', book: 'Amanda 2 · 4–5 tuổi', page: '../dao_cau_vong/dao-cau-vong.html', x: 820, y: 325, w: 620, token: 'manh_mau', tokenName: 'mảnh màu', landmark: 'cầu vồng' },
+  { key: 'daosongkim3d', img: 'dao_song_kim', name: 'Đảo Song Kim', book: 'Amanda 3 · 5–6 tuổi', page: '../dao_3d/dao-song-kim-3d.html', x: 1262, y: 612, w: 660, token: 'da_phat_sang', tokenName: 'đá sáng', landmark: 'hải đăng' },
+];
+// đường đi giữa hai đảo: [điểm đầu, điểm giữa, điểm cuối], cách đi
+const TRIPS = [
+  { from: 0, to: 1, p: [[612, 690], [760, 640], [790, 520]], by: 'boat', text: 'Cả đoàn đi thuyền sang Đảo Cầu Vồng' },
+  { from: 1, to: 2, p: [[1050, 300], [1300, 170], [1250, 470]], by: 'air', text: 'Cả đoàn bay khinh khí cầu qua cầu vồng sang Đảo Song Kim' },
+];
+const read = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+let here = Math.max(0, ISLES.findIndex(I => I.key === localStorage.getItem('quandao_dang_o')));
+function state(I) { const s = read(I.key); return { cur: s ? s.cur : 0, lit: !!(s && s.lit), started: !!s, ngay: s && s.ngay }; }
+function draw() {
+  $('isles').innerHTML = ISLES.map((I, i) => {
+    const st = state(I), h = I.w * 563 / 1000, pc = st.lit ? 100 : Math.round(st.cur / 69 * 100);
+    const info = st.lit ? `<span class="done">✓ Đã thắp sáng ${I.landmark}</span>` : st.started ? `Tiết ${st.cur + 1} / 70` : 'Chưa bắt đầu';
+    return `<div class="isl" tabindex="0" role="button" data-i="${i}" aria-label="${I.name}" style="left:${I.x}px;top:${I.y}px;width:${I.w}px"><img src="hinh/${I.img}.webp" alt=""></div>
+      <div class="tag ${i === here ? 'here' : ''}" style="left:${I.x}px;top:${I.y + h * .36}px"><b>${I.name}</b><small>${I.book} · ${info}</small><div class="bar"><i style="width:${pc}%"></i></div></div>`;
+  }).join('');
+  $('isles').querySelectorAll('.isl').forEach(el => { el.onclick = () => enter(+el.dataset.i); el.onkeydown = e => { if (e.key === 'Enter') enter(+el.dataset.i); }; });
+  const I = ISLES[here], st = state(I), w = $('who'); w.style.left = I.x + 'px'; w.style.top = I.y + 10 + 'px';
+  $('hNote').textContent = `Đang học: ${I.name} · ${st.lit ? 'đã xong' : 'Tiết ' + (st.cur + 1)}`;
+  $('bGo').firstChild.textContent = `Vào ${I.name} `;
+  $('routes').innerHTML = TRIPS.map(T => { const [a, c, b] = T.p; return `<path d="M${a[0]} ${a[1]} Q${c[0]} ${c[1]} ${b[0]} ${b[1]}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="5" stroke-dasharray="4 14" stroke-linecap="round"/>`; }).join('');
+}
+function enter(i) { here = i; try { localStorage.setItem('quandao_dang_o', ISLES[i].key); } catch (e) {} location.href = ISLES[i].page; }
+let tt; function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2600); }
+
+// ---------- biển: sóng, lấp lánh, mây trôi ----------
+const g = $('sea').getContext('2d'), rnd = s => { const x = Math.sin(s * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+function sea(t) {
+  const gr = g.createRadialGradient(800, 470, 100, 800, 470, 1000); gr.addColorStop(0, '#3CCBE3'); gr.addColorStop(.6, '#1FA6CF'); gr.addColorStop(1, '#14709E'); g.fillStyle = gr; g.fillRect(0, 0, 1600, 900);
+  ISLES.forEach(I => { const r = g.createRadialGradient(I.x, I.y, I.w * .2, I.x, I.y, I.w * .62); r.addColorStop(0, 'rgba(140,240,240,.55)'); r.addColorStop(1, 'rgba(140,240,240,0)'); g.fillStyle = r; g.fillRect(I.x - I.w, I.y - I.w, I.w * 2, I.w * 2); });
+  g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 3;
+  for (let i = 0; i < 46; i++) { const x = (rnd(i) * 1800 + t * (8 + rnd(i + 3) * 10)) % 1800 - 100, y = rnd(i + 9) * 900, w = 40 + rnd(i + 4) * 50, ph = Math.sin(t * 1.3 + i); g.globalAlpha = .4 + .4 * ph; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + w / 2, y - 7, x + w, y); g.stroke(); }
+  g.globalAlpha = 1;
+  for (let i = 0; i < 60; i++) { const a = Math.max(0, Math.sin(t * 1.7 + i * 2.3)); if (a < .3) continue; const x = rnd(i + 50) * 1600, y = rnd(i + 80) * 900, r = 2 + 3 * a; g.fillStyle = `rgba(255,255,255,${a * .8})`; g.beginPath(); g.moveTo(x, y - r * 2); g.lineTo(x + r * .5, y); g.lineTo(x, y + r * 2); g.lineTo(x - r * .5, y); g.closePath(); g.fill(); }
+  for (let i = 0; i < 4; i++) { const x = ((t * (10 + i * 4) + i * 480) % 2000) - 200, y = 90 + i * 190; g.fillStyle = 'rgba(10,60,90,.08)'; g.beginPath(); g.ellipse(x, y + 60, 150, 40, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,.55)'; [[0, 0, 70], [60, 10, 55], [-60, 12, 50]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(x + dx, y + dy, r * .6, 0, 7); g.fill(); }); }
+}
+(function loop(now) { sea(now / 1000); requestAnimationFrame(loop); })(0);
+
+// ---------- đi tàu / bay sang đảo sau ----------
+function travel(T) {
+  const [a, c, b] = T.p, layer = $('tripLayer'), el = document.createElement('div'); el.className = 'trip';
+  if (T.by === 'boat') el.innerHTML = '<img src="hinh/thuyen_buom.webp" alt="Thuyền buồm" style="left:0;height:110px"><img src="hinh/co_anh_vay_tay.webp" alt="" style="left:10px;bottom:36px;height:54px"><img src="hinh/ben_three_quarter.webp" alt="" style="left:44px;bottom:36px;height:38px"><img src="hinh/mia_three_quarter.webp" alt="" style="left:66px;bottom:36px;height:40px"><img src="hinh/thuyen_buom.webp" alt="" style="left:0;height:110px;clip-path:inset(60% 0 0 0)">';
+  else el.innerHTML = '<img src="hinh/co_anh_vay_tay.webp" alt="" style="left:30px;bottom:14px;height:44px"><img src="hinh/ben_three_quarter.webp" alt="" style="left:58px;bottom:14px;height:32px"><img src="hinh/mia_three_quarter.webp" alt="" style="left:76px;bottom:14px;height:33px"><img src="hinh/khinh_khi_cau.webp" alt="Khinh khí cầu" style="left:0;height:200px;clip-path:inset(78% 0 0 0)"><img src="hinh/khinh_khi_cau.webp" alt="" style="left:0;height:200px;clip-path:inset(0 0 22% 0)">';
+  el.style.width = T.by === 'boat' ? '106px' : '128px'; el.style.height = T.by === 'boat' ? '110px' : '200px';
+  layer.appendChild(el); $('who').hidden = true;
+  const say = $('say'); say.hidden = false; say.textContent = T.text; $('bGo').disabled = true;
+  const D = 7000, t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / D), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const x = (1 - e) * (1 - e) * a[0] + 2 * (1 - e) * e * c[0] + e * e * b[0], y = (1 - e) * (1 - e) * a[1] + 2 * (1 - e) * e * c[1] + e * e * b[1];
+    const lift = T.by === 'air' ? -Math.sin(Math.PI * e) * 60 : Math.sin(now / 380) * 3;
+    el.style.left = x + 'px'; el.style.top = y + lift + 'px'; el.style.transform = `translate(-50%,-100%) rotate(${Math.sin(now / 500) * 3}deg) scaleX(${b[0] < a[0] ? -1 : 1})`;
+    // máy quay bám theo chuyến đi
+    const z = 1 + .55 * Math.sin(Math.PI * Math.min(1, k * 1.2)), cx = Math.max(800 / z, Math.min(1600 - 800 / z, x)), cy = Math.max(450 / z, Math.min(900 - 450 / z, y - 60));
+    $('world').style.transform = `translate(800px,450px) scale(${z}) translate(${-cx}px,${-cy}px)`;
+    if (k < 1) return requestAnimationFrame(step);
+    say.textContent = `Tới ${ISLES[T.to].name} rồi!`;
+    here = T.to; try { localStorage.setItem('quandao_dang_o', ISLES[T.to].key); } catch (e) {}
+    setTimeout(() => enter(T.to), 1300);
+  };
+  requestAnimationFrame(step);
+}
+
+$('bGo').onclick = () => enter(here);
+$('bPrev').onclick = () => { here = Math.max(0, here - 1); draw(); };
+$('bNext').onclick = () => { here = Math.min(ISLES.length - 1, here + 1); draw(); };
+$('bQuit').onclick = () => { fetch('/quit', { method: 'POST' }).catch(() => {}); setTimeout(() => { try { window.close(); } catch (e) {} }, 300); setTimeout(() => toast('Đã tắt. Bấm Alt + F4 để đóng cửa sổ.'), 900); };
+addEventListener('keydown', e => {
+  if ($('bGo').disabled || (window.BangLop && BangLop.isOpen())) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); enter(here); }
+  else if (e.key === 'ArrowLeft') $('bPrev').onclick(); else if (e.key === 'ArrowRight') $('bNext').onclick();
+  else if (e.key === 'q' || e.key === 'Q') { const now = performance.now(); if (now - (window.__qAt || -1e9) < 2000) $('bQuit').onclick(); else { window.__qAt = now; toast('Bấm Q lần nữa để tắt ứng dụng'); } }
+});
+draw();
+try { BangLop.init({ chipId: 'hLop', parent: stage, onChange: () => { here = Math.max(0, ISLES.findIndex(I => I.key === localStorage.getItem('quandao_dang_o'))); draw(); }, skipAsk: !!new URLSearchParams(location.search).get('di') }); } catch (e) { console.error(e); }
+$('bCheck').onclick = () => BangLop.openCheck();
+// ?di=<khoá đảo vừa xong>: lên đường sang đảo sau
+{ const k = new URLSearchParams(location.search).get('di'), i = ISLES.findIndex(I => I.key === k), T = TRIPS.find(T => T.from === i);
+  if (T) { history.replaceState(null, '', location.pathname); here = i; draw(); setTimeout(() => travel(T), 900); }
+  else if (i === ISLES.length - 1) toast('Cả lớp đã đi hết quần đảo Song Kim. Giỏi quá!'); }
+</script>
+</body>
+</html>
