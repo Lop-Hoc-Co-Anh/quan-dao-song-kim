@@ -31,6 +31,7 @@ html, body { margin: 0; height: 100%; background: #0E1A2E; overflow: hidden; fon
 .who img { display: block; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .3)); }
 .trip { position: absolute; transform: translate(-50%, -100%); pointer-events: none; z-index: 5; }
 .trip img { position: absolute; bottom: 0; }
+.airport { position: absolute; transform: translate(-50%, -100%); background: #FFFDF6; border-radius: 10px; padding: 2px 8px 3px; font: 800 13px/1.2 'Baloo 2'; color: #1F2D4A; box-shadow: 0 3px 0 rgba(31, 45, 74, .2); pointer-events: none; white-space: nowrap; }
 .route { position: absolute; inset: 0; pointer-events: none; }
 .hud { position: absolute; left: 22px; right: 22px; top: 18px; display: flex; gap: 12px; align-items: center; z-index: 6; }
 .chip { background: rgba(255, 253, 246, .95); border-radius: 22px; padding: 9px 20px 11px; box-shadow: 0 6px 0 rgba(31, 45, 74, .16); font: 800 30px/1 'Baloo 2'; color: var(--ink); }
@@ -55,6 +56,7 @@ html, body { margin: 0; height: 100%; background: #0E1A2E; overflow: hidden; fon
     <svg class="route" viewBox="0 0 1600 900" aria-hidden="true"><g id="routes"></g></svg>
     <div id="isles"></div>
     <div class="who" id="who"><img src="hinh/co_anh_vay_tay.webp" alt="Cô Anh" style="height:62px"><img src="hinh/ben_three_quarter.webp" alt="Ben" style="height:46px"><img src="hinh/mia_three_quarter.webp" alt="Mia" style="height:47px"></div>
+    <div class="airport" style="left:1010px;top:162px">✈ Sân bay</div>
     <div id="tripLayer"></div>
   </div>
   <div class="hud"><div class="chip">Quần đảo Song Kim<small>Amanda and Friends 1 · 2 · 3</small></div><div class="chip" id="hLop" style="font-size:24px"></div><div class="spacer"></div><div class="chip" id="hNote" style="font-size:22px"></div></div>
@@ -81,7 +83,7 @@ const ISLES = [
 ];
 // đường đi giữa hai đảo: [điểm đầu, điểm giữa, điểm cuối], cách đi
 const TRIPS = [
-  { from: 0, to: 1, p: [[612, 690], [760, 640], [790, 520]], by: 'boat', text: 'Cả đoàn đi thuyền sang Đảo Cầu Vồng' },
+  { from: 0, to: 1, p: [[560, 640], [760, 330], [1058, 196]], by: 'plane', text: 'Cả đoàn đi máy bay sang sân bay Đảo Cầu Vồng' },
   { from: 1, to: 2, p: [[1050, 300], [1300, 170], [1250, 470]], by: 'air', text: 'Cả đoàn bay khinh khí cầu qua cầu vồng sang Đảo Song Kim' },
 ];
 const read = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
@@ -120,16 +122,20 @@ function sea(t) {
 function travel(T) {
   const [a, c, b] = T.p, layer = $('tripLayer'), el = document.createElement('div'); el.className = 'trip';
   if (T.by === 'boat') el.innerHTML = '<img src="hinh/thuyen_buom.webp" alt="Thuyền buồm" style="left:0;height:110px"><img src="hinh/co_anh_vay_tay.webp" alt="" style="left:10px;bottom:36px;height:54px"><img src="hinh/ben_three_quarter.webp" alt="" style="left:44px;bottom:36px;height:38px"><img src="hinh/mia_three_quarter.webp" alt="" style="left:66px;bottom:36px;height:40px"><img src="hinh/thuyen_buom.webp" alt="" style="left:0;height:110px;clip-path:inset(60% 0 0 0)">';
+  else if (T.by === 'plane') el.innerHTML = '<img src="hinh/may_bay.webp" alt="Máy bay" style="left:0;height:64px">';
   else el.innerHTML = '<img src="hinh/co_anh_vay_tay.webp" alt="" style="left:30px;bottom:14px;height:44px"><img src="hinh/ben_three_quarter.webp" alt="" style="left:58px;bottom:14px;height:32px"><img src="hinh/mia_three_quarter.webp" alt="" style="left:76px;bottom:14px;height:33px"><img src="hinh/khinh_khi_cau.webp" alt="Khinh khí cầu" style="left:0;height:200px;clip-path:inset(78% 0 0 0)"><img src="hinh/khinh_khi_cau.webp" alt="" style="left:0;height:200px;clip-path:inset(0 0 22% 0)">';
-  el.style.width = T.by === 'boat' ? '106px' : '128px'; el.style.height = T.by === 'boat' ? '110px' : '200px';
+  el.style.width = T.by === 'boat' ? '106px' : T.by === 'plane' ? '83px' : '128px'; el.style.height = T.by === 'boat' ? '110px' : T.by === 'plane' ? '64px' : '200px';
   layer.appendChild(el); $('who').hidden = true;
   const say = $('say'); say.hidden = false; say.textContent = T.text; $('bGo').disabled = true;
   const D = 7000, t0 = performance.now();
   const step = now => {
     const k = Math.min(1, (now - t0) / D), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
     const x = (1 - e) * (1 - e) * a[0] + 2 * (1 - e) * e * c[0] + e * e * b[0], y = (1 - e) * (1 - e) * a[1] + 2 * (1 - e) * e * c[1] + e * e * b[1];
-    const lift = T.by === 'air' ? -Math.sin(Math.PI * e) * 60 : Math.sin(now / 380) * 3;
-    el.style.left = x + 'px'; el.style.top = y + lift + 'px'; el.style.transform = `translate(-50%,-100%) rotate(${Math.sin(now / 500) * 3}deg) scaleX(${b[0] < a[0] ? -1 : 1})`;
+    const lift = T.by === 'air' ? -Math.sin(Math.PI * e) * 60 : T.by === 'plane' ? -Math.pow(Math.sin(Math.PI * e), .6) * 110 : Math.sin(now / 380) * 3;
+    // máy bay: ngóc đầu lúc cất cánh, chúc xuống lúc hạ cánh; hình gốc quay đầu sang trái nên lật lại
+    const tilt = T.by === 'plane' ? (e < .25 ? -12 * Math.sin(Math.PI * e / .25) : e > .75 ? 9 * Math.sin(Math.PI * (e - .75) / .25) : 0) : Math.sin(now / 500) * 3;
+    const flip = T.by === 'plane' ? (b[0] > a[0] ? -1 : 1) : (b[0] < a[0] ? -1 : 1);
+    el.style.left = x + 'px'; el.style.top = y + lift + 'px'; el.style.transform = `translate(-50%,-100%) rotate(${tilt}deg) scaleX(${flip})`;
     // máy quay bám theo chuyến đi
     const z = 1 + .55 * Math.sin(Math.PI * Math.min(1, k * 1.2)), cx = Math.max(800 / z, Math.min(1600 - 800 / z, x)), cy = Math.max(450 / z, Math.min(900 - 450 / z, y - 60));
     $('world').style.transform = `translate(800px,450px) scale(${z}) translate(${-cx}px,${-cy}px)`;

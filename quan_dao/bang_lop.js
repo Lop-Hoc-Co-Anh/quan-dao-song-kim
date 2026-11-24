@@ -82,7 +82,7 @@
   const row = (id, t, s, extra = '') => `<div class="dot wait" id="d_${id}"></div><div><b>${t}</b><span id="s_${id}">${s}</span></div><div>${extra}</div>`;
   const mark = (id, ok, s) => { $('d_' + id).className = 'dot ' + (ok === null ? 'wait' : ok ? 'ok' : 'bad'); if (s) $('s_' + id).textContent = s; };
   function openCheck() {
-    stopMic(); $('ovLop').hidden = false; const consent = localStorage.getItem('songkim_dongy_mic') === '1';
+    stopMic(); $('ovLop').hidden = false; 
     $('ovLop').innerHTML = `<div class="pn" role="dialog" aria-label="Kiểm tra trước giờ học">
       <button class="close" id="lClose">Đóng <small>Esc</small></button>
       <h2><small>${esc(LopHoc.current().ten)} · làm trước khi học sinh vào lớp</small>Kiểm tra trước giờ học</h2>
@@ -96,11 +96,9 @@
         ${row('bak', 'Sao lưu', '')}
       </div>
       <div class="sep"></div>
-      <label class="cb"><input type="checkbox" id="cConsent" ${consent ? 'checked' : ''}> <span><b>Phụ huynh của lớp đã đồng ý cho dùng máy nghe.</b> Khi bật máy nghe, tiếng nói trong lớp được Chrome gửi lên máy chủ của Google (Edge: Microsoft) để nhận dạng, không lưu trên máy này. Chưa tích ô này thì máy nghe tắt, cô tự chấm bằng phím Enter.</span></label>
       <div class="bar"><button class="go" id="bAgain">Kiểm tra lại</button><button id="bLop">Lớp học và sao lưu <small>L</small></button></div>
       <div class="msg" id="lMsg"></div></div>`;
     $('lClose').onclick = closeAll; $('bAgain').onclick = openCheck; $('bLop').onclick = () => { stopMic(); openLop(false); };
-    $('cConsent').onchange = () => { localStorage.setItem('songkim_dongy_mic', $('cConsent').checked ? '1' : '0'); msg($('cConsent').checked ? 'Đã ghi nhận: máy nghe được bật cho lớp này.' : 'Máy nghe sẽ tắt, cô chấm bằng phím Enter.'); };
     // máy nghe
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition; mark('sr', !!SR, SR ? 'Có.' : 'Chưa có. Hãy mở bằng Chrome hoặc Edge.');
     // mạng
