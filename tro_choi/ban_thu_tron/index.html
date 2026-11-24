@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bạn thú trốn đâu</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Bạn thú trốn đâu" – Rừng nhiệt đới, Unit 5 Animals */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; filter: saturate(1.1); }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 40, 20, 0) 40%, rgba(20, 60, 25, .35) 100%), radial-gradient(ellipse at 50% 30%, rgba(255, 245, 200, .25), rgba(0, 0, 0, 0) 60%); pointer-events: none; }
+.ray { position: absolute; top: -100px; width: 140px; height: 900px; background: linear-gradient(180deg, rgba(255, 250, 210, .35), rgba(255, 250, 210, 0)); transform: rotate(18deg); transform-origin: top; filter: blur(6px); animation: ray 7s ease-in-out infinite alternate; }
+@keyframes ray { to { opacity: .35; } }
+.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 260px; background: linear-gradient(180deg, rgba(110, 175, 60, 0), rgba(92, 160, 48, .9) 45%, #4E8E2E); }
+.bush { position: absolute; transform: translate(-50%, -100%); transform-origin: 50% 100%; pointer-events: none; }
+.bush.shake { animation: shake .16s ease-in-out 7 alternate; }
+@keyframes shake { from { transform: translate(-50%, -100%) rotate(-3.5deg) scaleY(1.02); } to { transform: translate(-50%, -100%) rotate(3.5deg) scaleY(.98); } }
+.hide { position: absolute; transform: translate(-50%, -100%); pointer-events: none; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .25)); }
+.branch { position: absolute; left: 1150px; top: 306px; width: 440px; height: 60px; pointer-events: none; }
+.found { position: absolute; transform: translate(-50%, -100%); pointer-events: none; text-align: center; }
+.found img { display: block; margin: 0 auto; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .25)); }
+.found span { display: inline-block; margin-top: 2px; background: rgba(255, 253, 246, .95); border-radius: 8px; padding: 1px 7px 3px; font: 800 13px/1.1 var(--display); color: var(--ink); white-space: nowrap; }
+.found.hop img { animation: hop .5s ease-in-out 3; }
+@keyframes hop { 50% { transform: translateY(-16px); } }
+.foundLbl { position: absolute; left: 1370px; top: 252px; transform: translateX(-50%); background: rgba(31, 45, 74, .72); color: #fff; font: 800 18px/1 var(--display); padding: 6px 14px 8px; border-radius: 12px; }
+@media (prefers-reduced-motion: reduce) { .ray, .bush.shake, .found.hop img { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const IMG = n => 'hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp', H = n => '../hinh/' + n + '.webp';
+const WORDS = [
+  { w: 'elephant', img: IMG('voi_phun_nuoc'), alt: ['elephants', 'elefant', 'element'] },
+  { w: 'lion', img: IMG('su_tu'), alt: ['lions', 'lyon', 'line', 'ryan'] },
+  { w: 'monkey', img: IMG('khi_an_chuoi'), alt: ['monkeys', 'monkee', 'money'] },
+  { w: 'snake', img: IMG('con_ran'), alt: ['snakes', 'snack', 'sneak', 'steak'] },
+  { w: 'fly', img: IMG('con_ruoi'), alt: ['flies', 'fry', 'flight', 'fl'] },
+  { w: 'snail', img: IMG('oc_sen'), alt: ['snails', 'nail', 'snell', 'snow'] },
+  { w: 'dog', img: IMG('thu_cho'), alt: ['dogs', 'dock', 'doc', 'duck'] },
+  { w: 'cat', img: IMG('thu_meo'), alt: ['cats', 'cut', 'cap', 'kat'] },
+  { w: 'bird', img: IMG('thu_chim'), alt: ['birds', 'bert', 'bud', 'word'] },
+  { w: 'sheep', img: IMG('thu_cuu'), alt: ['ship', 'cheap', 'sheeps'] },
+  { w: 'turtle', img: IMG('thu_rua'), alt: ['turtles', 'tuttle', 'total'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'fish', img: H('ca_vang'), alt: ['fishes', 'fist', 'fit'] },
+  { w: 'mouse', img: H('chuot'), alt: ['mice', 'mouth', 'mos'] },
+  { w: 'horse', img: H('ngua'), alt: ['horses', 'house', 'hose', 'horse'] },
+  { w: 'rabbit', img: H('thu_tho'), alt: ['rabbits', 'rabid', 'robert'] },
+  { w: 'frog', img: H('thu_ech'), alt: ['frogs', 'flog', 'frock'] },
+  { w: 'giraffe', img: H('thu_huou_cao_co'), alt: ['giraffes', 'giraf', 'draft'] },
+  { w: 'hippo', img: H('thu_ha_ma'), alt: ['hippos', 'hippo', 'hip'] },
+  { w: 'penguin', img: H('thu_chim_canh_cut'), alt: ['penguins', 'pengwin'] },
+];
+const BUSH = [[520, 790, 240], [830, 805, 250], [1140, 790, 240], [1440, 805, 240], [680, 905, 270], [1290, 905, 270]]; // 4 bụi hàng sau, 2 bụi hàng trước
+const HIDE_H = { elephant: 210, lion: 200, monkey: 200, snake: 190, fly: 150, snail: 150, dog: 170, cat: 150, bird: 150, sheep: 170, turtle: 150 };
+let found = [], hid = null;
+
+function bushSvg(seed, w) {
+  let s = seed * 9301 + 49297; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const h = w * .72, leaves = [];
+  for (let i = 0; i < 22; i++) { const a = Math.PI * (0.05 + rnd() * .9), r = .25 + rnd() * .45; leaves.push([150 + Math.cos(a) * r * 150 * (rnd() > .5 ? 1 : -1), 200 - Math.sin(a) * r * 190 - 20, 34 + rnd() * 26]); }
+  leaves.sort((a, b) => a[1] - b[1]);
+  const id = 'g' + seed;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 300 216" overflow="visible"><defs>
+<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#9BE36A"/><stop offset=".55" stop-color="#4FB33A"/><stop offset="1" stop-color="#2E7A26"/></radialGradient>
+<radialGradient id="${id}s" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="rgba(15,40,10,.5)"/><stop offset="1" stop-color="rgba(15,40,10,0)"/></radialGradient></defs>
+<ellipse cx="150" cy="208" rx="160" ry="22" fill="url(#${id}s)"/>
+<path d="M18 206 Q14 120 70 92 Q110 40 160 52 Q230 40 262 96 Q300 130 284 206 Z" fill="#2F7A27"/>
+${leaves.map(([x, y, r]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="url(#${id})" stroke="#2A6E22" stroke-width="2"/><ellipse cx="${(x - r * .3).toFixed(1)}" cy="${(y - r * .35).toFixed(1)}" rx="${(r * .32).toFixed(1)}" ry="${(r * .18).toFixed(1)}" fill="#D7F7B0" opacity=".55"/>`).join('')}
+${[0, 1, 2].map(i => { const x = 60 + rnd() * 180, y = 90 + rnd() * 90, c = ['#FF6FA5', '#FFD84D', '#FFFFFF'][i]; return `<circle cx="${x}" cy="${y}" r="7" fill="${c}"/><circle cx="${x}" cy="${y}" r="2.6" fill="#E0A100"/>`; }).join('')}
+</svg>`;
+}
+
+TroChoi.run({
+  id: 'ban_thu_tron', title: 'Bạn thú trốn đâu', unit: 'Unit 5 Animals', icon: C('pip_hoi'), progressLabel: 'bạn thú',
+  story: 'Các bạn thú đang chơi trốn tìm trong Rừng nhiệt đới. Bụi cây nào rung là có bạn đang trốn! Cả lớp đoán xem là ai, rồi bé đọc đúng tên thì bạn thú nhảy ra.',
+  doneSmall: 'Cả lớp đã tìm ra các bạn thú', doneTitle: 'Tìm được hết rồi!',
+  words: WORDS, defaultWords: ['elephant', 'lion', 'monkey', 'snake', 'fly', 'snail'], guessFirst: true,
+  cardPos: { x: 800, y: 150 }, micPos: { x: 800, y: 460 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_rung_ram.jpg" alt=""><div class="ray" style="left:420px"></div><div class="ray" style="left:980px;animation-delay:-3s"></div><div class="shade"></div>
+      <svg class="branch" viewBox="0 0 440 60"><path d="M0 34 Q220 18 440 30" stroke="#7A4A22" stroke-width="16" fill="none" stroke-linecap="round"/><path d="M0 34 Q220 18 440 30" stroke="#A86A33" stroke-width="7" fill="none" stroke-linecap="round" opacity=".7"/>${[40, 130, 250, 360].map((x, i) => `<ellipse cx="${x}" cy="${i % 2 ? 14 : 44}" rx="22" ry="10" fill="#4FB33A" transform="rotate(${i % 2 ? -25 : 25} ${x} ${i % 2 ? 14 : 44})"/>`).join('')}</svg>
+      <div class="foundLbl">Đã tìm thấy</div>
+      <div id="foundBox"></div><div id="hideLayer"></div>
+      ${BUSH.map(([x, y, w], i) => `<div class="bush" id="bush${i}" style="left:${x}px;top:${y}px"><img src="../hinh/bui_cay.webp" alt="" style="width:${w}px;display:block;transform:scaleX(${i % 2 ? -1 : 1});filter:drop-shadow(0 10px 8px rgba(20,50,10,.35))"></div>`).join('')}`;
+    api.sprite('anh', C('co_anh_vay_tay'), 130, 640, 200);
+    api.sprite('ben', C('ben_three_quarter'), 250, 650, 135);
+    api.sprite('pip', C('pip_hoi'), 330, 330, 110, 'bob');
+    api.say('Bạn nào đang trốn trong bụi cây nhỉ?', 60, 110);
+  },
+  onStart(api) { found = []; api.$('foundBox').innerHTML = ''; api.$('hideLayer').innerHTML = ''; },
+  progress(api) { return [found.length, api.kids.length]; },
+  async onTurn(api, ctx) {
+    const b = ctx.i % BUSH.length, [x, y, w] = BUSH[b], hh = HIDE_H[ctx.word.w] || 170, bushTop = y - w * .74 + 30;
+    // bạn thú đứng sau bụi, khung cắt ngang thân bụi để không lộ dưới đất
+    const base = y - 46, hidTy = hh - (base - bushTop) + 30, peekTy = hh * .62 - (base - bushTop);
+    api.$('hideLayer').innerHTML = `<div id="hwrap" style="position:absolute;left:${x - 200}px;top:0;width:400px;height:${base}px;overflow:hidden"><img id="hid" src="${ctx.word.img}" alt="" style="position:absolute;left:200px;bottom:0;height:${hh}px;transform:translate(-50%, ${hidTy}px);filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))"></div>`;
+    hid = { el: api.$('hid'), wrap: api.$('hwrap'), b, x, base, hh, ty: hidTy };
+    api.pose('pip', C('pip_hoi')); api.pose('anh', C('co_anh_la_ban'));
+    api.say(`${ctx.kid} ơi, bạn nào đang trốn vậy?`, 60, 110);
+    const bush = api.$('bush' + b); bush.classList.remove('shake'); void bush.offsetWidth; bush.classList.add('shake'); api.sfx.rustle();
+    await api.tween(900, (k, e) => { hid.ty = hidTy + (peekTy - hidTy) * e; hid.el.style.transform = `translate(-50%, ${hid.ty}px)`; });
+    await api.speak('Who is hiding?', .9); await api.wait(1800);
+    bush.classList.remove('shake'); void bush.offsetWidth; bush.classList.add('shake'); api.sfx.rustle(); await api.wait(600);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.say(`${praise} ${ctx.kid} giỏi quá!`, 60, 110);
+    api.sfx.boing(); api.hideCard();
+    const n = found.length, slotX = 1180 + (n % 7) * 62, slotY = 336 + Math.floor(n / 7) * 118, h1 = 70;
+    hid.wrap.style.overflow = 'visible';
+    const dx = slotX - hid.x, ty0 = hid.ty, ty1 = slotY - hid.base, h0 = hid.hh;
+    await api.tween(1050, (k, e) => { const h = h0 + (h1 - h0) * e, ty = ty0 + (ty1 - ty0) * e - Math.sin(Math.PI * k) * 280; hid.el.style.height = h + 'px'; hid.el.style.transform = `translate(calc(-50% + ${dx * e}px), ${ty}px) rotate(${Math.sin(Math.PI * k) * 12}deg)`; });
+    api.sparkle(slotX, slotY - 30);
+    found.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'found'; d.style.left = slotX + 'px'; d.style.top = (slotY + 18) + 'px';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${h1}px"><span>${api.esc(ctx.kid)}</span>`; api.$('foundBox').appendChild(d);
+    api.$('hideLayer').innerHTML = ''; await api.wait(600);
+  },
+  async onSkip(api) { if (hid) { const t0 = hid.ty; await api.tween(500, (k, e) => { hid.el.style.transform = `translate(-50%, ${t0 + 160 * e}px)`; }); } api.$('hideLayer').innerHTML = ''; },
+  async onFinish(api) {
+    api.say('Tìm được hết các bạn rồi! Cả lớp giỏi quá!', 60, 110); api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('pip', C('pip_reo'));
+    document.querySelectorAll('.found').forEach((f, i) => setTimeout(() => f.classList.add('hop'), i * 120));
+    await api.wait(2200);
+  },
+});
+</script>
+</body>
+</html>
