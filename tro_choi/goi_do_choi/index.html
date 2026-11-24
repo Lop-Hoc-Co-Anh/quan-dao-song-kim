@@ -27,6 +27,9 @@
 </style>
 </head>
 <body>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -91,8 +94,8 @@ TroChoi.run({
     });
     if (roll) toy.el.style.transform = 'translate(-50%, -100%)';
     api.sfx.thunk();
-    api.say('Bạn đồ chơi nào đây? Cả lớp đoán xem!', 30, 250);
-    await api.speak('What is this?', .9); await api.wait(1800);
+    api.say('Ai trốn trong hang đây? Cả lớp đoán xem!', 30, 250);
+    await api.speak((window.CauMau && CauMau.of(ctx.word.w) ? CauMau.of(ctx.word.w).q : "What's this?"), .9); await api.wait(1800);
   },
   async onCorrect(api, ctx, praise) {
     api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
@@ -117,7 +120,7 @@ TroChoi.run({
   },
   async onFinish(api) {
     api.$('dark').style.opacity = 0;
-    api.say('Các bạn đồ chơi về kệ đủ cả rồi! Cả lớp giỏi quá!', 30, 250);
+    api.say('Các bạn trong hang về kệ đủ cả rồi! Cả lớp giỏi quá!', 30, 250);
     api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('mia', C('mia_reo')); api.pose('pip', C('pip_reo'));
     document.querySelectorAll('.shelfToy').forEach((f, i) => setTimeout(() => f.classList.add('hop'), i * 120));
     await api.wait(2200);
