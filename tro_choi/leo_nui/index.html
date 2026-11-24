@@ -34,6 +34,9 @@
 </style>
 </head>
 <body>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -83,7 +86,7 @@ TroChoi.run({
     api.sprite('ben', C('ben_three_quarter'), 290, 870, 160);
     api.sprite('mia', C('mia_three_quarter'), 390, 874, 152);
     api.sprite('pip', C('pip_hoi'), 470, 560, 96, 'bob');
-    api.say('Lạnh quá! Quần áo bị đóng băng hết rồi!', 300, 420);
+    api.say('Lạnh quá! Mọi thứ bị đóng băng hết rồi!', 300, 420);
     placeTeam(api, 0); snowFall(api.$('snow'));
   },
   onStart(api) {
@@ -101,7 +104,7 @@ TroChoi.run({
     api.sfx.rustle();
     await api.tween(700, (k, e) => { iceEl.style.transform = `translate(-50%, -100%) scale(${.2 + .8 * e})`; iceEl.style.opacity = Math.min(1, k * 2); });
     api.sfx.thunk(); iceEl.classList.add('wob');
-    await api.speak('What is it?', .9);
+    await api.speak((window.CauMau && CauMau.of(ctx.word.w) ? CauMau.of(ctx.word.w).q : 'What is it?'), .9);
     api.pose('anh', C('co_anh_lang_nghe'));
     api.say('Nhìn kỹ qua lớp băng, cả lớp đoán xem!', 300, 420);
     await api.wait(1800);
