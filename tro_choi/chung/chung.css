@@ -70,3 +70,19 @@ button:focus-visible, .wpick:focus-within { outline: 4px solid #2E6FD8; outline-
 .stt { position: absolute; right: 24px; top: 84px; z-index: 7; padding: 8px 16px; border-radius: 14px; font: 800 18px/1.2 var(--body); background: #FFF6D8; color: #7A5A00; box-shadow: 0 4px 0 rgba(31, 45, 74, .15); max-width: 560px; }
 .stt.bad { background: #FFE1DC; color: #9A2E22; }
 .hint { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); z-index: 9; padding: 12px 26px; border-radius: 18px; background: rgba(31, 45, 74, .88); color: #fff; font: 800 26px/1.2 var(--body); }
+/* đợt 3: đồng thanh cả lớp, bé nhút nhát, đáp cả câu */
+.nameTip { font: 700 15px/1.35 var(--body); color: var(--soft); margin-top: 6px; }
+.opts select { font: 700 17px var(--body); border-radius: 10px; border: 2px solid #D3E2E8; padding: 2px 6px; margin-left: 6px; }
+.opts small { color: var(--soft); font-weight: 700; }
+.card .cauLine { font: 800 24px/1.25 var(--body); color: var(--ink); margin-top: 6px; text-align: center; max-width: 360px; }
+.card .cauLine b { display: block; color: #0D7068; }
+.chorus { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 12; background: rgba(255, 253, 246, .97); border-radius: 34px; padding: 26px 60px 22px; text-align: center; box-shadow: 0 12px 0 rgba(31, 45, 74, .25); min-width: 520px; }
+.chorus small { display: block; font: 800 22px/1 var(--body); color: #0D7068; letter-spacing: .06em; }
+.chorus b { display: block; font: 800 84px/1.1 'Baloo 2', var(--body); color: var(--ink); margin: 10px 0 4px; }
+.chorus i { display: block; font: 700 28px/1.2 var(--body); color: #B5463B; font-style: normal; min-height: 6px; }
+.chorus .chDots { display: flex; gap: 22px; justify-content: center; margin: 14px 0 6px; }
+.chorus .chDots span { width: 44px; height: 44px; border-radius: 50%; background: #E3EAF1; transition: background .2s, transform .2s; }
+.chorus .chDots span.on { background: #FFD23F; transform: scale(1.25); } .chorus .chDots span.done { background: #3CC46A; }
+.chorus em { font: 700 15px var(--body); color: var(--soft); font-style: normal; }
+.shy { position: absolute; left: 50%; top: 168px; transform: translateX(-50%); z-index: 6; background: #EAF6FF; color: #1F4A7A; border-radius: 18px; padding: 10px 20px; font: 700 20px/1.35 var(--body); text-align: center; box-shadow: 0 4px 0 rgba(31, 45, 74, .12); max-width: 760px; }
+.shy kbd { font: 800 15px var(--body); background: #fff; border-radius: 6px; padding: 2px 7px; }

@@ -11,7 +11,9 @@
   const H = (cls, inner = '') => inner;
 
   // ---------- khung trang ----------
+  const ISLAND_NAME = { dao_hat_mam: 'Đảo Hạt Mầm', dao_cau_vong: 'Đảo Cầu Vồng' }[QS.get('dao')] || 'Đảo Song Kim';
   function scaffold(G) {
+    G.story = String(G.story).replace(/Đảo Song Kim/g, ISLAND_NAME);
     document.body.insertAdjacentHTML('afterbegin', `
 <div id="stage">
   <div id="scene"></div>
@@ -21,7 +23,9 @@
   <div class="stt" id="stt" hidden></div>
   <div class="hint" id="hint" hidden></div>
   <div class="turn" id="turn" hidden><small>Lượt của</small><span id="turnName"></span></div>
-  <div class="card" id="card" hidden><img id="cardImg" src="" alt=""><div class="w" id="cardWord"></div></div>
+  <div class="card" id="card" hidden><img id="cardImg" src="" alt=""><div class="w" id="cardWord"></div><div class="cauLine" id="cardCau" hidden></div></div>
+  <div class="chorus" id="chorus" hidden><small>CẢ LỚP CÙNG ĐỌC</small><b id="chWord"></b><i id="chCmd"></i><div class="chDots"><span id="chD0"></span><span id="chD1"></span></div><em>Enter: bỏ qua</em></div>
+  <div class="shy" id="shy" hidden></div>
   <div class="mic" id="micRow" hidden>
     <button class="micBtn" id="micBtn" title="Nghe bé đọc (phím cách)"><svg viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="#fff"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
     <div class="heard" id="heard"><b id="heardLbl">MÁY ĐANG NGHE</b><span id="heardTxt">…</span></div>
@@ -38,17 +42,22 @@
   </div>
   <div class="ov" id="ovSetup">
     <div class="panel">
-      <h1><small>Đảo Song Kim · Thử thách${TIET ? ' · Tiết ' + esc(TIET) : ''}</small>${esc(G.title)}</h1>
+      <h1><small>${ISLAND_NAME} · Thử thách${TIET ? ' · Tiết ' + esc(TIET) : ''}</small>${esc(G.title)}</h1>
       <p>${G.story}</p>
       <div class="grid2">
-        <div><label class="t" for="names">Danh sách các bé (mỗi dòng một tên)</label><textarea id="names" spellcheck="false"></textarea></div>
+        <div><label class="t" for="names">Danh sách các bé (mỗi dòng một tên)</label><textarea id="names" spellcheck="false"></textarea>
+          <div class="nameTip">Bé nhút nhát: thêm dấu <b>*</b> sau tên (VD: Bé Na *). Có thể dùng biệt danh.</div></div>
         <div><label class="t">Chọn từ cho tiết này</label><div class="words" id="wordPick"></div>
           <div class="opts">
             <label><input type="checkbox" id="optSpeak"> Máy đọc mẫu từ</label>
             <label><input type="checkbox" id="optAuto"> Đọc mẫu xong tự bật nghe</label>
             <label><input type="checkbox" id="optMic"> Máy nghe để chấm</label>
-            <label title="Tiếng nói trong lớp được Chrome gửi lên Google (Edge: Microsoft) để nhận dạng"><input type="checkbox" id="optConsent"> Phụ huynh đã đồng ý cho máy nghe</label>
             <label><input type="checkbox" id="optShuffle"> Đảo thứ tự các bé</label>
+            <label><input type="checkbox" id="optChorus"> Cả lớp đọc lại 2 lần sau mỗi lượt</label>
+            <label id="lblCau"><input type="checkbox" id="optCau"> Đáp cả câu <small id="cauHint"></small></label>
+            <label id="lblDoi" hidden><input type="checkbox" id="optDoi"> Hai bé hỏi – đáp</label>
+            <label>Mỗi lượt <select id="selNhom"><option value="1">1 bé</option><option value="2">2 bé</option><option value="3">3 bé</option><option value="4">4 bé</option></select></label>
+            <label title="Máy ưu tiên các bé ít được gọi trong 7 ngày qua">Gọi <select id="selMax"><option value="0">tất cả các bé</option><option value="6">6 bé</option><option value="8">8 bé</option><option value="10">10 bé</option><option value="12">12 bé</option></select></label>
           </div></div>
       </div>
       <div class="row"><span class="note" id="micNote">Máy nghe dùng micro của máy tính và cần có mạng. Nếu máy nghe nhầm, cô bấm Enter để công nhận bé đọc đúng.</span>
@@ -98,7 +107,7 @@
     scaffold(G);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const KEY = 'trochoi_' + G.id;
-    let cfg = { words: G.defaultWords.slice(), speak: true, auto: true, mic: true, shuffle: false };
+    let cfg = { words: G.defaultWords.slice(), speak: true, auto: true, mic: true, shuffle: false, chorus: true, cau: false, doi: false, nhom: 1, max: 0 };
     try { Object.assign(cfg, JSON.parse(localStorage.getItem(KEY) || 'null') || {}); } catch (e) {}
     let names = 'Bé An\nBé Bin\nBé Na\nBé Tôm\nBé Su\nBé Bơ\nBé Mít\nBé Cốm';
     try { names = localStorage.getItem('trochoi_names') || localStorage.getItem('ghepvancau') && JSON.parse(localStorage.getItem('ghepvancau')).names || names; } catch (e) {}
@@ -110,6 +119,30 @@
         cfg.words = m.concat(near); } }
 
     let state = 'setup', kids = [], words = [], turnIdx = 0, cur = null, rec = null, results = [];
+    let members = [], shyOf = [], nextName = [];
+    // ---- mẫu câu của tiết (từ đảo gửi sang) -> câu hỏi + câu trả lời có chứa từ ----
+    const CAU = (QS.get('cau') || '').trim(), DAO = QS.get('dao') || 'dao_3d';
+    const NOART = /^(red|yellow|blue|green|orange|brown|purple|pink|black|white|grey|gray|one|two|three|four|five|six|seven|eight|nine|ten|long|short|big|little|fast|slow|happy|sad)$/i;
+    function sentence(W) {
+      const w = W.w, plural = /s$/i.test(w) && !/ss$/i.test(w), art = NOART.test(w) || plural || /^(mother|father|brother|sister|grandma|grandpa|mum|dad|baby)$/i.test(w) ? '' : (/^[aeiou]/i.test(w) ? 'an ' : 'a ');
+      const fam = /^(mother|father|brother|sister|grandma|grandpa|mum|dad|baby|grandmother|grandfather)$/i.test(w);
+      let q = W.q || '', a = '';
+      const m = CAU.match(/([^\/–\-?]*\?)\s*[–-]\s*([^\/]*)/); // "What's this? – It's a …"
+      if (m) { q = m[1].trim(); a = m[2].trim(); }
+      else { const qs = CAU.split('/').map(x => x.trim()).filter(x => /\?$/.test(x)); if (qs.length) q = qs[0]; }
+      if (!fam && /^who/i.test(q)) { q = ''; a = ''; } // câu hỏi về người mà từ không phải người
+      if (!/\?$/.test(q)) q = fam ? "Who's this?" : NOART.test(w) && /^(red|yellow|blue|green|orange|brown|purple|pink|black|white)$/i.test(w) ? 'What colour is it?' : "What's this?";
+      a = a.replace(/\b(An\/A|A\/An)\b/i, 'a');
+      if (a && !fam && /\bmy\s*(…|\.\.\.)/i.test(a)) a = '';
+      if (a && /…|\.\.\./.test(a)) a = a.replace(/\b(a|an)\s*(…|\.\.\.)/i, art + w).replace(/(…|\.\.\.)/, (/my\s*$/i.test(a.split(/…|\.\.\./)[0]) ? '' : '') + w);
+      else a = fam ? 'This is my ' + w : (NOART.test(w) ? "It's " + w : "It's " + art + w);
+      a = a.replace(/\s+/g, ' ').replace(/[.!]*$/, '.').replace(/^./, c => c.toUpperCase());
+      return { q: q.replace(/’/g, "'"), a: a.replace(/’/g, "'") };
+    }
+    // ---- gọi công bằng: đếm số lần mỗi bé được gọi trong 7 ngày ----
+    const K_GOI = 'songkim_goi', DAY = 864e5;
+    const goiCount = n => { try { const g = JSON.parse(localStorage.getItem(K_GOI) || '{}'); return (g[n] || []).filter(t => Date.now() - t < 7 * DAY).length; } catch (e) { return 0; } };
+    const goiMark = list => { try { const g = JSON.parse(localStorage.getItem(K_GOI) || '{}'); list.forEach(n => { g[n] = (g[n] || []).filter(t => Date.now() - t < 14 * DAY).concat(Date.now()); }); localStorage.setItem(K_GOI, JSON.stringify(g)); } catch (e) {} };
     const api = {
       G, sfx, $, esc, get kids() { return kids; }, get words() { return words; }, get results() { return results; }, get turnIdx() { return turnIdx; },
       stage: $('stage'), scene: $('scene'),
@@ -139,10 +172,9 @@
     function listen() {
       if (state !== 'turn') return;
       stopListen(); $('micBtn').classList.remove('ok', 'no'); lastHeard = '';
-      if (cfg.mic && SR && !consent()) { heard('CÔ CHẤM', 'Máy nghe chưa bật cho lớp này (chưa có đồng ý của phụ huynh). Bé đọc đúng thì cô bấm Enter.'); return; }
       if (!cfg.mic || !SR || !window.MayNghe) { heard('CÔ CHẤM', SR ? 'Máy nghe đang tắt. Bé đọc đúng thì cô bấm Enter.' : 'Máy này chưa nghe được. Bé đọc đúng thì cô bấm Enter.'); return; }
       const me = cur;
-      MayNghe.start({ word: cur.word, others: G.words.map(W => W.w), ms: 8000,
+      MayNghe.start({ word: cur.word, others: G.words.map(W => W.w), ms: cfg.cau ? 11000 : DAO === 'dao_hat_mam' ? 6000 : 8000,
         onStart: () => { $('micBtn').classList.add('on'); heard('MÁY ĐANG NGHE', 'Bé đọc to nhé…'); showPeek(); },
         onHeard: txt => { if (cur !== me) return; lastHeard = txt; if (navigator.onLine) status(''); showPeek(); },
         onMatch: () => { if (cur === me && state === 'turn') correct(); },
@@ -155,19 +187,43 @@
           heard('ĐỌC LẠI NÀO', 'Bé đọc lại (phím cách) hoặc cô bấm Enter.'); showPeek(); } });
     }
     async function model() {
-      const me = cur; api.showCard(cur.word); heard('NGHE MẪU', 'Cô đọc mẫu, cả lớp nghe…');
-      await api.speak(cur.word.w); await api.wait(350); if (cur !== me) return;
-      await api.speak('Your turn!', .95); if (cur !== me) return;
+      const me = cur; api.showCard(cur.word); heard('NGHE MẪU', 'Nghe mẫu, cả lớp nghe…');
+      if (cfg.cau) { const S = sentence(cur.word); $('cardCau').hidden = false; $('cardCau').innerHTML = `<b>${esc(S.q)}</b> ${esc(S.a)}`;
+        await api.speak(S.q, .85); await api.wait(300); if (cur !== me) return; await api.speak(S.a, .8); }
+      else { $('cardCau').hidden = true; await api.speak(cur.word.w); }
+      await api.wait(350); if (cur !== me) return;
+      await api.speak(cfg.cau && cfg.doi ? 'Ask and answer!' : 'Your turn!', .95); if (cur !== me) return;
       if (cfg.auto) listen(); else heard('SẴN SÀNG', 'Bấm micro hoặc phím cách để máy nghe.');
     }
     async function nextTurn() {
       stopListen();
       if (turnIdx >= kids.length) return finish();
       const W = words[turnIdx % words.length]; cur = { kid: kids[turnIdx], word: W, i: turnIdx }; state = 'intro';
-      $('turnName').textContent = cur.kid; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
+      goiMark(members[turnIdx]);
+      const pair = cfg.cau && cfg.doi && +cfg.nhom <= 1 && kids.length > 1 ? `${nextName[turnIdx]} hỏi · ${kids[turnIdx]} đáp` : '';
+      $('turnName').textContent = pair || cur.kid;
+      const shy = shyOf[turnIdx]; $('shy').hidden = !shy;
+      if (shy) $('shy').innerHTML = `<b>${esc(cur.kid)}</b> có thể nói cùng một bạn thân, thì thầm với Pip, hoặc chỉ vào hình.<br>Bé làm được thì cô bấm <kbd>Enter</kbd>.`; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
       if (G.guessFirst) { api.hideCard(); heard('ĐOÁN XEM', 'Cả lớp đoán xem nào…'); }
       const me = cur; if (G.onTurn) await G.onTurn(api, cur); if (cur !== me || state !== 'intro') return;
       state = 'turn'; model();
+    }
+    let chorusSkip = null;
+    async function chorus(W) {
+      if (!cfg.chorus) return;
+      state = 'chorus'; $('shy').hidden = true; const box = $('chorus');
+      $('chWord').textContent = cfg.cau ? sentence(W).a : W.w; $('chCmd').textContent = W.cmd || ''; $('chD0').className = $('chD1').className = '';
+      box.hidden = false; let skipped = false; const skipP = new Promise(r => chorusSkip = () => { skipped = true; r(); });
+      const step = async () => {
+        await api.speak('Everyone, say it with me!', .95); if (skipped) return;
+        for (let k = 0; k < 2 && !skipped; k++) {
+          $('chD' + k).className = 'on'; sfx.pop();
+          await api.speak(cfg.cau ? sentence(W).a : W.w, .85); if (skipped) return;
+          await api.wait(1700); // cả lớp đọc theo
+          $('chD' + k).className = 'done';
+        }
+      };
+      await Promise.race([step(), skipP]); chorusSkip = null; box.hidden = true; try { speechSynthesis.cancel(); } catch (e) {}
     }
     async function correct() {
       if (state !== 'turn' && state !== 'intro') return; state = 'anim'; stopListen();
@@ -175,16 +231,16 @@
       sfx.good(); const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; api.speak(praise, .95);
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: true };
       if (G.onCorrect) await G.onCorrect(api, cur, praise); api.progress();
-      await api.wait(500); turnIdx++; nextTurn();
+      await api.wait(500); await chorus(cur.word); if (state === 'setup' || state === 'bye') return; turnIdx++; nextTurn();
     }
     async function skip() {
       if (state !== 'turn' && state !== 'intro') return; stopListen(); state = 'anim';
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: false };
-      if (G.onSkip) await G.onSkip(api, cur); api.progress(); turnIdx++; nextTurn();
+      if (G.onSkip) await G.onSkip(api, cur); api.progress(); await chorus(cur.word); if (state === 'setup' || state === 'bye') return; turnIdx++; nextTurn();
     }
     async function finish() {
-      state = 'finish'; ['turn', 'card', 'micRow'].forEach(i => $(i).hidden = true); stopListen();
-      try { const K = 'songkim_vinhdanh', v = JSON.parse(localStorage.getItem(K) || '{}'); kids.forEach((k, i) => { const r = v[k] || (v[k] = { dung: 0, luot: 0 }); r.luot++; if (results[i] && results[i].ok) r.dung++; }); localStorage.setItem(K, JSON.stringify(v)); } catch (e) {} // ghi cho bảng vinh danh
+      state = 'finish'; ['turn', 'card', 'micRow', 'shy', 'chorus'].forEach(i => $(i).hidden = true); stopListen();
+      try { const K = 'songkim_vinhdanh', v = JSON.parse(localStorage.getItem(K) || '{}'); kids.forEach((k, i) => (members[i] || [k]).forEach(n => { const r = v[n] || (v[n] = { dung: 0, luot: 0 }); r.luot++; if (results[i] && results[i].ok) r.dung++; })); localStorage.setItem(K, JSON.stringify(v)); } catch (e) {} // ghi cho bảng vinh danh
       sfx.fanfare(); api.speak("Hooray! Well done, everyone!", .95);
       if (G.onFinish) await G.onFinish(api);
       confetti(); sfx.fanfare();
@@ -193,9 +249,15 @@
     }
     function start() {
       names = $('names').value; saveCfg();
-      kids = names.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 20);
-      if (!kids.length) { $('names').focus(); return; }
-      if (cfg.shuffle) for (let i = kids.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [kids[i], kids[j]] = [kids[j], kids[i]]; }
+      let roster = names.split('\n').map(s => s.trim()).filter(Boolean).map(s => ({ name: s.replace(/\s*\*+\s*$/, '').trim(), shy: /\*\s*$/.test(s) })).filter(k => k.name);
+      if (!roster.length) { $('names').focus(); return; }
+      const lim = +cfg.max > 0 ? +cfg.max : 20 * (+cfg.nhom || 1);
+      if (roster.length > lim) { const idx = roster.map((k, i) => [goiCount(k.name), i]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, lim).map(x => x[1]).sort((a, b) => a - b); roster = idx.map(i => roster[i]); } // ưu tiên bé ít được gọi
+      if (cfg.shuffle) for (let i = roster.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [roster[i], roster[j]] = [roster[j], roster[i]]; }
+      const n = Math.max(1, +cfg.nhom || 1), groups = []; for (let i = 0; i < roster.length; i += n) groups.push(roster.slice(i, i + n));
+      if (groups.length > 1 && groups[groups.length - 1].length === 1 && n > 1) groups[groups.length - 2].push(...groups.pop()); // không để bé lẻ một mình
+      kids = groups.map(g => g.map(k => k.name).join(' · ')); members = groups.map(g => g.map(k => k.name)); shyOf = groups.map(g => g.length === 1 && g[0].shy);
+      nextName = kids.map((k, i) => kids[(i + 1) % kids.length]);
       words = G.words.filter(W => cfg.words.includes(W.w)); if (words.length < 2) words = G.words.filter(W => G.defaultWords.includes(W.w));
       turnIdx = 0; results = [];
       $('ovSetup').hidden = true; $('ovDone').hidden = true; $('keys').hidden = false;
@@ -214,8 +276,10 @@
       $('names').value = names;
       $('wordPick').innerHTML = G.words.map(W => `<label class="wpick ${cfg.words.includes(W.w) ? 'on' : ''}"><input type="checkbox" value="${W.w}" ${cfg.words.includes(W.w) ? 'checked' : ''}><img src="${W.img}" alt=""><span>${W.w}</span></label>`).join('');
       $('wordPick').querySelectorAll('input').forEach(inp => inp.onchange = () => { inp.parentElement.classList.toggle('on', inp.checked); cfg.words = [...$('wordPick').querySelectorAll('input:checked')].map(i => i.value); saveCfg(); });
-      [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
-      $('optConsent').checked = consent(); $('optConsent').onchange = () => { try { localStorage.setItem('songkim_dongy_mic', $('optConsent').checked ? '1' : '0'); } catch (e) {} };
+      [['selNhom', 'nhom'], ['selMax', 'max']].forEach(([id, k]) => { $(id).value = String(cfg[k] || (k === 'nhom' ? 1 : 0)); $(id).onchange = () => { cfg[k] = +$(id).value; saveCfg(); }; });
+      $('cauHint').textContent = CAU && /\?/.test(CAU) ? '(' + CAU.split('/')[0].trim().slice(0, 40) + ')' : '';
+      $('lblDoi').hidden = DAO !== 'dao_3d'; // Amanda 3: hai bé hỏi đáp nhau
+      [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle'], ['optChorus', 'chorus'], ['optCau', 'cau'], ['optDoi', 'doi']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
       if (!SR) { $('micNote').textContent = 'Trình duyệt này chưa có máy nghe. Hãy mở bằng Chrome hoặc Edge. Tạm thời cô bấm Enter khi bé đọc đúng.'; $('micNote').classList.add('warn'); }
     }
     $('bStart').onclick = () => { start(); if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); };
@@ -233,6 +297,8 @@
       if (e.key === 'f' || e.key === 'F') return $('kFull').onclick();
       if (state === 'setup') { if (e.key === 'Enter') start(); return; }
       if (state === 'done') { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); FROM_ISLAND ? goIsland('xong') : start(); } if (e.key === 'Escape') openSetup(); return; }
+      if (state === 'chorus' && e.key === 'Escape') { chorusSkip && chorusSkip(); return openSetup(); }
+      if (state === 'chorus') { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); chorusSkip && chorusSkip(); } return; }
       if (e.key === 'Escape') return openSetup();
       if (state !== 'turn' && state !== 'intro') return;
       if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); correct(); }
@@ -241,7 +307,7 @@
       else if (e.key === 's' || e.key === 'S') skip();
     });
     buildSetup();
-    window.__tro = { api, cfg, correct, skip, get state() { return state; } };
+    window.__tro = { api, cfg, correct, skip, sentence, get state() { return state; }, get kids() { return kids; }, get members() { return members; } };
   } };
 
   // ---------- hiệu ứng ----------
