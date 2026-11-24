@@ -13,7 +13,7 @@
 .snow { position: absolute; inset: 0; pointer-events: none; }
 .ice { position: absolute; transform: translate(-50%, -100%); border-radius: 28px; pointer-events: none;
   background: linear-gradient(150deg, rgba(235, 250, 255, .78), rgba(160, 215, 245, .62) 45%, rgba(120, 190, 235, .7)); box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .7), inset -14px -18px 30px rgba(70, 140, 200, .35), 0 16px 20px rgba(60, 110, 160, .3); overflow: hidden; }
-.ice img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); filter: blur(4px) saturate(.6) opacity(.85); }
+.ice img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); filter: saturate(1.05) drop-shadow(0 4px 6px rgba(40, 90, 140, .25)); } /* hình rõ, bé nhìn là gọi được tên */
 .ice::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, .55) 28%, rgba(255, 255, 255, 0) 36%), radial-gradient(circle at 20% 80%, rgba(255, 255, 255, .5) 0 3px, transparent 4px), radial-gradient(circle at 70% 30%, rgba(255, 255, 255, .55) 0 4px, transparent 5px), radial-gradient(circle at 80% 75%, rgba(255, 255, 255, .45) 0 3px, transparent 4px); z-index: 2; }
 .ice svg { position: absolute; inset: 0; z-index: 3; }
 .ice.wob { animation: wob .14s ease-in-out 8 alternate; }
@@ -71,7 +71,7 @@ function hangSlot(n, total) { const per = Math.max(4, Math.min(8, total)), row =
 
 TroChoi.run({
   id: 'leo_nui', title: 'Leo núi tuyết', unit: 'Unit 4 Clothes', icon: H('khan_quang'), progressLabel: 'chặng',
-  story: 'Cả nhóm leo lên đỉnh núi tuyết để cắm lá cờ. Gió lạnh đã đóng băng quần áo! Cả lớp nhìn qua lớp băng đoán xem là món đồ gì. Bé đọc đúng thì băng vỡ, cả nhóm mặc ấm và leo thêm một chặng.',
+  story: 'Cả nhóm leo lên đỉnh núi tuyết để cắm lá cờ. Gió lạnh đóng băng các món đồ! Bé nhìn hình trong khối băng, gọi thật to tên món đồ: băng vỡ tan, cả nhóm leo thêm một chặng.',
   doneSmall: 'Cả nhóm đã lên tới đỉnh', doneTitle: 'Cắm cờ trên đỉnh núi!',
   words: WORDS, defaultWords: ['T-shirt', 'socks', 'skirt', 'shorts', 'scarf', 'boots'], guessFirst: true,
   cardPos: { x: 1310, y: 400 }, micPos: { x: 1290, y: 700 },
@@ -100,14 +100,14 @@ TroChoi.run({
     api.$('iceLayer').innerHTML = `<div class="ice" id="ice" style="left:${ICE.x}px;top:${ICE.y}px;width:${w}px;height:${h}px"><img src="${ctx.word.img}" alt="" style="max-width:${w - 50}px;max-height:${h - 50}px"><svg id="crk" viewBox="0 0 300 270"></svg></div>`;
     iceEl = api.$('ice'); iceEl.style.transform = 'translate(-50%, -100%) scale(.2)'; iceEl.style.opacity = 0;
     api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
-    api.say(`${ctx.kid} ơi, khối băng này có gì bên trong?`, 300, 420);
+    api.say(`${ctx.kid} ơi, trong khối băng có gì kìa?`, 300, 420);
     api.sfx.rustle();
     await api.tween(700, (k, e) => { iceEl.style.transform = `translate(-50%, -100%) scale(${.2 + .8 * e})`; iceEl.style.opacity = Math.min(1, k * 2); });
     api.sfx.thunk(); iceEl.classList.add('wob');
     await api.speak((window.CauMau && CauMau.of(ctx.word.w) ? CauMau.of(ctx.word.w).q : 'What is it?'), .9);
     api.pose('anh', C('co_anh_lang_nghe'));
-    api.say('Nhìn kỹ qua lớp băng, cả lớp đoán xem!', 300, 420);
-    await api.wait(1800);
+    api.say('Gọi thật to tên nó, băng sẽ vỡ tan!', 300, 420);
+    await api.wait(900);
   },
   async onCorrect(api, ctx, praise) {
     api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
