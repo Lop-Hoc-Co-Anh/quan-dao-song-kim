@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nghe – chạm</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Trò khởi động nghe hiểu: Pip hỏi "Where's the ball?", cả lớp chỉ vào hình đúng, cô bấm vào hình đó. Không chấm điểm ai. */
+:root { --ink: #1F2D4A; --soft: #56637F; --teal: #14998F; --paper: #FFFDF6; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0E1A2E; font-family: 'Nunito', Arial, sans-serif; color: var(--ink); }
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 50% 50%; overflow: hidden; background: radial-gradient(circle at 50% 30%, #BFF0F7, #6FC9E0 60%, #3C9EC4); }
+.top { position: absolute; left: 24px; right: 24px; top: 18px; display: flex; gap: 12px; align-items: center; }
+.chip { background: rgba(255, 253, 246, .95); border-radius: 22px; padding: 9px 20px 11px; font: 800 28px/1 'Baloo 2'; box-shadow: 0 6px 0 rgba(31, 45, 74, .16); }
+.chip small { font: 700 16px 'Nunito'; color: var(--soft); margin-left: 8px; }
+.sp { flex: 1; }
+.ask { position: absolute; left: 50%; top: 108px; transform: translateX(-50%); background: var(--paper); border-radius: 30px; padding: 16px 40px 20px; font: 800 64px/1.1 'Baloo 2'; box-shadow: 0 8px 0 rgba(31, 45, 74, .18); white-space: nowrap; }
+.ask small { display: block; font: 700 22px 'Nunito'; color: var(--soft); text-align: center; }
+.pip { position: absolute; left: 70px; top: 120px; height: 170px; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-10px); } }
+.grid { position: absolute; left: 50%; top: 300px; transform: translateX(-50%); display: flex; gap: 34px; }
+.cd { width: 300px; height: 330px; background: var(--paper); border-radius: 34px; box-shadow: 0 10px 0 rgba(31, 45, 74, .22); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 0; transition: transform .15s; position: relative; }
+.cd img { height: 230px; max-width: 260px; object-fit: contain; pointer-events: none; }
+.cd kbd { position: absolute; top: 12px; left: 16px; font: 800 22px 'Baloo 2'; color: var(--soft); }
+.cd b { font: 800 34px 'Baloo 2'; margin-top: 6px; visibility: hidden; }
+.cd.ok { transform: scale(1.1) rotate(-3deg); box-shadow: 0 0 0 10px #FFD23F, 0 10px 0 rgba(31, 45, 74, .22); } .cd.ok b { visibility: visible; }
+.cd.no { animation: shake .4s; } @keyframes shake { 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
+.keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; gap: 12px; justify-content: center; }
+.k { font: 800 20px 'Baloo 2'; border: 0; border-radius: 16px; padding: 10px 18px; background: var(--paper); cursor: pointer; box-shadow: 0 5px 0 rgba(31, 45, 74, .2); }
+.k kbd { font: 700 13px 'Nunito'; background: #E6EEF3; border-radius: 6px; padding: 3px 6px; margin-left: 6px; }
+.hint { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); padding: 10px 24px; border-radius: 16px; background: rgba(31, 45, 74, .88); color: #fff; font: 800 24px 'Baloo 2'; z-index: 9; }
+.done { position: absolute; inset: 0; background: rgba(14, 26, 46, .5); display: flex; align-items: center; justify-content: center; }
+.done div { background: var(--paper); border-radius: 30px; padding: 30px 50px; text-align: center; font: 800 52px 'Baloo 2'; }
+.done p { font: 700 22px 'Nunito'; color: var(--soft); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="top"><div class="chip">Nghe – chạm<small id="sub">Khởi động</small></div><div class="sp"></div><div class="chip" id="prog">1 / 8</div></div>
+  <img class="pip" src="../chung/hinh/pip_noi.webp" alt="Pip">
+  <div class="ask" id="ask"><small>Pip hỏi, cả lớp chỉ vào hình đúng!</small><span id="askT"></span></div>
+  <div class="grid" id="grid"></div>
+  <div class="keys"><button class="k" id="kRep">Nghe lại<kbd>R</kbd></button><button class="k" id="kNext">Câu khác<kbd>Space</kbd></button><button class="k" id="kBack">Về đảo<kbd>Q</kbd></button></div>
+  <div class="hint" id="hint" hidden></div>
+  <div class="done" id="done" hidden><div>Cả lớp nghe giỏi quá!<p>Bấm Enter để về đảo vào thử thách của tiết.</p></div></div>
+</div>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
+<script>
+const $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
+const stage = $('stage'), fit = () => { const k = Math.min(innerWidth / 1600, innerHeight / 900); stage.style.transform = `translate(-50%, -50%) scale(${k})`; }; addEventListener('resize', fit); fit();
+const ISLAND = '../../' + ({ dao_hat_mam: 'dao_hat_mam/dao-hat-mam.html', dao_cau_vong: 'dao_cau_vong/dao-cau-vong.html' }[QS.get('dao')] || 'dao_3d/dao-song-kim-3d.html');
+const UNIT = QS.get('unit') || ''; if (UNIT) $('sub').textContent = UNIT;
+const find = w => KHO_TU.find(W => [w, w.replace(/s$/, ''), w.split(' ')[0]].includes(W.w.toLowerCase()));
+let words = [...new Set((QS.get('tu') || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean))].map(find).filter(Boolean).filter(W => CauMau.of(W.w, UNIT));
+if (words.length < 3) words = words.concat(KHO_TU.filter(W => ['car', 'ball', 'doll', 'teddy', 'cat', 'dog'].includes(W.w) && !words.includes(W))).slice(0, 4);
+const ROUNDS = Math.min(8, words.length * 2);
+// câu hỏi nghe hiểu theo nhóm từ
+function ask(W) {
+  const S = CauMau.of(W.w, UNIT) || { q: '' }, w = W.w;
+  if (/^who/i.test(S.q)) return `Where's ${/^(mummy|daddy|granny|grandad|grandma|grandpa)$/i.test(w) ? w : 'the ' + w}?`;
+  if (/colour/i.test(S.q)) return `Find ${w}!`;
+  if (/how many/i.test(S.q)) return `Find ${w}!`;
+  if (/these/i.test(S.q)) return `Where are the ${w}?`;
+  if (/room/i.test(S.q)) return `Where's the ${w}?`;
+  if (/^(is it|is he|how are)/i.test(S.q)) return `Find ${w}!`;
+  return `Where's the ${w}?`;
+}
+const img = W => /^data:/.test(W.img) ? W.img : W.img; // đường dẫn trong kho tính từ thư mục một trò: đúng với thư mục này
+function say(t) { if (window.GiongCo && GiongCo.has(t)) return GiongCo.play(t); return new Promise(res => { if (!window.speechSynthesis) return res(); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; const v = speechSynthesis.getVoices().find(x => /^en/i.test(x.lang)); if (v) u.voice = v; u.rate = .85; u.pitch = 1.1; let d = 0; const f = () => { if (!d) { d = 1; res(); } }; u.onend = f; u.onerror = f; setTimeout(f, 3500); speechSynthesis.speak(u); }); }
+let round = 0, target = null, opts = [], locked = false, order = [];
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function next() {
+  if (round >= ROUNDS) { $('done').hidden = false; say('Great listening, everyone!'); return; }
+  if (!order.length) order = shuffle(words.slice());
+  target = order.pop(); opts = shuffle([target].concat(shuffle(words.filter(W => W !== target)).slice(0, 3)));
+  $('prog').textContent = `${round + 1} / ${ROUNDS}`; $('askT').textContent = ask(target); locked = false;
+  $('grid').innerHTML = opts.map((W, i) => `<button class="cd" data-i="${i}"><kbd>${i + 1}</kbd><img src="${img(W)}" alt="${W.w}"><b>${W.w}</b></button>`).join('');
+  $('grid').querySelectorAll('.cd').forEach(b => b.onclick = () => pick(+b.dataset.i));
+  setTimeout(() => say(ask(target)), 400);
+}
+async function pick(i) {
+  if (locked) return; const W = opts[i], el = $('grid').children[i];
+  if (W === target) { locked = true; el.classList.add('ok'); const S = CauMau.of(W.w, UNIT); await say('Yes! ' + (S ? S.a : W.w)); round++; setTimeout(next, 900); }
+  else { el.classList.remove('no'); void el.offsetWidth; el.classList.add('no'); say('Listen again! ' + ask(target)); }
+}
+let qAt = -1e9, hintT = 0;
+const hint = t => { $('hint').hidden = false; $('hint').textContent = t; clearTimeout(hintT); hintT = setTimeout(() => $('hint').hidden = true, 1800); };
+const back = () => { try { speechSynthesis.cancel(); } catch (e) {} window.GiongCo && GiongCo.stop(); location.href = `${ISLAND}?ve=khoi_dong`; };
+$('kRep').onclick = () => target && say(ask(target)); $('kNext').onclick = () => { round++; next(); }; $('kBack').onclick = back;
+addEventListener('keydown', e => {
+  if (!$('done').hidden) { if (e.key === 'Enter' || e.key === ' ') back(); return; }
+  if (/^[1-4]$/.test(e.key)) pick(+e.key - 1);
+  else if (e.key === 'r' || e.key === 'R') $('kRep').onclick();
+  else if (e.key === ' ') { e.preventDefault(); $('kNext').onclick(); }
+  else if (e.key === 'q' || e.key === 'Q') { const n = performance.now(); if (n - qAt < 1800) back(); else { qAt = n; hint('Bấm Q lần nữa để về đảo'); } }
+  else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else document.exitFullscreen(); }
+});
+(window.GiongCo ? GiongCo.ready : Promise.resolve()).then(() => setTimeout(next, 500));
+</script>
+</body>
+</html>
