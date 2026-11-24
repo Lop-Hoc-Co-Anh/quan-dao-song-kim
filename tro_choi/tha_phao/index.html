@@ -28,6 +28,9 @@
 </style>
 </head>
 <body>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -75,7 +78,7 @@ const boatX = m => BOAT.x0 + (BOAT.x1 - BOAT.x0) * (steps ? m / steps : 0);
 TroChoi.run({
   id: 'tha_phao', title: 'Bóng bay đón bạn', unit: 'Welcome', icon: H('phao'), progressLabel: 'quả bóng',
   story: 'Ben và Mia đang chèo thuyền tới Đảo Song Kim! Cô Anh đứng ở bến đón hai bạn. Mỗi chiếc phao trôi vào mang theo một quả bóng. Cả lớp nói hình gì, màu gì. Bé đọc đúng thì quả bóng bay về bến và thuyền tiến gần thêm một chút.',
-  doneSmall: 'Thuyền đã cập bến', doneTitle: 'Chào mừng tới Đảo Song Kim!',
+  doneSmall: 'Thuyền đã cập bến', doneTitle: 'Chào mừng Ben và Mia!',
   words: WORDS, defaultWords: ['circle', 'square', 'triangle', 'pink', 'black', 'white', 'blue'], guessFirst: true,
   cardPos: { x: 860, y: 150 }, micPos: { x: 860, y: 486 },
   buildScene(api) {
@@ -98,9 +101,9 @@ TroChoi.run({
     api.say(`${ctx.kid} ơi, phao trôi vào kìa!`, 600, 610);
     api.sfx.rustle();
     await api.tween(1500, (k, e) => { buoy.x = 1760 - (1760 - 1180) * e; buoy.y = 730 - 30 * e; });
-    await api.speak(/^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'What number is it?' : /circle|square|triangle/.test(ctx.word.w) ? 'What shape is it?' : 'What colour is it?', .9);
+    await api.speak(/^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'What number is it?' : /circle|square|triangle/.test(ctx.word.w) ? 'What shape is it?' : /^(red|yellow|blue|green|orange|brown|purple|pink|black|white)$/.test(ctx.word.w) ? 'What colour is it?' : 'What is it?', .9);
     api.pose('anh', C('co_anh_lang_nghe'));
-    api.say(/circle|square|triangle/.test(ctx.word.w) ? 'Quả bóng hình gì đây?' : /^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'Số mấy đây các con?' : 'Quả bóng màu gì đây?', 600, 610);
+    api.say(/circle|square|triangle/.test(ctx.word.w) ? 'Quả bóng hình gì đây?' : /^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'Số mấy đây các con?' : /^(red|yellow|blue|green|orange|brown|purple|pink|black|white)$/.test(ctx.word.w) ? 'Quả bóng màu gì đây?' : 'Quả bóng có hình gì đây?', 600, 610);
     await api.wait(1500);
   },
   async onCorrect(api, ctx, praise) {
@@ -123,10 +126,10 @@ TroChoi.run({
   },
   async onSkip(api) { if (buoy) { await api.tween(700, (k, e) => { buoy.x = 1180 + 600 * e; }); buoy.el.remove(); } await sail(api); },
   async onFinish(api) {
-    api.say('Thuyền cập bến rồi! Chào mừng Ben và Mia tới Đảo Song Kim!', 600, 610);
+    api.say(`Thuyền cập bến rồi! Chào mừng Ben và Mia tới ${api.island}!`, 600, 610);
     api.pose('anh', C('co_anh_reo')); api.pose('pip', C('pip_reo'));
     document.querySelectorAll('#boat .kid').forEach(k => k.src = k.src.replace('three_quarter', 'reo'));
-    api.sparkle(boatX(steps), BOAT.y - 200, 50); await api.speak('Welcome to Song Kim Island!', .9);
+    api.sparkle(boatX(steps), BOAT.y - 200, 50); await api.speak('Welcome to the island!', .9);
     await api.wait(1200);
   },
 });
