@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bóng bay đón bạn</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Bóng bay đón bạn" – Bến thuyền, Welcome */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.boat { position: absolute; transform: translate(-50%, -100%); pointer-events: none; width: 260px; height: 270px; }
+.boat img { position: absolute; }
+.boat .hull { left: 0; bottom: 0; height: 270px; filter: drop-shadow(0 10px 8px rgba(10, 60, 90, .3)); }
+.boat .kid { bottom: 84px; height: 86px; }
+.boat .hull.front { clip-path: inset(60% 0 0 0); filter: none; }
+.wave { position: absolute; height: 26px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
+.buoy { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+.buoy .ring { position: absolute; left: 50%; bottom: 0; width: 150px; transform: translateX(-50%) scaleY(.62); transform-origin: 50% 100%; filter: drop-shadow(0 6px 6px rgba(10, 60, 90, .3)); }
+.buoy .bal { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%); filter: drop-shadow(0 8px 8px rgba(10, 60, 90, .25)); }
+.bunchBal { position: absolute; transform: translate(-50%, -100%); transform-origin: 50% 100%; text-align: center; pointer-events: none; animation: float 3s ease-in-out infinite alternate; }
+.bunchBal img { display: block; margin: 0 auto; }
+.bunchBal span { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, .92); border-radius: 8px; padding: 0 6px 2px; font: 800 12px/1.2 var(--display); color: var(--ink); white-space: nowrap; }
+@keyframes float { from { transform: translate(-50%, -100%) rotate(-4deg); } to { transform: translate(-50%, -100%) rotate(4deg); } }
+.strings { position: absolute; left: 0; top: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .bunchBal { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const svg = s => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280">${s}</svg>`);
+const STR = '<path d="M100 200 Q92 230 104 250 Q112 266 100 280" stroke="#6B6B6B" stroke-width="2.5" fill="none"/>';
+function balloon(c, edge, label = '') {
+  return svg(`${STR}<path d="M100 10 C150 10 182 52 182 100 C182 150 140 192 100 196 C60 192 18 150 18 100 C18 52 50 10 100 10 Z" fill="${c}" stroke="${edge}" stroke-width="4"/><path d="M92 196 L108 196 L104 206 L96 206 Z" fill="${edge}"/><ellipse cx="66" cy="62" rx="20" ry="30" fill="#fff" opacity=".45" transform="rotate(25 66 62)"/>${label ? `<text x="100" y="132" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial Black, Arial" font-weight="900" font-size="96" fill="#fff" stroke="${edge}" stroke-width="6" paint-order="stroke">${label}</text>` : ''}`);
+}
+function foil(shape) {
+  const g = '<defs><linearGradient id="f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3A0"/><stop offset=".5" stop-color="#FFC928"/><stop offset="1" stop-color="#E0900A"/></linearGradient></defs>';
+  const body = { circle: '<circle cx="100" cy="102" r="86" fill="url(#f)" stroke="#C07A08" stroke-width="5"/>', square: '<rect x="22" y="24" width="156" height="156" rx="16" fill="url(#f)" stroke="#C07A08" stroke-width="5"/>', triangle: '<path d="M100 14 L186 182 L14 182 Z" fill="url(#f)" stroke="#C07A08" stroke-width="5" stroke-linejoin="round"/>' }[shape];
+  return svg(`${g}${STR}${body}<ellipse cx="72" cy="66" rx="16" ry="26" fill="#fff" opacity=".55" transform="rotate(30 72 66)"/>`);
+}
+const WORDS = [
+  { w: 'circle', img: foil('circle'), alt: ['circles', 'circo', 'sirkel', 'circus', 'circle'] },
+  { w: 'square', img: foil('square'), alt: ['squares', 'swear', 'sware', 'square'] },
+  { w: 'triangle', img: foil('triangle'), alt: ['triangles', 'try angle', 'triangel', 'tri angle'] },
+  { w: 'pink', img: balloon('#FF8FBF', '#D9558F'), alt: ['pinks', 'ping', 'pin', 'peek'] },
+  { w: 'black', img: balloon('#2B2B33', '#000000'), alt: ['blacks', 'block', 'back', 'plak'] },
+  { w: 'white', img: balloon('#FFFFFF', '#B9C2CC'), alt: ['whites', 'wide', 'right', 'wife', 'why'] },
+  { w: 'blue', img: balloon('#3A8DFF', '#1C5FC4'), alt: ['blues', 'blew', 'below', 'glue', 'bloom'] },
+  { w: 'one', img: balloon('#FF9A3C', '#D46A12', '1'), alt: ['won', 'wan', 'van', '1'] },
+  { w: 'two', img: balloon('#7BCB4B', '#4B9425', '2'), alt: ['too', 'to', 'tu', '2'] },
+  { w: 'three', img: balloon('#B07BE0', '#7C46B5', '3'), alt: ['tree', 'free', 'sree', '3'] },
+  { w: 'four', img: balloon('#3FC1C9', '#1E8E95', '4'), alt: ['for', 'fore', 'foe', '4'] },
+  { w: 'five', img: balloon('#F2675A', '#B5463B', '5'), alt: ['fife', 'fight', 'fly', '5'] },
+  { w: 'six', img: balloon('#F3B728', '#B98410', '6'), alt: ['sex', 'sick', 'sixth', 'sax', '6'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'red', img: balloon('#F04A3E', '#B5281F'), alt: ['read', 'rad', 'bread', 'rat'] },
+  { w: 'yellow', img: balloon('#FFD23F', '#C99A06'), alt: ['yelo', 'jello', 'hello'] },
+  { w: 'green', img: balloon('#4FC15A', '#2E8A36'), alt: ['greens', 'grin', 'queen', 'clean'] },
+  { w: 'orange', img: balloon('#FF8A2A', '#C45E10'), alt: ['oranges', 'orinj', 'orang'] },
+  { w: 'brown', img: balloon('#9A5B2E', '#6B3A18'), alt: ['browns', 'brow', 'around'] },
+  { w: 'purple', img: balloon('#9B5BD6', '#6B32A6'), alt: ['purples', 'people', 'purpel'] },
+];
+const BOAT = { x0: 1430, x1: 770, y: 470 };
+const TIE = { x: 470, y: 400 };
+let flown = [], moved = 0, steps = 1, buoy = null, wt = 0;
+
+function bunchSlot(n) { const ring = n < 6 ? 0 : n < 13 ? 1 : 2, k = ring === 0 ? n : ring === 1 ? n - 6 : n - 13, cnt = [6, 7, 8][ring], a = -Math.PI * (.18 + .64 * (k + .5) / cnt); const r = 150 + ring * 70; return { x: TIE.x + Math.cos(a) * r * 1.05, y: TIE.y - 40 + Math.sin(a) * r * .9, h: 92 - ring * 6 }; }
+function drawStrings(api) { api.$('strings').innerHTML = flown.map((f, i) => { const s = bunchSlot(i); return `<path d="M${TIE.x} ${TIE.y} Q${(TIE.x + s.x) / 2 + 10} ${(TIE.y + s.y) / 2 + 30} ${s.x} ${s.y}" stroke="rgba(90,90,90,.75)" stroke-width="2" fill="none"/>`; }).join(''); }
+const boatX = m => BOAT.x0 + (BOAT.x1 - BOAT.x0) * (steps ? m / steps : 0);
+
+TroChoi.run({
+  id: 'tha_phao', title: 'Bóng bay đón bạn', unit: 'Welcome', icon: H('phao'), progressLabel: 'quả bóng',
+  story: 'Ben và Mia đang chèo thuyền tới Đảo Song Kim! Cô Anh đứng ở bến đón hai bạn. Mỗi chiếc phao trôi vào mang theo một quả bóng. Cả lớp nói hình gì, màu gì. Bé đọc đúng thì quả bóng bay về bến và thuyền tiến gần thêm một chút.',
+  doneSmall: 'Thuyền đã cập bến', doneTitle: 'Chào mừng tới Đảo Song Kim!',
+  words: WORDS, defaultWords: ['circle', 'square', 'triangle', 'pink', 'black', 'white', 'blue'], guessFirst: true,
+  cardPos: { x: 860, y: 150 }, micPos: { x: 860, y: 486 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_ben_thuyen.jpg" alt="">
+      <svg class="strings" id="strings" width="1600" height="900"></svg><div id="bunch"></div>
+      <div class="wave" id="wv" style="width:300px"></div>
+      <div class="boat" id="boat"><img class="hull" src="${H('thuyen_xanh')}" alt=""><img class="kid" src="${C('mia_three_quarter')}" alt="" style="left:44px"><img class="kid" src="${C('ben_three_quarter')}" alt="" style="left:150px"><img class="hull front" src="${H('thuyen_xanh')}" alt=""></div>
+      <div id="buoyLayer"></div>`;
+    api.sprite('anh', C('co_anh_vay_tay'), 200, 640, 270);
+    api.sprite('pip', C('pip_hoi'), 360, 470, 90, 'bob');
+    api.say('Ben và Mia sắp tới rồi! Mình đón hai bạn nhé!', 600, 610);
+    placeBoat(api, 0); bobLoop(api);
+  },
+  onStart(api) { flown = []; moved = 0; steps = api.kids.length; api.$('bunch').innerHTML = ''; drawStrings(api); api.$('buoyLayer').innerHTML = ''; placeBoat(api, 0); },
+  progress(api) { return [flown.length, api.kids.length]; },
+  async onTurn(api, ctx) {
+    api.$('buoyLayer').innerHTML = `<div class="buoy" id="buoy" style="width:200px;height:330px"><img class="bal" src="${ctx.word.img}" alt="" style="height:230px"><img class="ring" src="${H('phao')}" alt=""></div>`;
+    buoy = { el: api.$('buoy'), x: 1180, y: 700 };
+    api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
+    api.say(`${ctx.kid} ơi, phao trôi vào kìa!`, 600, 610);
+    api.sfx.rustle();
+    await api.tween(1500, (k, e) => { buoy.x = 1760 - (1760 - 1180) * e; buoy.y = 730 - 30 * e; });
+    await api.speak(/^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'What number is it?' : /circle|square|triangle/.test(ctx.word.w) ? 'What shape is it?' : 'What colour is it?', .9);
+    api.pose('anh', C('co_anh_lang_nghe'));
+    api.say(/circle|square|triangle/.test(ctx.word.w) ? 'Quả bóng hình gì đây?' : /^(one|two|three|four|five|six)$/.test(ctx.word.w) ? 'Số mấy đây các con?' : 'Quả bóng màu gì đây?', 600, 610);
+    await api.wait(1500);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo'));
+    api.say(`${praise} ${ctx.kid} giỏi quá!`, 600, 610);
+    api.hideCard(); api.sfx.boing();
+    // quả bóng tách khỏi phao, bay về bó bóng ở cột bến
+    const bal = buoy.el.querySelector('.bal'), r = bal.getBoundingClientRect(), st = api.stage.getBoundingClientRect(), sc = st.width / 1600;
+    const x0 = (r.left + r.width / 2 - st.left) / sc, y0 = (r.bottom - st.top) / sc, n = flown.length, s = bunchSlot(n);
+    bal.remove();
+    api.$('buoyLayer').insertAdjacentHTML('beforeend', `<img id="fly" src="${ctx.word.img}" alt="" style="position:absolute;left:${x0}px;top:${y0}px;height:230px;transform:translate(-50%,-100%)">`);
+    const fl = api.$('fly'), hb = s.h * 230 / 200;
+    await api.tween(1300, (k, e) => { fl.style.left = x0 + (s.x - x0) * e + 'px'; fl.style.top = y0 + (s.y + hb * .28 - y0) * e - Math.sin(Math.PI * k) * 140 + 'px'; fl.style.height = 230 + (hb - 230) * e + 'px'; });
+    fl.remove(); api.sparkle(s.x, s.y - hb * .4);
+    flown.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'bunchBal'; d.style.left = s.x + 'px'; d.style.top = s.y + hb * .28 + 'px'; d.style.animationDelay = (-n * .6) + 's';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${hb}px"><span>${api.esc(ctx.kid)}</span>`; api.$('bunch').appendChild(d); drawStrings(api);
+    const be = buoy.el; await api.tween(700, (k, e) => { buoy.x = 1180 + 600 * e; });
+    be.remove(); await sail(api);
+  },
+  async onSkip(api) { if (buoy) { await api.tween(700, (k, e) => { buoy.x = 1180 + 600 * e; }); buoy.el.remove(); } await sail(api); },
+  async onFinish(api) {
+    api.say('Thuyền cập bến rồi! Chào mừng Ben và Mia tới Đảo Song Kim!', 600, 610);
+    api.pose('anh', C('co_anh_reo')); api.pose('pip', C('pip_reo'));
+    document.querySelectorAll('#boat .kid').forEach(k => k.src = k.src.replace('three_quarter', 'reo'));
+    api.sparkle(boatX(steps), BOAT.y - 200, 50); await api.speak('Welcome to Song Kim Island!', .9);
+    await api.wait(1200);
+  },
+});
+
+function placeBoat(api, m) { const b = api.$('boat'), x = boatX(m); b.style.left = x + 'px'; b.dataset.x = x; const w = api.$('wv'); w.style.left = x + 'px'; w.style.top = BOAT.y - 6 + 'px'; }
+async function sail(api) { const m0 = moved, m1 = moved + 1; api.sfx.rustle(); await api.tween(1100, (k, e) => placeBoat(api, m0 + (m1 - m0) * e)); moved = m1; }
+function bobLoop(api) {
+  const b = api.$('boat');
+  (function f(t) { wt = t / 1000; b.style.top = BOAT.y + Math.sin(wt * 1.6) * 5 + 'px'; b.style.transform = `translate(-50%, -100%) rotate(${Math.sin(wt * 1.3) * 2}deg)`;
+    if (buoy && buoy.el.isConnected) { buoy.el.style.left = buoy.x + 'px'; buoy.el.style.top = buoy.y + Math.sin(wt * 2.2) * 7 + 'px'; buoy.el.style.transform = `translate(-50%, -50%) rotate(${Math.sin(wt * 1.7) * 4}deg)`; }
+    requestAnimationFrame(f); })(0);
+}
+</script>
+</body>
+</html>
