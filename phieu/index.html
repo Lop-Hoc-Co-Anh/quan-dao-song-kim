@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu ghi nhận của cô</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Phiếu ghi nhận: mỗi tiết cô đánh dấu nhanh từng bé 3 mức; cuối unit máy soạn nhận xét định tính gửi phụ huynh */
+:root { --ink: #1F2D4A; --soft: #56637F; --paper: #FFFDF6; --teal: #14998F; --coral: #F2675A; --gold: #FFD23F; --line: #E3EAF1; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #EAF4F8; color: var(--ink); font-family: 'Nunito', Arial, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--paper); box-shadow: 0 4px 0 rgba(31, 45, 74, .08); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+h1 { margin: 0; font: 800 30px/1.1 'Baloo 2'; } h1 small { display: block; font: 700 15px 'Nunito'; color: var(--soft); }
+.sp { flex: 1; }
+select, input[type=number], input[type=text] { font: 700 18px 'Nunito'; border: 2px solid #CBD6E2; border-radius: 12px; padding: 6px 10px; background: #fff; color: var(--ink); }
+input[type=number] { width: 84px; }
+button { font: 800 18px/1 'Baloo 2'; border: 0; border-radius: 14px; padding: 10px 16px 12px; cursor: pointer; background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(31, 45, 74, .16); }
+button.go { background: var(--teal); color: #fff; box-shadow: 0 4px 0 #0D7068; }
+button:focus-visible { outline: 4px solid #2E6FD8; outline-offset: 2px; }
+main { max-width: 1180px; margin: 18px auto 60px; padding: 0 16px; }
+.info { font-size: 18px; color: var(--soft); margin: 4px 0 14px; } .info b { color: var(--ink); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font: 700 16px 'Nunito'; margin-bottom: 10px; }
+.legend span { display: flex; gap: 6px; align-items: center; } .legend i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+.l1 { background: #F4A259; } .l2 { background: #5AA9E6; } .l3 { background: #3CC46A; }
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+td { background: var(--paper); padding: 10px 12px; vertical-align: middle; }
+td:first-child { border-radius: 16px 0 0 16px; font: 800 22px 'Baloo 2'; width: 210px; } td:last-child { border-radius: 0 16px 16px 0; }
+.lv { display: flex; gap: 8px; }
+.lv button { font-size: 17px; padding: 9px 12px 11px; background: #F1F5F8; box-shadow: none; border: 3px solid transparent; }
+.lv button.on.b1 { background: #FDE6D1; border-color: #F4A259; } .lv button.on.b2 { background: #D9ECFB; border-color: #5AA9E6; } .lv button.on.b3 { background: #D5F3DE; border-color: #3CC46A; }
+.hist { display: flex; gap: 4px; flex-wrap: wrap; max-width: 260px; } .hist i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; } .hist small { color: var(--soft); font-size: 13px; }
+td input[type=text] { width: 100%; font-size: 16px; }
+.empty { background: var(--paper); border-radius: 18px; padding: 24px; font-size: 19px; }
+.ov { position: fixed; inset: 0; background: rgba(14, 26, 46, .55); z-index: 20; display: flex; align-items: center; justify-content: center; }
+.pn { width: min(980px, 94vw); max-height: 90vh; overflow: auto; background: var(--paper); border-radius: 26px; padding: 24px 30px; }
+.pn h2 { margin: 0 0 8px; font: 800 32px 'Baloo 2'; }
+.pn textarea { width: 100%; height: 52vh; font: 400 17px/1.5 'Nunito'; border: 2px solid #CBD6E2; border-radius: 14px; padding: 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; } .msg { font: 800 17px 'Nunito'; color: #0D7068; }
+@media print { header, .noprint { display: none !important; } body { background: #fff; } td { background: #fff; border-bottom: 1px solid #ccc; } }
+</style>
+</head>
+<body>
+<header>
+  <h1><small id="hSmall">Phiếu ghi nhận của cô</small><span id="hTitle">Phiếu ghi nhận</span></h1>
+  <div class="sp"></div>
+  <label>Đảo <select id="selDao"></select></label>
+  <label>Unit <select id="selUnit"></select></label>
+  <label>Tiết <input type="number" id="inTiet" min="1" max="70"></label>
+  <button class="go" id="bNx">Nhận xét cuối unit</button>
+  <button id="bBack">Về đảo</button>
+</header>
+<main>
+  <div class="info" id="info"></div>
+  <div class="legend"><span><i class="l1"></i> Chưa làm được</span><span><i class="l2"></i> Làm được khi có cô hỗ trợ</span><span><i class="l3"></i> Tự làm được</span><span style="color:var(--soft)">Bấm lại lần nữa để bỏ đánh dấu. Máy tự lưu.</span></div>
+  <table><tbody id="rows"></tbody></table>
+  <div class="empty" id="empty" hidden>Chưa có danh sách bé. Mở một trò chơi, nhập danh sách các bé ở bảng cài đặt (mỗi dòng một tên), rồi quay lại đây.</div>
+</main>
+<div class="ov" id="ovNx" hidden><div class="pn">
+  <h2 id="nxTitle">Nhận xét cuối unit</h2>
+  <p style="margin:0 0 10px;color:var(--soft)">Máy soạn sẵn theo các lần cô đánh dấu trong unit. Cô sửa thêm cho đúng từng bé rồi gửi phụ huynh.</p>
+  <textarea id="nxText" spellcheck="false"></textarea>
+  <div class="row"><button class="go" id="bCopy">Chép</button><button id="bSaveTxt">Lưu file .txt</button><button id="bClose">Đóng (Esc)</button><span class="msg" id="nxMsg"></span></div>
+</div></div>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const DAOS = [
+  { key: 'daohatmam', name: 'Đảo Hạt Mầm', book: 'Amanda and Friends 1', ppct: '../dao_hat_mam/ppct_amanda1.json', page: '../dao_hat_mam/dao-hat-mam.html' },
+  { key: 'daocauvong', name: 'Đảo Cầu Vồng', book: 'Amanda and Friends 2', ppct: '../dao_cau_vong/ppct_amanda2.json', page: '../dao_cau_vong/dao-cau-vong.html' },
+  { key: 'daosongkim3d', name: 'Đảo Song Kim', book: 'Amanda and Friends 3', ppct: '../dao_3d/ppct_amanda3.json', page: '../dao_3d/dao-song-kim-3d.html' },
+];
+const LV = ['', 'Chưa', 'Có hỗ trợ', 'Tự làm'];
+const K = 'songkim_phieu';
+const read = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+const QS = new URLSearchParams(location.search);
+let D = DAOS.find(d => d.key === (QS.get('dao') || localStorage.getItem('quandao_dang_o'))) || DAOS[2], PPCT = [], unit = '', tiet = 1;
+let data = read(K, {});
+const save = () => { try { localStorage.setItem(K, JSON.stringify(data)); } catch (e) {} };
+const kids = () => (localStorage.getItem('trochoi_names') || '').split('\n').map(s => s.replace(/\*+\s*$/, '').trim()).filter(Boolean);
+const box = () => ((data[D.key] = data[D.key] || {})[unit] = data[D.key][unit] || {});
+const kidBox = n => { const b = box(); return b[n] = b[n] || { marks: {}, ghi: '' }; };
+
+$('selDao').innerHTML = DAOS.map(d => `<option value="${d.key}">${d.name}</option>`).join('');
+function loadDao(first) {
+  $('selDao').value = D.key;
+  fetch(D.ppct).then(r => r.json()).then(p => {
+    PPCT = p; const units = [...new Set(p.map(r => r.unit))];
+    $('selUnit').innerHTML = units.map(u => `<option>${esc(u)}</option>`).join('');
+    const st = read(D.key, null), cur = st ? st.cur : 0;
+    tiet = first && +QS.get('tiet') ? +QS.get('tiet') : cur + 1; tiet = Math.max(1, Math.min(70, tiet));
+    unit = (PPCT[tiet - 1] || PPCT[0]).unit; $('selUnit').value = unit; $('inTiet').value = tiet; draw();
+  }).catch(() => { $('info').textContent = 'Không đọc được dữ liệu tiết học. Hãy mở bằng file .bat (không mở thẳng file html).'; });
+}
+function unitWords(u) { const w = []; PPCT.filter(r => r.unit === u).forEach(r => String(r.tu || '').split(/[;,]/).map(x => x.trim()).filter(x => /^[A-Za-z][A-Za-z' -]{0,16}$/.test(x) && x.split(' ').length <= 2 && !/vocabulary|colours|numbers/i.test(x)).forEach(x => { if (!w.includes(x)) w.push(x); })); return w; }
+function draw() {
+  const r = PPCT[tiet - 1] || {}, ks = kids();
+  $('hTitle').textContent = `Phiếu ghi nhận · ${D.name}`; $('hSmall').textContent = D.book;
+  $('info').innerHTML = `Tiết <b>${tiet}</b> · ${esc(r.unit || unit)}${r.nd ? ' · ' + esc(r.nd) : ''}${r.cau ? '<br>Mẫu câu: <b>' + esc(r.cau) + '</b>' : ''}${r.tu ? ' · Từ: <b>' + esc(r.tu) + '</b>' : ''}` + (r.unit && r.unit !== unit ? `<br><span style="color:#B5463B">Tiết ${tiet} thuộc ${esc(r.unit)}, đang xem phiếu ${esc(unit)}.</span>` : '');
+  $('empty').hidden = ks.length > 0;
+  $('rows').innerHTML = ks.map((n, i) => {
+    const kb = (box()[n]) || { marks: {}, ghi: '' }, m = kb.marks[tiet] || 0;
+    const hist = Object.entries(kb.marks).sort((a, b) => a[0] - b[0]).map(([t, v]) => `<i class="l${v}" title="Tiết ${t}: ${LV[v]}"></i>`).join('');
+    return `<tr><td>${esc(n)}</td><td><div class="lv">${[1, 2, 3].map(v => `<button class="b${v} ${m === v ? 'on' : ''}" data-i="${i}" data-v="${v}">${LV[v]}</button>`).join('')}</div></td>
+      <td><div class="hist">${hist || '<small>chưa có đánh dấu trong unit</small>'}</div></td>
+      <td><input type="text" data-g="${i}" value="${esc(kb.ghi || '')}" placeholder="Ghi chú riêng (VD: bé hát to, thích con mèo)"></td></tr>`;
+  }).join('');
+  $('rows').querySelectorAll('[data-v]').forEach(b => b.onclick = () => { const n = ks[+b.dataset.i], kb = kidBox(n), v = +b.dataset.v; if (kb.marks[tiet] === v) delete kb.marks[tiet]; else kb.marks[tiet] = v; save(); draw(); });
+  $('rows').querySelectorAll('[data-g]').forEach(inp => inp.onchange = () => { kidBox(ks[+inp.dataset.g]).ghi = inp.value.trim(); save(); });
+}
+// ---- nhận xét định tính cuối unit (không chấm điểm, không so sánh) ----
+function nhanXet() {
+  const ks = kids(), w = unitWords(unit), ws = w.slice(0, 8).join(', '), cau = [...new Set(PPCT.filter(r => r.unit === unit).map(r => r.cau).filter(c => c && /\?|\./.test(c)))].slice(0, 2).join(' / ');
+  const out = [`NHẬN XÉT ${unit.toUpperCase()} – ${D.book}`, `Trong unit này các bé học các từ: ${ws || '(xem sách)'}${cau ? '; mẫu câu: ' + cau.replace(/[.\s]+$/, '') : ''}${/[?!.…]$/.test(cau) ? '' : '.'}`, ''];
+  ks.forEach(n => {
+    const kb = (box()[n]) || { marks: {}, ghi: '' }, v = Object.values(kb.marks), c3 = v.filter(x => x === 3).length, c2 = v.filter(x => x === 2).length, c1 = v.filter(x => x === 1).length;
+    let t;
+    if (!v.length) t = 'cô chưa ghi nhận trong unit này; cô sẽ dành thêm thời gian cùng bé ở các buổi tới.';
+    else if (c3 >= v.length / 2) t = 'bé tự nói được phần lớn các từ của unit, mạnh dạn tham gia trò chơi cùng lớp.';
+    else if (c3 + c2 >= v.length / 2) t = 'bé nói được các từ khi có cô gợi ý và ngày càng tự tin hơn; ở nhà ba mẹ cho bé chỉ đồ vật và gọi tên bằng tiếng Anh sẽ giúp bé nhớ lâu.';
+    else t = 'bé đang làm quen với các từ mới, thích nghe và nhìn hình; ba mẹ cùng bé hát, chỉ hình và nhắc lại vài từ mỗi ngày giúp bé tự tin hơn.';
+    out.push(`- ${n}: ${t}${kb.ghi ? ' ' + kb.ghi.replace(/[.\s]*$/, '.') : ''}`);
+  });
+  out.push('', 'Cảm ơn ba mẹ đã đồng hành cùng các bé!');
+  return out.join('\n');
+}
+$('bNx').onclick = () => { $('nxTitle').textContent = `Nhận xét cuối ${unit}`; $('nxText').value = nhanXet(); $('nxMsg').textContent = ''; $('ovNx').hidden = false; $('nxText').focus(); };
+$('bClose').onclick = () => $('ovNx').hidden = true;
+$('bCopy').onclick = () => { $('nxText').select(); (navigator.clipboard ? navigator.clipboard.writeText($('nxText').value) : Promise.reject()).then(() => $('nxMsg').textContent = 'Đã chép, dán vào Zalo hoặc Word.', () => { document.execCommand('copy'); $('nxMsg').textContent = 'Đã chép.'; }); };
+$('bSaveTxt').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + $('nxText').value], { type: 'text/plain;charset=utf-8' })); a.download = `Nhan xet ${unit.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')}.txt`; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 500); $('nxMsg').textContent = 'Đã lưu vào thư mục Downloads.'; };
+$('selDao').onchange = () => { D = DAOS.find(d => d.key === $('selDao').value); loadDao(false); };
+$('selUnit').onchange = () => { unit = $('selUnit').value; const i = PPCT.findIndex(r => r.unit === unit); if (i >= 0 && (PPCT[tiet - 1] || {}).unit !== unit) { tiet = i + 1; $('inTiet').value = tiet; } draw(); };
+$('inTiet').onchange = () => { tiet = Math.max(1, Math.min(70, +$('inTiet').value || 1)); $('inTiet').value = tiet; unit = (PPCT[tiet - 1] || {}).unit || unit; $('selUnit').value = unit; draw(); };
+$('bBack').onclick = () => { location.href = D.page; };
+addEventListener('keydown', e => { if (e.key === 'Escape') $('ovNx').hidden = true; });
+loadDao(true);
+</script>
+</body>
+</html>
