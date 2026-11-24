@@ -86,3 +86,18 @@ button:focus-visible, .wpick:focus-within { outline: 4px solid #2E6FD8; outline-
 .chorus em { font: 700 15px var(--body); color: var(--soft); font-style: normal; }
 .shy { position: absolute; left: 50%; top: 168px; transform: translateX(-50%); z-index: 6; background: #EAF6FF; color: #1F4A7A; border-radius: 18px; padding: 10px 20px; font: 700 20px/1.35 var(--body); text-align: center; box-shadow: 0 4px 0 rgba(31, 45, 74, .12); max-width: 760px; }
 .shy kbd { font: 800 15px var(--body); background: #fff; border-radius: 6px; padding: 2px 7px; }
+
+/* bảng chuẩn bị gọn trong khung 900: danh sách từ cuộn riêng, hàng nút luôn thấy */
+#ovSetup .panel { max-height: 872px; display: flex; flex-direction: column; padding: 22px 32px 20px; box-sizing: border-box; }
+#ovSetup .panel h1 { font-size: 40px; }
+#ovSetup .panel > p { font-size: 17px; margin: 4px 0; }
+#ovSetup .grid2 { flex: 1 1 auto; min-height: 0; margin-top: 10px; }
+#ovSetup .grid2 > div { min-height: 0; display: flex; flex-direction: column; }
+#ovSetup textarea { height: auto; flex: 1 1 auto; min-height: 180px; max-height: 360px; }
+#ovSetup .words { grid-template-columns: repeat(5, 1fr); gap: 8px; overflow-y: auto; min-height: 120px; max-height: 360px; flex: 0 1 auto; padding: 4px; }
+#ovSetup .wpick { padding: 4px; border-radius: 14px; }
+#ovSetup .wpick img { height: 50px; max-width: 90px; }
+#ovSetup .wpick span { font-size: 18px; }
+#ovSetup .opts { margin-top: 10px; gap: 6px 18px; font-size: 17px; }
+#ovSetup .row { margin-top: 12px; flex: 0 0 auto; }
+#ovSetup .big { padding: 12px 30px 15px; }
