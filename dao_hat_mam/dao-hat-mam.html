@@ -158,6 +158,7 @@ canvas.fx { position: absolute; inset: 0; pointer-events: none; z-index: 11; }
 .boatIn .hull { left: 0; height: 156px; filter: drop-shadow(0 6px 5px rgba(10, 60, 90, .3)); }
 .boatIn .hull.front { clip-path: inset(60% 0 0 0); filter: none; }
 .boatIn .k { bottom: 52px; }
+.planeIn { position: absolute; transform: translate(-50%, -100%); width: 120px; pointer-events: none; z-index: 6; filter: drop-shadow(0 10px 6px rgba(10, 60, 90, .28)); }
 .wake { position: absolute; width: 170px; height: 34px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 255, 255, .75), rgba(255, 255, 255, 0) 70%); pointer-events: none; z-index: 5; }
 /* chạy trên máy dạy: phủ kín màn hình như ứng dụng */
 body.app { background: #0E1A2E; overflow: hidden; margin: 0; }
@@ -209,6 +210,7 @@ body.app .tv { width: min(100vw, 177.78vh); border-radius: 0; box-shadow: none; 
         <button class="btn" id="bView">Toàn cảnh <kbd>Z</kbd></button>
         <button class="btn" id="bTour">Bay quanh đảo <kbd>T</kbd></button>
         <button class="btn" id="bAlbum">Bạn thú <kbd>B</kbd></button>
+        <button class="btn" id="bPhieu" title="Phiếu ghi nhận của cô">Phiếu <kbd>P</kbd></button>
         <button class="btn" id="bWorld">Quần đảo <kbd>W</kbd></button>
         <button class="btn quit" id="bQuit">Thoát <kbd>Q</kbd></button>
       </div>
@@ -280,17 +282,17 @@ const PLACES = [
 const ANCH = [[0, 0], [2, 5], [8, 7], [16, 10], [24, 12], [32, 14], [40, 16], [48, 18], [56, 20], [60, 22], [64, 23], [69, 24]]; // [tiết, đỉnh thứ mấy của ROUTE]
 const LAMP = P(840, 240);
 const STORY = {
- "Welcome": "Chào mừng tới Đảo Hạt Mầm! Cả lớp chào Pip bằng tiếng Anh nhé: Hello!",
- "Unit 1 School": "Bạn thỏ con đi lạc trong lớp học nấm! Gọi đúng tên đồ dùng học tập để tìm bạn ấy.",
- "Unit 2 Family": "Gà con muốn về với gia đình! Gõ cửa nhà Ben, gọi đúng tên từng người nhé.",
- "Unit 3 Toys": "Gấu trúc con trốn trong xưởng đồ chơi! Gọi đúng tên đồ chơi thì bạn ấy chui ra.",
- "Unit 4 Body": "Ếch con soi gương bên hồ! Chỉ đúng tai, mắt, mũi, miệng nào.",
- "Unit 5 Pets": "Vịt con lạc giữa làng thú cưng! Gọi đúng tên các bạn thú cưng nhé.",
- "Unit 6 Food": "Sóc con đói bụng! Hái đúng trái cây cho bạn ấy ăn.",
- "Festivals": "Quảng trường sắp mở hội! Nhận ra đồ lễ hội để nhím con vui chơi cùng.",
- "Course Review": "Lên Đồi Cây Thần! Ôn lại những gì đã học để có thêm giọt nước.",
- "Assessment": "Thử thách lớn trên đồi! Cây Thần đang chờ những giọt nước cuối cùng.",
- "Consolidation": "Gom những giọt nước cuối cùng để Cây Thần nở hoa!"
+ "Welcome": "Chào mừng tới Đảo Hạt Mầm! Phao trôi vào bến mang theo bóng bay: nói đúng hình, đúng màu thì bóng bay về đón bạn.",
+ "Unit 1 School": "Thỏ con lạc trên núi tuyết! Đồ dùng học tập bị băng phủ kín, nói đúng tên thì băng vỡ, cả nhóm leo lên tìm bạn ấy.",
+ "Unit 2 Family": "Gà con muốn về với gia đình! Gõ từng cánh cửa, nói đúng tên người trong nhà nhé.",
+ "Unit 3 Toys": "Gấu trúc con và đồ chơi trốn trong hang! Cái bóng lăn ra, gọi đúng tên thì đồ chơi nhảy lên kệ.",
+ "Unit 4 Body": "Ếch con chờ bên kia cầu treo! Làm theo Ben, nói đúng bộ phận cơ thể thì cả nhóm bước qua cầu.",
+ "Unit 5 Pets": "Vịt con và các bạn thú cưng chơi trốn tìm! Bụi cây nào rung, gọi đúng tên thì bạn ấy nhảy ra.",
+ "Unit 6 Food": "Sóc con đói bụng ở bên kia suối! Nói đúng tên món ăn để ghép ván cầu, mang trái cây sang cho bạn ấy.",
+ "Festivals": "Quảng trường sắp mở hội! Mở rương bí mật, đoán đúng đồ lễ hội để nhím con trang trí.",
+ "Course Review": "Lên Đồi Cây Thần! Cả lớp chèo hai thuyền, đọc đúng từ đã học để có thêm giọt nước.",
+ "Assessment": "Thử thách lớn trên đồi! Hai thuyền cùng về đích, đọc đúng từ để mang giọt nước cho Cây Thần.",
+ "Consolidation": "Chuyến thuyền cuối! Đọc đúng từ để gom những giọt nước cuối cùng cho Cây Thần nở hoa."
 };
 const STEPS = [['Pip kể chuyện', 'Thử thách hôm nay là gì?', 2], ['Học từ', 'Mỗi từ một tấm ván cầu', 8], ['Chướng ngại 1', 'Trò chơi (bàn sau)', 6], ['Chướng ngại 2', 'Trò chơi (bàn sau)', 8], ['Về đích', 'Nhận đá sáng, phát sao', 6]];
 const FRIENDS = PLACES.filter(p => p.friend);
@@ -670,12 +672,14 @@ const GAMES = {
   'Consolidation': '../tro_choi/dua_thuyen/index.html',
 };
 let pendingWalk = false, pendingFinale = false;
+function openPhieu() { save(); location.href = `../phieu/index.html?dao=${STORE_KEY}&tiet=${cur + 1}`; }
+$('bPhieu').onclick = openPhieu;
 const openFinale = () => { if (LOCAL) { save(); location.href = '../ai_cuoi/index.html?dao=dao_hat_mam'; } else toast('Phim ải cuối chạy trên máy dạy.'); };
 $('lStart').onclick = () => {
   const g = GAMES[unitOf(cur)];
   if (!g) { closeAll(); toast('Trò chơi cho bài này đang làm. Tạm thời cô dạy theo các bước trên màn hình.'); return; }
   if (!LOCAL) { closeAll(); toast('Trò chơi chạy trên máy dạy: mở bằng file "Mo Dao Song Kim.bat".'); return; }
-  save(); location.href = `${g}?tu_dao=1&dao=dao_hat_mam&tiet=${cur + 1}&unit=${encodeURIComponent(unitOf(cur))}&tu=${encodeURIComponent(wordsOf(cur).join(','))}`;
+  save(); location.href = `${g}?tu_dao=1&dao=dao_hat_mam&tiet=${cur + 1}&unit=${encodeURIComponent(unitOf(cur))}&tu=${encodeURIComponent(wordsOf(cur).join(','))}&cau=${encodeURIComponent((PPCT && PPCT[cur] && PPCT[cur].cau) || '')}`;
 };
 function challengeWon() {
   aimView(); setPose('reo'); stars += 3; hud(); save();
@@ -686,7 +690,53 @@ function challengeWon() {
 // ---------- mở đầu: Cô Anh và các bạn đi thuyền tới đảo ----------
 const ARRIVE = { from: P(250, 965), to: P(660, 935) }; // từ ngoài khơi vào cập bến (toạ độ ảnh bản đồ)
 const ISLAND_NAME = document.querySelector('.top h1').textContent;
+// đi máy bay: bay từ trời xuống, hạ cánh trên đường băng, chạy chậm lại gần nhà chứa, cả đoàn xuống rồi chạy tới điểm xuất phát
+function arrivePlane() {
+  if (busy || anyOpen() || !pts.length) return; if (tour) stopTour(); closeAll(); busy = true; if (view !== 'follow') setView('follow');
+  const world = $('world'), pl = document.createElement('img'); pl.src = 'hinh/may_bay.webp'; pl.alt = 'Máy bay'; pl.className = 'planeIn'; world.appendChild(pl);
+  const hideG = v => ['anh', 'ben', 'mia', 'shA', 'shB', 'shM', 'pipW'].forEach(id => $(id).style.visibility = v ? 'hidden' : '');
+  hideG(true); $('mode').hidden = false; $('mode').style.opacity = 1; $('mode').textContent = `Cô Anh và các bạn đi máy bay tới ${ISLAND_NAME}`;
+  const A = ARRIVE.from, T = ARRIVE.to, S = ARRIVE.stop, G0 = group(pos), W = ARRIVE.walk.concat([G0]), t0 = performance.now(), D1 = 5200, D2 = 1700;
+  const seg = [0]; for (let i = 1; i < W.length; i++) seg.push(seg[i - 1] + Math.hypot(W[i].x - W[i - 1].x, W[i].y - W[i - 1].y));
+  const L = seg[seg.length - 1], D3 = Math.max(3500, L / .32);
+  const along = d => { d = Math.max(0, Math.min(L, d)); let i = 1; while (i < seg.length - 1 && seg[i] < d) i++; const k = (d - seg[i - 1]) / ((seg[i] - seg[i - 1]) || 1); return { x: W[i - 1].x + (W[i].x - W[i - 1].x) * k, y: W[i - 1].y + (W[i].y - W[i - 1].y) * k }; };
+  const flip = T.x > A.x ? -1 : 1; // hình máy bay quay đầu sang trái
+  aim(A.x, A.y + 80, 1.3, 10); camS.x = camT.x; camS.y = camT.y; camS.z = camT.z;
+  const step = now => {
+    const t = now - t0;
+    if (t < D1) { // hạ dần độ cao
+      const k = t / D1, e = 1 - Math.pow(1 - k, 2), x = A.x + (T.x - A.x) * e, y = A.y + (T.y - A.y) * e;
+      pl.style.left = x + 'px'; pl.style.top = y + 'px'; pl.style.width = 120 * (1.6 - .6 * e) + 'px';
+      pl.style.transform = `translate(-50%,-100%) rotate(${-7 * flip * (1 - k) + Math.sin(t / 300) * 1.5}deg) scaleX(${flip})`;
+      aim(x, y - 40, 1.3 + .5 * e, 10 + 6 * e); return requestAnimationFrame(step);
+    }
+    if (t < D1 + D2) { // chạy trên đường băng, chậm dần
+      const k = (t - D1) / D2, e = 1 - Math.pow(1 - k, 3), x = T.x + (S.x - T.x) * e, y = T.y + (S.y - T.y) * e;
+      pl.style.left = x + 'px'; pl.style.top = y + Math.sin(t / 60) * (1 - k) + 'px'; pl.style.width = '120px'; pl.style.transform = `translate(-50%,-100%) scaleX(${flip})`;
+      aim(x, y - 40, 1.85, 14); return requestAnimationFrame(step);
+    }
+    // cả đoàn xuống máy bay, chạy nhảy tới điểm xuất phát
+    if (!pl.dataset.out) { pl.dataset.out = '1'; hideG(false); setPose('reo'); ['shA', 'shB', 'shM'].forEach(id => $(id).style.opacity = 0); }
+    const u = Math.min(1, (t - D1 - D2) / D3), ee = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    let lead = null;
+    [['anh', 'shA', 0, 0, 0], ['ben', 'shB', -34, -8, 60], ['mia', 'shM', 34, -8, 120]].forEach(([id, sh, dx, dy, lag]) => {
+      const d = ee * L - lag * (1 - ee), q = along(d), hop = Math.abs(Math.sin(d / 46 * Math.PI)) * 16 * (1 - ee * ee);
+      const x = q.x + dx * ee, y = q.y + dy * ee; if (!lead) lead = q;
+      $(id).style.left = x + 'px'; $(id).style.top = y - hop + 'px'; $(sh).style.left = x + 'px'; $(sh).style.top = y + 'px'; $(sh).style.opacity = ee;
+    });
+    $('pipW').style.left = lead.x + 70 + 'px'; $('pipW').style.top = lead.y - 120 + Math.sin(t / 300) * 6 + 'px';
+    aim(lead.x, lead.y - 40, 1.85, 14);
+    if (u < 1) return requestAnimationFrame(step);
+    ['shA', 'shB', 'shM'].forEach(id => $(id).style.opacity = '');
+    busy = false; $('mode').hidden = true; placeGroup(pos, false); aimView(); confetti();
+    toast(`Chào mừng tới ${ISLAND_NAME}!`);
+    try { localStorage.setItem(STORE_KEY + '_modau', '1'); } catch (e) {}
+    setTimeout(() => setPose('idle'), 1600);
+  };
+  requestAnimationFrame(step);
+}
 function arrive() {
+  if (ARRIVE.by === 'plane') return arrivePlane();
   if (busy || anyOpen() || !pts.length) return; if (tour) stopTour(); closeAll(); busy = true; if (view !== 'follow') setView('follow');
   const first = cur === 0; // tiết 1: cả đoàn nhảy lên bến; tiết khác: xem lại cảnh, đoàn về đúng chỗ đang học
   const world = $('world'), b = document.createElement('div'), wk = document.createElement('div'); b.className = 'boatIn'; wk.className = 'wake';
@@ -756,6 +806,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'm' || e.key === 'M') arrive();
   else if (e.key === 'w' || e.key === 'W') { if (twice('w', 'Bấm W lần nữa để về bản đồ quần đảo')) goWorld(false); }
   else if (e.key === 'v' || e.key === 'V') openFinale();
+  else if (e.key === 'p' || e.key === 'P') openPhieu();
   else if (e.key === 'f' || e.key === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else document.exitFullscreen().catch(() => {}); }
 });
 
