@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Làm theo Ben qua cầu</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Làm theo Ben qua cầu" – Bãi biển, Unit 3 Body */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.bigBen { position: absolute; left: 790px; top: 862px; transform: translate(-50%, -100%); transform-origin: 50% 100%; pointer-events: none; filter: drop-shadow(0 14px 12px rgba(80, 50, 10, .3)); }
+.bigBen.boing { animation: boing .5s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes boing { from { transform: translate(-50%, -100%) scale(.85, 1.1); } to { transform: translate(-50%, -100%) scale(1); } }
+.spot { position: absolute; left: 790px; top: 878px; width: 360px; height: 60px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(ellipse, rgba(120, 80, 20, .32), rgba(120, 80, 20, 0) 70%); pointer-events: none; }
+.team { position: absolute; transform: translate(-50%, -100%); pointer-events: none; display: flex; align-items: flex-end; gap: 0; }
+.team img { height: 74px; display: block; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .3)); }
+.team img.anh { height: 92px; margin-right: -8px; }
+.flag { position: absolute; left: 1500px; top: 268px; transform: translate(-50%, -100%); pointer-events: none; }
+.step { position: absolute; transform: translate(-50%, 0); pointer-events: none; font: 800 12px/1 var(--display); color: #fff; background: rgba(31, 45, 74, .55); border-radius: 7px; padding: 2px 6px 3px; white-space: nowrap; }
+.step.ok { background: #3EA84A; }
+.step.no { background: rgba(140, 140, 140, .6); }
+@media (prefers-reduced-motion: reduce) { .bigBen.boing { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const WORDS = [
+  { w: 'head', img: H('ben_cham_dau'), alt: ['heads', 'had', 'hand head', 'heat', 'hed'], cmd: 'Touch your head!', vn: 'Ben chạm vào đâu đây?' },
+  { w: 'arm', img: H('ben_gio_tay'), alt: ['arms', 'um', 'am', 'harm'], cmd: 'Stretch your arms!', vn: 'Ben giơ cái gì ra thế?' },
+  { w: 'hand', img: H('ben_vay_ban_tay'), alt: ['hands', 'and', 'han', 'hen'], cmd: 'Show me your hands!', vn: 'Ben đưa cái gì ra vậy?' },
+  { w: 'finger', img: H('ben_gio_ngon'), alt: ['fingers', 'finga', 'finder', 'singer'], cmd: 'Point your finger!', vn: 'Ben giơ cái gì lên kìa?' },
+  { w: 'leg', img: H('ben_co_chan'), alt: ['legs', 'lag', 'lack', 'lake'], cmd: 'Lift your leg!', vn: 'Ben co cái gì lên đây?' },
+  { w: 'foot', img: H('ben_giam_chan'), alt: ['feet', 'foods', 'food', 'put', 'fut'], cmd: 'Stamp your foot!', vn: 'Ben dậm cái gì xuống đất?' },
+  { w: 'clap', img: H('ben_vo_tay'), alt: ['claps', 'clip', 'club', 'clapping'], cmd: 'Clap, clap, clap!', vn: 'Ben đang làm gì đây?' },
+  { w: 'jump', img: H('ben_nhay'), alt: ['jumps', 'jam', 'jumping', 'champ'], cmd: 'Jump, jump, jump!', vn: 'Ben đang làm gì đây?' },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'ear', img: H('mia_chi_tai'), alt: ['ears', 'year', 'here'], cmd: 'Touch your ear!', vn: 'Mia chỉ vào đâu đây?', g: 'face' },
+  { w: 'eye', img: H('mia_chi_mat'), alt: ['eyes', 'i', 'ai', 'hi'], cmd: 'Touch your eye!', vn: 'Mia chỉ vào đâu đây?', g: 'face' },
+  { w: 'mouth', img: H('mia_chi_mieng'), alt: ['mouths', 'mouf', 'mouse'], cmd: 'Touch your mouth!', vn: 'Mia chỉ vào đâu đây?', g: 'face' },
+  { w: 'nose', img: H('mia_chi_mui'), alt: ['noses', 'knows', 'nos'], cmd: 'Touch your nose!', vn: 'Mia chỉ vào đâu đây?', g: 'face' },
+  { w: 'face', img: H('mia_khuon_mat'), alt: ['faces', 'fays', 'phase'], cmd: 'Show me your happy face!', vn: 'Đây là gì của Mia nhỉ?', g: 'face' },
+  { w: 'shoulders', img: H('ben_cham_vai'), alt: ['shoulder', 'soldiers', 'shoulders'], cmd: 'Touch your shoulders!', vn: 'Ben chạm vào đâu đây?', g: 'body2' },
+  { w: 'toes', img: H('ben_ngon_chan'), alt: ['toe', 'tows', 'tose', 'toast'], cmd: 'Wiggle your toes!', vn: 'Ben ngọ nguậy cái gì kìa?', g: 'body2' },
+  { w: 'teeth', img: H('ben_danh_rang'), alt: ['tooth', 'teach', 'tease', 'teef'], cmd: 'Brush your teeth!', vn: 'Ben đang đánh gì đây?', g: 'body2' },
+  { w: 'hair', img: H('mia_chai_toc'), alt: ['hare', 'here', 'her', 'hairs'], cmd: 'Brush your hair!', vn: 'Mia đang chải gì đây?', g: 'body2' },
+  { w: 'long', img: H('mia_toc_dai'), alt: ['lung', 'along', 'lon'], cmd: 'Long, long hair!', vn: 'Tóc Mia thế nào nhỉ?', g: 'body2' },
+  { w: 'short', img: H('ben_toc_ngan'), alt: ['shot', 'shirt', 'shorts'], cmd: 'Short hair!', vn: 'Tóc Ben thế nào nhỉ?', g: 'body2' },
+];
+const BRIDGE = { x0: 120, x1: 1440, y: 268 };
+let step = 0, steps = 0, ben = null;
+
+const teamX = s => BRIDGE.x0 + (BRIDGE.x1 - BRIDGE.x0) * (steps ? s / steps : 0);
+
+TroChoi.run({
+  id: 'lam_theo_ben', title: 'Làm theo Ben qua cầu', unit: 'Unit 3 Body', icon: C('ben_reo'), progressLabel: 'bước',
+  story: 'Cả nhóm phải qua chiếc cầu treo trên bãi biển. Ben làm một động tác, cả lớp làm theo và đoán Ben đang chỉ bộ phận nào. Bé đọc đúng thì cả nhóm bước thêm một bước qua cầu.',
+  doneSmall: 'Cả nhóm đã qua cầu', doneTitle: 'Qua cầu rồi!',
+  words: WORDS, defaultWords: ['head', 'arm', 'hand', 'finger', 'leg', 'foot'], guessFirst: true,
+  cardPos: { x: 1290, y: 330 }, micPos: { x: 1290, y: 640 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_bai_bien.jpg" alt="">
+      <svg class="flag" width="70" height="120" viewBox="0 0 70 120"><rect x="6" y="4" width="6" height="116" rx="3" fill="#7A4A22"/><path d="M12 8 H66 V44 H12 Z" fill="#DA251D"/><polygon points="39,14 42.5,24 53,24 44.5,30 47.5,40 39,34 30.5,40 33.5,30 25,24 35.5,24" fill="#FFDE00"/></svg>
+      <div id="steps"></div>
+      <div class="team" id="team"><img class="anh" src="${C('co_anh_di')}" alt=""><img src="${C('mia_side')}" alt=""><img src="${C('ben_side')}" alt=""></div>
+      <div class="spot"></div><img class="bigBen" id="bigBen" src="${C('ben_reo')}" alt="" style="height:360px">`;
+    ben = api.$('bigBen');
+    api.sprite('anh', C('co_anh_vay_tay'), 160, 880, 300);
+    api.sprite('pip', C('pip_hoi'), 480, 610, 100, 'bob');
+    api.say('Ben làm gì, cả lớp làm theo nhé!', 300, 400);
+    placeTeam(api, 0);
+  },
+  onStart(api) {
+    step = 0; steps = api.kids.length; placeTeam(api, 0);
+    api.$('steps').innerHTML = api.kids.map((k, i) => `<div class="step" id="st${i}" style="left:${teamX(i + 1)}px;top:${BRIDGE.y + 18}px">${i + 1}</div>`).join('');
+  },
+  progress(api) { return [step, api.kids.length]; },
+  async onTurn(api, ctx) {
+    api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
+    api.say(`${ctx.kid} ơi, nhìn Ben nè! ${ctx.word.vn}`, 300, 400);
+    ben.src = ctx.word.img; ben.classList.remove('boing'); void ben.offsetWidth; ben.classList.add('boing'); api.sfx.boing();
+    await api.speak('Look at Ben. Do it with me!', .9);
+    // Ben lặp lại động tác hai lần cho cả lớp làm theo
+    for (let r = 0; r < 2; r++) { await api.wait(700); ben.src = C('ben_three_quarter'); await api.wait(380); ben.src = ctx.word.img; ben.classList.remove('boing'); void ben.offsetWidth; ben.classList.add('boing'); api.sfx.pop(); }
+    api.pose('anh', C('co_anh_lang_nghe'));
+    api.say(ctx.word.w === 'clap' || ctx.word.w === 'jump' ? 'Ben đang làm gì? Cả lớp nói xem!' : 'Đây là bộ phận nào? Cả lớp nói xem!', 300, 400);
+    await api.wait(1500);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo'));
+    api.say(`${praise} ${ctx.kid} giỏi quá! Bước tiếp nào!`, 300, 400);
+    api.speak(ctx.word.cmd, .9);
+    ben.src = H('ben_vo_tay'); ben.classList.remove('boing'); void ben.offsetWidth; ben.classList.add('boing');
+    await api.wait(400); api.hideCard();
+    await walkTo(api, step + 1); step++;
+    const s = api.$('st' + ctx.i); if (s) { s.classList.add('ok'); s.textContent = ctx.kid; }
+    api.sparkle(teamX(step), BRIDGE.y - 50);
+    ben.src = C('ben_three_quarter');
+  },
+  async onSkip(api, ctx) {
+    // bước lượt bỏ qua cũng đi, để nhóm vẫn tới cuối cầu
+    await walkTo(api, step + 1); step++;
+    const s = api.$('st' + ctx.i); if (s) s.classList.add('no');
+    ben.src = C('ben_three_quarter');
+  },
+  async onFinish(api) {
+    api.say('Cả nhóm qua cầu rồi! Cả lớp giỏi quá!', 300, 400);
+    api.pose('anh', C('co_anh_reo')); api.pose('pip', C('pip_reo'));
+    for (let r = 0; r < 3; r++) { ben.src = H('ben_nhay'); ben.classList.remove('boing'); void ben.offsetWidth; ben.classList.add('boing'); api.sfx.boing(); await api.wait(420); ben.src = C('ben_reo'); await api.wait(260); }
+    api.sparkle(BRIDGE.x1 + 40, BRIDGE.y - 80, 50);
+    await api.wait(1200);
+  },
+});
+
+function placeTeam(api, s, hop = 0) { const t = api.$('team'); t.style.left = teamX(s) + 'px'; t.style.top = BRIDGE.y + 6 - hop + 'px'; }
+async function walkTo(api, s1) {
+  const s0 = step, dur = 900;
+  await api.tween(dur, (k, e) => { const s = s0 + (s1 - s0) * e; placeTeam(api, s, Math.abs(Math.sin(k * Math.PI * 3)) * 10); });
+  api.sfx.thunk(); placeTeam(api, s1);
+}
+</script>
+</body>
+</html>
