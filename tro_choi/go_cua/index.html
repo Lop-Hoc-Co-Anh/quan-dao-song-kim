@@ -29,6 +29,9 @@
 </style>
 </head>
 <body>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -92,7 +95,7 @@ TroChoi.run({
   progress(api) { return [got.length, api.kids.length]; },
   async onTurn(api, ctx) {
     const di = ctx.i % DOORS.length, D = DOORS[di], door = api.$('door' + di), hole = door.querySelector('.hole'), leaf = door.querySelector('.leaf');
-    const isRoom = ROOMS.includes(ctx.word.w) || !!ctx.word.q;
+    const isRoom = ROOMS.includes(ctx.word.w) || !!ctx.word.q, isNum = /^(one|two|three|four|five|six|seven|eight|nine|ten)$/.test(ctx.word.w);
     hole.querySelector('img').src = ctx.word.img; hole.style.opacity = 0; leaf.style.opacity = 1; leaf.style.transform = 'perspective(700px) rotateY(0deg)';
     api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
     api.say(`${ctx.kid} ơi, gõ cửa nào! Cốc cốc cốc!`, 30, 430);
@@ -108,8 +111,8 @@ TroChoi.run({
     await api.tween(800, (k, e) => { pop.style.left = sx + (tx - sx) * e + 'px'; pop.style.top = sy + (ty - sy) * e - Math.sin(Math.PI * k) * 60 + 'px'; pop.style.height = h0 + (h1 - h0) * e + 'px'; });
     pop.dataset.x = tx; pop.dataset.y = ty; pop.dataset.h = h1;
     api.pose('anh', C('co_anh_lang_nghe'));
-    api.say(ctx.word.vn || (isRoom ? 'Đây là phòng gì nhỉ?' : 'Số mấy đây các con?'), 30, 430);
-    await api.speak(ctx.word.q || (isRoom ? 'What room is this?' : 'What number is it?'), .9);
+    api.say(ctx.word.vn || (isRoom ? 'Đây là phòng gì nhỉ?' : isNum ? 'Số mấy đây các con?' : 'Sau cánh cửa là gì nhỉ?'), 30, 430);
+    await api.speak(ctx.word.q || (isRoom ? 'What room is this?' : isNum ? 'What number is it?' : 'What is it?'), .9);
     await api.wait(1400);
     // thu hình nhỏ lại để thẻ từ hiện ra
     await api.tween(450, (k, e) => { pop.style.top = ty - 120 * e + 'px'; pop.style.height = h1 - (h1 - 150) * e + 'px'; pop.style.opacity = 1 - e; });
