@@ -77,6 +77,9 @@ const seen = new Set(), WORDS = Object.values(BOOK).flat().filter(([w]) => !seen
   try { const k = 'trochoi_dua_thuyen', c = JSON.parse(localStorage.getItem(k) || '{}'); c.words = pick; localStorage.setItem(k, JSON.stringify(c)); } catch (e) {}
 })();
 </script>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -87,7 +90,7 @@ const teamOf = i => i % 2;
 
 TroChoi.run({
   id: 'dua_thuyen', title: 'Đua thuyền về hải đăng', unit: 'Ôn tập', icon: H('thuyen_xanh'), progressLabel: 'lượt đúng',
-  story: 'Hai đội Ben và Mia đua thuyền về ngọn hải đăng! Các bé lần lượt thay phiên cho hai đội: bé thứ nhất đội Ben, bé thứ hai đội Mia… Bé đọc đúng từ thì thuyền lao lên phía trước. Cả lớp cùng chèo để hai thuyền cùng về tới hải đăng!',
+  story: 'Hai thuyền của Ben và Mia chèo về ngọn hải đăng! Các bạn thay phiên nhau: mỗi bạn nói một từ, cả lớp nói theo, thuyền lại tiến lên. Hai thuyền cùng về đích.',
   doneSmall: 'Cuộc đua kết thúc', doneTitle: 'Cả hai đội đều giỏi!',
   words: WORDS, defaultWords: window.__PICK || ['bedroom', 'car', 'head', 'socks', 'lion', 'cake', 'ghost'],
   cardPos: { x: 800, y: 132 }, micPos: { x: 1330, y: 590 },
@@ -117,7 +120,7 @@ TroChoi.run({
   },
   async onCorrect(api, ctx, praise) {
     const t = teamOf(ctx.i), L = LANES[t];
-    api.pose('pip', C('pip_reo')); api.say(`${praise} ${L.name} lao lên nào!`, 40, 110);
+    api.pose('pip', C('pip_reo')); api.say(/[!?.]$/.test(praise) && !/^[A-Z]/.test(praise) ? praise : `${praise} ${L.name} tiến lên nào!`, 40, 110);
     api.$('b' + t).querySelector('.kid').src = C(L.kid + '_reo');
     score[t]++; api.$('sc' + t).textContent = score[t];
     const kn = api.$('kn' + ctx.i); if (kn) { kn.classList.add('ok'); kn.style.background = L.col; }
@@ -127,7 +130,7 @@ TroChoi.run({
     pos[t] = p1; place(api); api.sparkle(START + (FIN - START) * p1, L.y - L.h * .7, 20);
     api.$('b' + t).querySelector('.kid').src = C(L.kid + '_three_quarter');
   },
-  async onSkip(api, ctx) { const kn = api.$('kn' + ctx.i), L = LANES[teamOf(ctx.i)]; if (kn) { kn.classList.add('ok'); kn.style.background = L.col; } }, // bé nào cũng được tô màu như nhau
+  async onSkip(api, ctx) { return this.onCorrect(api, ctx, 'Cả lớp chèo giúp nào!'); }, // bạn chưa nói được: cả lớp chèo giúp, thuyền vẫn tiến như mọi bạn
   async onFinish(api) {
     // hai thuyền cùng lướt về đích, không phân thắng thua
     const p0 = pos.slice(); api.sfx.rustle();
