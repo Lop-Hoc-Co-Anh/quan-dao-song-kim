@@ -29,6 +29,10 @@
 </style>
 </head>
 <body>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/cau_mau.js"></script>
+<script src="../chung/le_hoi_viet.js"></script>
+<script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
 <script src="../chung/chung.js"></script>
 <script>
@@ -52,6 +56,7 @@ const WORDS = [
   { w: 'monster', img: H('quai_vat'), alt: ['monsters', 'mons ter', 'master'], g: 'fest2' },
   { w: 'costume', img: H('quai_vat'), alt: ['costumes', 'costum', 'custom'], g: 'fest2' },
 ];
+if (window.LE_HOI_VIET) WORDS.push(...LE_HOI_VIET); // Trung thu, Tết
 const TILE = ['#E0483E', '#2E9A4E', '#F3B728', '#5B5FD6', '#E05B8C', '#14998F', '#F08A24', '#7C4DBF', '#3AA0E0'];
 const WALL = { x0: 270, x1: 1330, rows: [128, 300], h: 92 };
 let hung = [], prize = null, peel = null;
@@ -86,7 +91,7 @@ TroChoi.run({
     api.$('prizeLayer').innerHTML = `<div class="prize" id="prize" style="left:800px;top:700px;width:250px;height:250px"><img src="${ctx.word.img}" alt=""><div class="tiles">${TILE.map(c => `<i style="background:${c}"></i>`).join('')}</div></div>`;
     prize = api.$('prize'); prize.style.opacity = 0;
     await api.tween(800, (k, e) => { prize.style.top = 700 - 160 * e + 'px'; prize.style.opacity = Math.min(1, k * 2.5); prize.style.transform = `translate(-50%, -50%) scale(${.3 + .7 * e})`; beam.style.opacity = e; });
-    await api.speak('What is it?', .9);
+    await api.speak((window.CauMau && CauMau.of(ctx.word.w) ? CauMau.of(ctx.word.w).q : 'What is it?'), .9);
     api.pose('anh', C('co_anh_lang_nghe')); api.say('Giấy đang bóc dần, cả lớp đoán xem!', 300, 420);
     const tiles = prize.querySelectorAll('.tiles i'); let p = 0;
     peel = order; for (; p < 5; p++) { await api.wait(650); if (!prize.isConnected) return; tiles[order[p]].classList.add('off'); api.sfx.pop(); }
