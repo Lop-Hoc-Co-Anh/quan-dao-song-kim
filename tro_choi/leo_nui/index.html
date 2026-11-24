@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leo núi tuyết</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Leo núi tuyết" – Núi tuyết, Unit 4 Clothes */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.snow { position: absolute; inset: 0; pointer-events: none; }
+.ice { position: absolute; transform: translate(-50%, -100%); border-radius: 28px; pointer-events: none;
+  background: linear-gradient(150deg, rgba(235, 250, 255, .78), rgba(160, 215, 245, .62) 45%, rgba(120, 190, 235, .7)); box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .7), inset -14px -18px 30px rgba(70, 140, 200, .35), 0 16px 20px rgba(60, 110, 160, .3); overflow: hidden; }
+.ice img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); filter: blur(4px) saturate(.6) opacity(.85); }
+.ice::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, .55) 28%, rgba(255, 255, 255, 0) 36%), radial-gradient(circle at 20% 80%, rgba(255, 255, 255, .5) 0 3px, transparent 4px), radial-gradient(circle at 70% 30%, rgba(255, 255, 255, .55) 0 4px, transparent 5px), radial-gradient(circle at 80% 75%, rgba(255, 255, 255, .45) 0 3px, transparent 4px); z-index: 2; }
+.ice svg { position: absolute; inset: 0; z-index: 3; }
+.ice.wob { animation: wob .14s ease-in-out 8 alternate; }
+@keyframes wob { from { margin-left: -4px; } to { margin-left: 4px; } }
+.shard { position: absolute; pointer-events: none; background: linear-gradient(150deg, rgba(235, 250, 255, .9), rgba(140, 205, 240, .75)); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8); }
+.item { position: absolute; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 8px 8px rgba(40, 70, 110, .3)); }
+.rope { position: absolute; left: 0; top: 0; pointer-events: none; }
+.hung { position: absolute; transform: translate(-50%, 0); transform-origin: 50% 0; text-align: center; pointer-events: none; animation: sway 2.6s ease-in-out infinite alternate; }
+.hung img { display: block; margin: 0 auto; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .25)); }
+.hung span { display: inline-block; background: rgba(255, 255, 255, .92); border-radius: 8px; padding: 0 7px 2px; font: 800 13px/1.2 var(--display); color: var(--ink); white-space: nowrap; }
+.hung::before { content: ""; position: absolute; left: 50%; top: -8px; width: 8px; height: 16px; margin-left: -4px; border-radius: 3px; background: #E8B04A; box-shadow: 0 0 0 1px #A87420; }
+@keyframes sway { from { transform: translate(-50%, 0) rotate(-3deg); } to { transform: translate(-50%, 0) rotate(3deg); } }
+.team { position: absolute; transform: translate(-50%, -100%); pointer-events: none; display: flex; align-items: flex-end; }
+.team img { display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .3)); }
+.dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: rgba(255, 255, 255, .9); box-shadow: 0 0 0 2px rgba(20, 153, 143, .8); pointer-events: none; }
+.dot.ok { background: #FFD23F; box-shadow: 0 0 6px 2px rgba(255, 210, 63, .9); }
+@media (prefers-reduced-motion: reduce) { .hung, .ice.wob { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const WORDS = [
+  { w: 'T-shirt', img: H('ao_phong_do'), alt: ['t shirt', 'tshirt', 'tee shirt', 'shirt', 't shirts', 'teeshirt'] },
+  { w: 'socks', img: H('tat_vang'), alt: ['sock', 'sucks', 'socks', 'sox', 'shocks'] },
+  { w: 'skirt', img: H('vay_tim'), alt: ['skirts', 'squirt', 'scout', 'skirt'] },
+  { w: 'shorts', img: H('quan_short_xanh'), alt: ['short', 'shots', 'shirts', 'sorts'] },
+  { w: 'scarf', img: H('khan_quang'), alt: ['scarves', 'scar', 'scuff', 'scarfs', 'staff'] },
+  { w: 'boots', img: H('ung_vang'), alt: ['boot', 'boats', 'boost', 'buts', 'books'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'bag', img: H('cap_sach'), alt: ['bags', 'back', 'bad', 'beg'], g: 'school' },
+  { w: 'book', img: H('quyen_sach'), alt: ['books', 'look', 'boo', 'buck'], g: 'school' },
+  { w: 'crayon', img: H('but_sap'), alt: ['crayons', 'crown', 'cray on', 'crayan'], g: 'school' },
+  { w: 'pencil', img: H('but_chi'), alt: ['pencils', 'pensil', 'pence'], g: 'school' },
+  { w: 'trousers', img: H('quan_dai'), alt: ['trouser', 'browsers', 'trousers'], g: 'clothes2' },
+  { w: 'dress', img: H('vay_lien'), alt: ['dresses', 'dres', 'address', 'dress'], g: 'clothes2' },
+  { w: 'shoes', img: H('doi_giay'), alt: ['shoe', 'choose', 'shows', 'shoos'], g: 'clothes2' },
+];
+// đường mòn trên nền, từ chân núi lên đỉnh (toạ độ khung 1600x900)
+const PATH = [[1085, 436], [1065, 390], [1005, 355], [915, 330], [835, 308], [800, 290], [830, 264], [910, 242], [1010, 222], [1110, 205], [1200, 185], [1235, 160], [1190, 140], [1100, 128], [1020, 110], [990, 85], [1010, 58], [1060, 38], [1110, 16]];
+const ROPE = { x0: 40, x1: 640, y: 150, sag: 46 };
+const ICE = { x: 700, y: 760, w: 300, h: 270 };
+let hung = [], climbed = 0, steps = 1, itemEl = null, iceEl = null;
+
+// điểm trên đường mòn theo tỉ lệ t (0..1), tính theo độ dài thật
+const SEG = PATH.slice(1).map((p, i) => Math.hypot(p[0] - PATH[i][0], p[1] - PATH[i][1])), LEN = SEG.reduce((a, b) => a + b, 0);
+function onPath(t) { let d = Math.max(0, Math.min(1, t)) * LEN; for (let i = 0; i < SEG.length; i++) { if (d <= SEG[i]) { const k = d / SEG[i]; return [PATH[i][0] + (PATH[i + 1][0] - PATH[i][0]) * k, PATH[i][1] + (PATH[i + 1][1] - PATH[i][1]) * k]; } d -= SEG[i]; } return PATH[PATH.length - 1]; }
+function ropeY(x) { const u = (x - ROPE.x0) / (ROPE.x1 - ROPE.x0); return ROPE.y + ROPE.sag * 4 * u * (1 - u); }
+function hangSlot(n, total) { const per = Math.max(4, Math.min(8, total)), row = Math.floor(n / per), x = ROPE.x0 + (ROPE.x1 - ROPE.x0) * ((n % per) + .5) / per; return { x, y: ropeY(x) + row * 150, h: Math.min(78, 480 / per) }; }
+
+TroChoi.run({
+  id: 'leo_nui', title: 'Leo núi tuyết', unit: 'Unit 4 Clothes', icon: H('khan_quang'), progressLabel: 'chặng',
+  story: 'Cả nhóm leo lên đỉnh núi tuyết để cắm lá cờ. Gió lạnh đã đóng băng quần áo! Cả lớp nhìn qua lớp băng đoán xem là món đồ gì. Bé đọc đúng thì băng vỡ, cả nhóm mặc ấm và leo thêm một chặng.',
+  doneSmall: 'Cả nhóm đã lên tới đỉnh', doneTitle: 'Cắm cờ trên đỉnh núi!',
+  words: WORDS, defaultWords: ['T-shirt', 'socks', 'skirt', 'shorts', 'scarf', 'boots'], guessFirst: true,
+  cardPos: { x: 1310, y: 400 }, micPos: { x: 1290, y: 700 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_nui_tuyet.jpg" alt=""><canvas class="snow" id="snow" width="1600" height="900"></canvas>
+      <svg class="rope" width="1600" height="900"><rect x="${ROPE.x0 - 8}" y="${ROPE.y - 20}" width="12" height="230" rx="5" fill="#8A5A2B"/><rect x="${ROPE.x1 - 4}" y="${ROPE.y - 20}" width="12" height="230" rx="5" fill="#8A5A2B"/>
+        <path d="M${ROPE.x0} ${ROPE.y} Q${(ROPE.x0 + ROPE.x1) / 2} ${ROPE.y + ROPE.sag * 2} ${ROPE.x1} ${ROPE.y}" stroke="#E9D9B8" stroke-width="5" fill="none"/>
+        <g transform="translate(${PATH[PATH.length - 1][0]} ${PATH[PATH.length - 1][1]})"><rect x="-3" y="-62" width="5" height="64" rx="2" fill="#6B4320"/><path d="M2 -60 H44 V-32 H2 Z" fill="#DA251D"/><polygon points="23,-55 25.6,-48.4 32.6,-48.4 27,-44.2 29.1,-37.5 23,-41.6 16.9,-37.5 19,-44.2 13.4,-48.4 20.4,-48.4" fill="#FFDE00"/></g></svg>
+      <div id="dots"></div><div class="team" id="team"><img src="${C('co_anh_di')}" alt="" style="height:56px"><img src="${C('mia_side')}" alt="" style="height:42px"><img src="${C('ben_side')}" alt="" style="height:44px"></div>
+      <div id="hungBox"></div><div id="iceLayer"></div>`;
+    api.sprite('anh', C('co_anh_vay_tay'), 140, 880, 300);
+    api.sprite('ben', C('ben_three_quarter'), 290, 870, 160);
+    api.sprite('mia', C('mia_three_quarter'), 390, 874, 152);
+    api.sprite('pip', C('pip_hoi'), 470, 560, 96, 'bob');
+    api.say('Lạnh quá! Quần áo bị đóng băng hết rồi!', 300, 420);
+    placeTeam(api, 0); snowFall(api.$('snow'));
+  },
+  onStart(api) {
+    hung = []; climbed = 0; steps = api.kids.length; api.$('hungBox').innerHTML = ''; api.$('iceLayer').innerHTML = '';
+    api.$('dots').innerHTML = api.kids.map((k, i) => { const [x, y] = onPath((i + 1) / steps); return `<div class="dot" id="d${i}" style="left:${x}px;top:${y}px"></div>`; }).join('');
+    placeTeam(api, 0);
+  },
+  progress(api) { return [climbed, api.kids.length]; },
+  async onTurn(api, ctx) {
+    const w = ICE.w, h = ICE.h;
+    api.$('iceLayer').innerHTML = `<div class="ice" id="ice" style="left:${ICE.x}px;top:${ICE.y}px;width:${w}px;height:${h}px"><img src="${ctx.word.img}" alt="" style="max-width:${w - 50}px;max-height:${h - 50}px"><svg id="crk" viewBox="0 0 300 270"></svg></div>`;
+    iceEl = api.$('ice'); iceEl.style.transform = 'translate(-50%, -100%) scale(.2)'; iceEl.style.opacity = 0;
+    api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
+    api.say(`${ctx.kid} ơi, khối băng này có gì bên trong?`, 300, 420);
+    api.sfx.rustle();
+    await api.tween(700, (k, e) => { iceEl.style.transform = `translate(-50%, -100%) scale(${.2 + .8 * e})`; iceEl.style.opacity = Math.min(1, k * 2); });
+    api.sfx.thunk(); iceEl.classList.add('wob');
+    await api.speak('What is it?', .9);
+    api.pose('anh', C('co_anh_lang_nghe'));
+    api.say('Nhìn kỹ qua lớp băng, cả lớp đoán xem!', 300, 420);
+    await api.wait(1800);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
+    api.say(`${praise} ${ctx.kid} làm vỡ băng rồi!`, 300, 420);
+    api.hideCard();
+    await crack(api);
+    // món đồ bay lên dây phơi
+    const n = hung.length, s = hangSlot(n, api.kids.length), x0 = ICE.x, y0 = ICE.y - ICE.h / 2;
+    api.$('iceLayer').insertAdjacentHTML('beforeend', `<img class="item" id="item" src="${ctx.word.img}" alt="" style="left:${x0}px;top:${y0}px;height:200px">`);
+    itemEl = api.$('item'); api.sparkle(x0, y0, 34); api.sfx.boing();
+    await api.tween(1000, (k, e) => { const h = 200 + (s.h - 200) * e; itemEl.style.left = x0 + (s.x - x0) * e + 'px'; itemEl.style.top = y0 + (s.y + h / 2 + 4 - y0) * e - Math.sin(Math.PI * k) * 120 + 'px'; itemEl.style.height = h + 'px'; });
+    hung.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'hung'; d.style.left = s.x + 'px'; d.style.top = s.y + 4 + 'px'; d.style.animationDelay = (-n * .7) + 's';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${s.h}px"><span>${api.esc(ctx.kid)}</span>`; api.$('hungBox').appendChild(d);
+    api.$('iceLayer').innerHTML = '';
+    const dot = api.$('d' + ctx.i); if (dot) dot.classList.add('ok');
+    await climb(api); api.pose('ben', C('ben_three_quarter'));
+  },
+  async onSkip(api) {
+    if (iceEl) await api.tween(500, (k, e) => { iceEl.style.transform = `translate(-50%, -100%) scale(${1 - .8 * e})`; iceEl.style.opacity = 1 - e; });
+    api.$('iceLayer').innerHTML = ''; await climb(api);
+  },
+  async onFinish(api) {
+    api.say('Lên tới đỉnh rồi! Cắm cờ nào! Cả lớp giỏi quá!', 300, 420);
+    api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('mia', C('mia_reo')); api.pose('pip', C('pip_reo'));
+    const [x, y] = PATH[PATH.length - 1]; api.sparkle(x + 20, y - 40, 50);
+    await api.wait(2000);
+  },
+});
+
+function placeTeam(api, t, hop = 0) { const [x, y] = onPath(t), k = 1 - t * .45, el = api.$('team'); el.style.left = x + 'px'; el.style.top = y + 4 - hop + 'px'; el.style.transform = `translate(-50%, -100%) scale(${k})`; el.style.transformOrigin = '50% 100%'; }
+async function climb(api) { const t0 = climbed / steps, t1 = (climbed + 1) / steps; await api.tween(1000, (k, e) => placeTeam(api, t0 + (t1 - t0) * e, Math.abs(Math.sin(k * Math.PI * 3)) * 6)); climbed++; placeTeam(api, t1); api.sfx.thunk(); }
+async function crack(api) {
+  const svg = api.$('crk');
+  svg.innerHTML = '<path d="M150 135 L110 60 L120 10 M150 135 L210 70 L250 40 M150 135 L80 170 L20 190 M150 135 L190 210 L230 262 M150 135 L140 220 L120 268" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600"/>';
+  const p = svg.firstChild; api.sfx.thunk();
+  await api.tween(350, (k) => { p.style.strokeDashoffset = 600 * (1 - k); });
+  api.sfx.pop();
+  // vỡ thành mảnh
+  const r = { x: ICE.x - ICE.w / 2, y: ICE.y - ICE.h, w: ICE.w, h: ICE.h }, polys = ['0 0,55% 0,50% 50%,0 60%', '55% 0,100% 0,100% 45%,50% 50%', '0 60%,50% 50%,45% 100%,0 100%', '50% 50%,100% 45%,100% 100%,45% 100%'];
+  const sh = polys.map((pl, i) => { const d = document.createElement('div'); d.className = 'shard'; Object.assign(d.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px', clipPath: `polygon(${pl})`, borderRadius: '28px' }); api.$('iceLayer').appendChild(d); return d; });
+  iceEl.remove();
+  const dirs = [[-1, -1], [1, -1], [-1, .6], [1, .6]];
+  await api.tween(650, (k, e) => sh.forEach((d, i) => { d.style.transform = `translate(${dirs[i][0] * 180 * e}px, ${dirs[i][1] * 160 * e + 260 * k * k}px) rotate(${dirs[i][0] * 50 * e}deg)`; d.style.opacity = 1 - k; }));
+  sh.forEach(d => d.remove());
+}
+function snowFall(cv) {
+  const g = cv.getContext('2d'), fl = Array.from({ length: 70 }, () => ({ x: Math.random() * 1600, y: Math.random() * 900, r: 1.5 + Math.random() * 3, v: .4 + Math.random() * .9, s: Math.random() * 6 }));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  (function f() { g.clearRect(0, 0, 1600, 900); g.fillStyle = 'rgba(255,255,255,.85)'; fl.forEach(p => { p.y += p.v; p.s += .02; p.x += Math.sin(p.s) * .4; if (p.y > 905) { p.y = -5; p.x = Math.random() * 1600; } g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.3); g.fill(); }); requestAnimationFrame(f); })();
+}
+</script>
+</body>
+</html>
