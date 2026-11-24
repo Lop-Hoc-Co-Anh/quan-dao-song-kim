@@ -40,6 +40,8 @@ td input[type=text] { width: 100%; font-size: 16px; }
 .pn textarea { width: 100%; height: 52vh; font: 400 17px/1.5 'Nunito'; border: 2px solid #CBD6E2; border-radius: 14px; padding: 12px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; } .msg { font: 800 17px 'Nunito'; color: #0D7068; }
 @media print { header, .noprint { display: none !important; } body { background: #fff; } td { background: #fff; border-bottom: 1px solid #ccc; } }
+.nxk { background: #fff; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; }
+.nxk b { font: 800 20px 'Baloo 2'; } .nxk textarea { height: 110px; margin-top: 6px; } .nxk button { margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -60,10 +62,13 @@ td input[type=text] { width: 100%; font-size: 16px; }
 </main>
 <div class="ov" id="ovNx" hidden><div class="pn">
   <h2 id="nxTitle">Nhận xét cuối unit</h2>
-  <p style="margin:0 0 10px;color:var(--soft)">Máy soạn sẵn theo các lần cô đánh dấu trong unit. Cô sửa thêm cho đúng từng bé rồi gửi phụ huynh.</p>
-  <textarea id="nxText" spellcheck="false"></textarea>
-  <div class="row"><button class="go" id="bCopy">Chép</button><button id="bSaveTxt">Lưu file .txt</button><button id="bClose">Đóng (Esc)</button><span class="msg" id="nxMsg"></span></div>
+  <p style="margin:0 0 10px;color:var(--soft)">Mỗi bé một tin riêng, gửi riêng cho ba mẹ bé đó (không dán vào nhóm lớp). Cô sửa thêm cho đúng từng bé rồi bấm "Chép".</p>
+  <div id="nxList"></div>
+  <textarea id="nxText" spellcheck="false" hidden></textarea>
+  <div class="row"><button id="bSaveTxt">Lưu tất cả ra file .txt</button><button id="bClose">Đóng (Esc)</button><span class="msg" id="nxMsg"></span></div>
 </div></div>
+<script src="../tro_choi/chung/kho_tu.js"></script>
+<script src="../tro_choi/chung/cau_mau.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -111,25 +116,31 @@ function draw() {
   $('rows').querySelectorAll('[data-g]').forEach(inp => inp.onchange = () => { kidBox(ks[+inp.dataset.g]).ghi = inp.value.trim(); save(); });
 }
 // ---- nhận xét định tính cuối unit (không chấm điểm, không so sánh) ----
+// từ có hình của unit (bỏ các ghi chú kiểu "family members", "Toàn bộ Unit 1")
+function cleanWords(u) { const w = []; PPCT.filter(r => r.unit === u).forEach(r => String(r.tu || '').split(/[;,]/).map(x => x.trim().toLowerCase()).forEach(x => { const K = window.KHO_TU && KHO_TU.find(W => [x, x.replace(/s$/, '')].includes(W.w.toLowerCase())); if (K && !w.includes(K.w)) w.push(K.w); })); return w; }
 function nhanXet() {
-  const ks = kids(), w = unitWords(unit), ws = w.slice(0, 8).join(', '), cau = [...new Set(PPCT.filter(r => r.unit === unit).map(r => r.cau).filter(c => c && /\?|\./.test(c)))].slice(0, 2).join(' / ');
-  const out = [`NHẬN XÉT ${unit.toUpperCase()} – ${D.book}`, `Trong unit này các bé học các từ: ${ws || '(xem sách)'}${cau ? '; mẫu câu: ' + cau.replace(/[.\s]+$/, '') : ''}${/[?!.…]$/.test(cau) ? '' : '.'}`, ''];
+  const ks = kids(), w = cleanWords(unit).slice(0, 6), S = w.map(x => window.CauMau && CauMau.of(x, unit)).find(Boolean);
+  const cau = S ? `"${S.q} – ${S.a}"` : '';
+  const list = [], none = [];
   ks.forEach(n => {
-    const kb = (box()[n]) || { marks: {}, ghi: '' }, v = Object.values(kb.marks), c3 = v.filter(x => x === 3).length, c2 = v.filter(x => x === 2).length, c1 = v.filter(x => x === 1).length;
-    let t;
-    if (!v.length) t = 'cô chưa ghi nhận trong unit này; cô sẽ dành thêm thời gian cùng bé ở các buổi tới.';
-    else if (c3 >= v.length / 2) t = 'bé tự nói được phần lớn các từ của unit, mạnh dạn tham gia trò chơi cùng lớp.';
-    else if (c3 + c2 >= v.length / 2) t = 'bé nói được các từ khi có cô gợi ý và ngày càng tự tin hơn; ở nhà ba mẹ cho bé chỉ đồ vật và gọi tên bằng tiếng Anh sẽ giúp bé nhớ lâu.';
-    else t = 'bé đang làm quen với các từ mới, thích nghe và nhìn hình; ba mẹ cùng bé hát, chỉ hình và nhắc lại vài từ mỗi ngày giúp bé tự tin hơn.';
-    out.push(`- ${n}: ${t}${kb.ghi ? ' ' + kb.ghi.replace(/[.\s]*$/, '.') : ''}`);
+    const kb = (box()[n]) || { marks: {}, ghi: '' }, v = Object.values(kb.marks), c3 = v.filter(x => x === 3).length, c2 = v.filter(x => x === 2).length;
+    if (!v.length) { none.push(n); return; }
+    const t = c3 >= v.length / 2 ? 'Bé tự nói được phần lớn các từ, mạnh dạn tham gia trò chơi cùng các bạn.'
+      : c3 + c2 >= v.length / 2 ? 'Bé nói được các từ khi cô gợi ý và ngày càng mạnh dạn hơn.'
+      : 'Bé đang làm quen với các từ mới, rất thích nghe và nhìn hình.';
+    const home = S ? `Ở nhà ba mẹ chỉ vào đồ vật hoặc hình, hỏi "${S.q}" để bé trả lời nhé.` : 'Ở nhà ba mẹ cùng bé chỉ hình và nói lại vài từ mỗi ngày nhé.';
+    list.push({ n, t: `Gửi ba mẹ bé ${n}: Trong ${unit}, bé học ${w.length ? 'các từ ' + w.join(', ') : 'các từ mới'}.${cau ? ' Câu mẫu: ' + cau : ''} ${t}${kb.ghi ? ' ' + kb.ghi.replace(/[.\s]*$/, '.') : ''} ${home} Cảm ơn ba mẹ!` });
   });
-  out.push('', 'Cảm ơn ba mẹ đã đồng hành cùng các bé!');
-  return out.join('\n');
+  return { list, none };
 }
-$('bNx').onclick = () => { $('nxTitle').textContent = `Nhận xét cuối ${unit}`; $('nxText').value = nhanXet(); $('nxMsg').textContent = ''; $('ovNx').hidden = false; $('nxText').focus(); };
+$('bNx').onclick = () => { $('nxTitle').textContent = `Nhận xét cuối ${unit}`; const N = nhanXet();
+  $('nxList').innerHTML = N.list.map((x, i) => `<div class="nxk"><b>${esc(x.n)}</b><textarea id="nx${i}" spellcheck="false">${esc(x.t)}</textarea><button class="go" data-c="${i}">Chép tin của bé ${esc(x.n)}</button></div>`).join('')
+    + (N.none.length ? `<p style="color:var(--soft)">Chưa có đánh dấu trong unit này nên chưa soạn tin: ${esc(N.none.join(', '))}. Cô đánh dấu vài tiết rồi mở lại.</p>` : '');
+  $('nxList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const ta = $('nx' + b.dataset.c); ta.select(); (navigator.clipboard ? navigator.clipboard.writeText(ta.value) : Promise.reject()).then(() => $('nxMsg').textContent = 'Đã chép, dán vào tin nhắn Zalo riêng cho ba mẹ bé.', () => { document.execCommand('copy'); $('nxMsg').textContent = 'Đã chép.'; }); });
+  $('nxText').value = N.list.map((x, i) => x.t).join('\n\n'); $('nxMsg').textContent = ''; $('ovNx').hidden = false; $('nxText').focus(); };
 $('bClose').onclick = () => $('ovNx').hidden = true;
-$('bCopy').onclick = () => { $('nxText').select(); (navigator.clipboard ? navigator.clipboard.writeText($('nxText').value) : Promise.reject()).then(() => $('nxMsg').textContent = 'Đã chép, dán vào Zalo hoặc Word.', () => { document.execCommand('copy'); $('nxMsg').textContent = 'Đã chép.'; }); };
-$('bSaveTxt').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + $('nxText').value], { type: 'text/plain;charset=utf-8' })); a.download = `Nhan xet ${unit.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')}.txt`; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 500); $('nxMsg').textContent = 'Đã lưu vào thư mục Downloads.'; };
+if ($('bCopy')) $('bCopy').onclick = () => { $('nxText').select(); (navigator.clipboard ? navigator.clipboard.writeText($('nxText').value) : Promise.reject()).then(() => $('nxMsg').textContent = 'Đã chép, dán vào Zalo hoặc Word.', () => { document.execCommand('copy'); $('nxMsg').textContent = 'Đã chép.'; }); };
+$('bSaveTxt').onclick = () => { $('nxText').value = [...document.querySelectorAll('#nxList textarea')].map(t => t.value).join('\n\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + $('nxText').value], { type: 'text/plain;charset=utf-8' })); a.download = `Nhan xet ${unit.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')}.txt`; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 500); $('nxMsg').textContent = 'Đã lưu vào thư mục Downloads.'; };
 $('selDao').onchange = () => { D = DAOS.find(d => d.key === $('selDao').value); loadDao(false); };
 $('selUnit').onchange = () => { unit = $('selUnit').value; const i = PPCT.findIndex(r => r.unit === unit); if (i >= 0 && (PPCT[tiet - 1] || {}).unit !== unit) { tiet = i + 1; $('inTiet').value = tiet; } draw(); };
 $('inTiet').onchange = () => { tiet = Math.max(1, Math.min(70, +$('inTiet').value || 1)); $('inTiet').value = tiet; unit = (PPCT[tiet - 1] || {}).unit || unit; $('selUnit').value = unit; draw(); };
