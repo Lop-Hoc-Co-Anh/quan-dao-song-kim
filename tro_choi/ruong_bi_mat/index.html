@@ -94,7 +94,7 @@ TroChoi.run({
     await api.speak((window.CauMau && CauMau.of(ctx.word.w) ? CauMau.of(ctx.word.w).q : 'What is it?'), .9);
     api.pose('anh', C('co_anh_lang_nghe')); api.say('Giấy đang bóc dần, cả lớp đoán xem!', 300, 420);
     const tiles = prize.querySelectorAll('.tiles i'); let p = 0;
-    peel = order; for (; p < 5; p++) { await api.wait(650); if (!prize.isConnected) return; tiles[order[p]].classList.add('off'); api.sfx.pop(); }
+    peel = order; for (; p < 7; p++) { await api.wait(650); if (!prize.isConnected) return; tiles[order[p]].classList.add('off'); api.sfx.pop(); }
     peel = order.slice(p); await api.wait(900);
   },
   async onCorrect(api, ctx, praise) {
