@@ -128,6 +128,7 @@ img.camp.fire { animation: fireflick .5s ease-in-out infinite alternate; transfo
 .step span { font: 700 17px/1.25 var(--body); color: var(--soft); }
 .step em { font: 800 15px/1 var(--body); font-style: normal; color: var(--teal); }
 .row { display: flex; gap: 14px; justify-content: flex-end; align-items: center; }
+#ovLesson .row { gap: 10px; } #ovLesson .row .btn { font-size: 19px; padding: 11px 14px 13px; white-space: nowrap; } #ovLesson .row .note { font-size: 14px; } #ovLesson .row .btn.go { font-size: 23px; padding: 13px 22px 15px; }
 .note { margin-right: auto; font: 700 18px/1.3 var(--body); color: var(--soft); }
 .album { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .af { display: grid; justify-items: center; gap: 6px; }
@@ -226,7 +227,7 @@ body.app .tv { width: min(100vw, 177.78vh); border-radius: 0; box-shadow: none; 
           <div class="row">
             <span class="note">Mỗi từ học xong là một tấm ván lắp vào cầu. Trò chơi bên trong sẽ bàn tiếp.</span>
             <button class="btn" id="lClose">Đóng <kbd>Esc</kbd></button>
-            <button class="btn" id="lWarm" title="Trò nghe hiểu khởi động: Pip hỏi, cả lớp chỉ hình">Khởi động: nghe – chạm</button><button class="btn go" id="lStart">Xuất phát!</button>
+            <button class="btn" id="lKe" title="Pip kể chuyện bằng giọng cô đã ghi">🔊 Pip kể</button><button class="btn" id="lSimon" title="Trò vận động: Pip says, cả lớp đứng lên làm theo">Vận động: Pip says</button><button class="btn" id="lWarm" title="Trò nghe hiểu khởi động: Pip hỏi, cả lớp chỉ hình">Khởi động: nghe – chạm</button><button class="btn go" id="lStart">Xuất phát!</button>
           </div>
         </div>
       </div>
@@ -267,7 +268,9 @@ body.app .tv { width: min(100vw, 177.78vh); border-radius: 0; box-shadow: none; 
 <script src="../tro_choi/chung/kho_tu.js"></script>
 <script src="../tro_choi/chung/cau_mau.js"></script>
 <script src="../tro_choi/chung/giong_co.js"></script>
+<script src="../tro_choi/chung/loi_ke.js"></script>
 <script src="../tro_choi/chung/chant.js"></script>
+<script src="../tro_choi/chung/bai_hat.js"></script>
 <script>
 const F = 1600 / 1672; // toạ độ ảnh bản đồ -> toạ độ thế giới
 const P = (x, y) => ({ x: x * F, y: y * F });
@@ -299,7 +302,7 @@ const STORY = {
  "Assessment": "Thử thách lớn trên đồi! Hai thuyền cùng chèo về đích, nói to từng từ để mang giọt nước cho Cây Thần.",
  "Consolidation": "Chuyến thuyền cuối! Nói to từng từ để gom những giọt nước cuối cùng cho Cây Thần nở hoa."
 };
-const STEPS = i => [['Hát chào', 'Hello song (phím C)', 2], ['Pip kể chuyện', 'Thử thách hôm nay là gì?', 2], ['Học từ', 'Xem hình, nghe mẫu, cả lớp nói theo', 6], ['Trò chơi', GNAME[gameOf(i)] || 'Trò chơi', 10], ['Chant + chào', 'Chant theo unit, Goodbye song', 4]];
+const STEPS = i => [['Hát chào', 'Hello song (phím C)', 2], ['Pip kể chuyện', 'Thử thách hôm nay là gì? (nút 🔊 Pip kể)', 2], ['Học từ', 'Xem hình, nghe mẫu, cả lớp nói theo', 6], ['Trò chơi', GNAME[gameOf(i)] || 'Trò chơi', 10], ['Chant + chào', 'Chant theo unit, Goodbye song', 4]];
 const FRIENDS = PLACES.filter(p => p.friend);
 let PPCT = null, PPCT_LOI = false, cur = 0, pos = 0, stars = 0, helped = new Set(), busy = false, lit = false; // lớp mới: bắt đầu từ tiết 1
 let view = 'follow', tour = null;
@@ -418,6 +421,17 @@ function gameOf(i) {
   for (let t = 0; t < pool.length; t++) { const g = pool[(k - 1 + first + t) % pool.length]; if (!avoid.includes(g)) return GCACHE[i] = g; }
   return GCACHE[i] = pool[0];
 }
+// lời Pip kể bằng giọng cô (trang Giọng cô, tro_choi/chung/loi_ke.js): mã theo vùng hoặc theo trò, giống cách chọn chữ ở storyOf
+const storyKey = i => { if (!window.LOI_KE) return ''; const g = gameOf(i), u = unitOf(i); return g === (GAMES[u] || '').split('/')[2] && STORY[u] ? LOI_KE.maDao(STORE_KEY, u) : GSTORY[g] ? LOI_KE.maTro(g) : LOI_KE.maDao(STORE_KEY, STORY[u] ? u : 'Review'); };
+function pipKe(tuBam) {
+  if (!PPCT) return; const k = storyKey(cur);
+  if (window.GiongCo && GiongCo.has(k)) { try { speechSynthesis.cancel(); } catch (e) {} return GiongCo.play(k, 60000); }
+  if (!tuBam) return;
+  const vi = window.speechSynthesis && speechSynthesis.getVoices().find(v => /^vi/i.test(v.lang));
+  if (vi) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(storyOf(cur)); u.lang = 'vi-VN'; u.voice = vi; u.rate = .95; u.pitch = 1.2; speechSynthesis.speak(u); return; }
+  toast('Cô chưa ghi lời kể này. Vào nút "Giọng cô" trên bản đồ quần đảo để ghi.');
+}
+function pipThoi() { window.GiongCo && GiongCo.stop(); try { speechSynthesis.cancel(); } catch (e) {} }
 const storyOf = i => { const g = gameOf(i), u = unitOf(i); return g === (GAMES[u] || '').split('/')[2] && STORY[u] ? STORY[u] : (GSTORY[g] || STORY[u] || STORY.Review); };
 function hud() {
   const r = PPCT && PPCT[cur];
@@ -519,6 +533,7 @@ function openLesson() {
     $('lMeta2').innerHTML = `<b>Mẫu câu:</b> ${r.cau}<br><b>Hoạt động gợi ý:</b> ${r.hd}`;
     $('lSteps').innerHTML = STEPS(cur).map(([a, b, m]) => `<div class="step"><em>${m} phút</em><b>${a}</b><span>${b}</span></div>`).join('');
     $('ovLesson').hidden = false; $('lStart').focus();
+    if (window.GiongCo) GiongCo.ready.then(() => { if (!$('ovLesson').hidden) pipKe(false); });
   }, 1100);
 }
 function album() {
@@ -654,7 +669,7 @@ function jumpTo(i) {
   toast(`Tới Tuần ${PPCT[i].tuan} · Tiết ${i + 1}: ${PPCT[i].unit}`);
 }
 $('hChip').onclick = openPick; $('pClose').onclick = () => { $('ovPick').hidden = true; };
-function closeAll() { ['ovLesson', 'ovAlbum', 'ovCer', 'ovPick'].forEach(i => $(i).hidden = true); if (!busy) { setPose('idle'); aimView(); } if (pendingWalk) { pendingWalk = false; setTimeout(() => walk(cur + 1), 450); } if (pendingFinale) { pendingFinale = false; setTimeout(openFinale, 500); } }
+function closeAll() { if (!$('ovLesson').hidden) pipThoi(); ['ovLesson', 'ovAlbum', 'ovCer', 'ovPick'].forEach(i => $(i).hidden = true); if (!busy) { setPose('idle'); aimView(); } if (pendingWalk) { pendingWalk = false; setTimeout(() => walk(cur + 1), 450); } if (pendingFinale) { pendingFinale = false; setTimeout(openFinale, 500); } }
 function setView(v) { view = v; $('bView').classList.toggle('on', v !== 'follow'); $('bView').firstChild.textContent = v === 'follow' ? 'Toàn cảnh ' : 'Theo đoàn '; aimView(); }
 function toggleView() { if (tour) stopTour(); setView(view === 'follow' ? 'overview' : 'follow'); }
 
@@ -730,12 +745,15 @@ function chantWords() {
 const CH = n => new URL('../tro_choi/chung/hinh/' + n + '.webp', location.href).href;
 const HELLO = () => [{ t: 'Hello, hello, hello!', img: CH('pip_bay') }, { t: 'How are you?', img: CH('co_anh_vay_tay') }, { t: "I'm fine, thank you!", img: CH('ben_reo') }, { t: 'Hello, Pip! Hello, Ben! Hello, Mia!', img: CH('mia_reo'), wait: 900 }, { t: "Let's play together!", img: CH('pip_reo') }];
 const BYE = () => [{ t: 'Goodbye, goodbye!', img: CH('pip_bay') }, { t: 'See you next time!', img: CH('co_anh_vay_tay') }, { t: 'Bye-bye, Pip! Bye-bye, Ben! Bye-bye, Mia!', img: CH('ben_reo'), wait: 900 }, { t: 'Goodbye, everyone!', img: CH('mia_reo') }];
+// ảnh của một từ trong kho (đường dẫn tính từ thư mục một trò)
+const hinhTu = w => { if (!w || !window.KHO_TU) return ''; const K = KHO_TU.find(W => W.w.toLowerCase() === String(w).toLowerCase()); return !K ? '' : /^data:/.test(K.img) ? K.img : new URL(K.img, new URL('../tro_choi/goi_do_choi/', location.href)).href; };
 function openChant() {
   if (!PPCT || busy || !window.Chant || !window.KHO_TU || !window.CauMau) return;
-  const u = unitOf(cur), list = chantWords(), few = STORE_KEY === 'daohatmam';
+  const u = unitOf(cur), list = chantWords(), few = STORE_KEY === 'daohatmam', bh = window.BAI_HAT && BAI_HAT.chon(u, wordsOf(cur), muaLeHoi());
   Chant.menu('Hát và chant', [
     { label: 'Hello', sub: 'Hát chào đầu giờ', fn: () => Chant.song('Hello song', HELLO()) },
     { label: 'Chant ' + u.replace(/^Unit \d+ /, ''), sub: list.length ? list.slice(0, few ? 4 : 6).map(W => W.w).join(', ') : 'unit này chưa có từ có hình', fn: () => list.length ? Chant.play(list, `Chant ${u}`, w => (CauMau.of(w, u) || {}).a, { max: few ? 4 : 6, rounds: 1 }) : toast('Unit này chưa có từ có hình để chant.') },
+    ...(bh ? [{ label: 'Bài hát: ' + bh.ten, sub: 'Cả lớp vừa hát vừa làm động tác', fn: () => Chant.song(bh.ten, bh.dong.map(([t, w]) => ({ t, img: hinhTu(w) || CH('pip_reo'), wait: 900 }))) }] : []),
     { label: 'Goodbye', sub: 'Hát chào cuối giờ', fn: () => Chant.song('Goodbye song', BYE()) },
   ]);
 }
@@ -743,6 +761,11 @@ $('bChant').onclick = openChant;
 function openPhieu() { save(); location.href = `../phieu/index.html?dao=${STORE_KEY}&tiet=${cur + 1}`; }
 $('bPhieu').onclick = openPhieu;
 const openFinale = () => { if (LOCAL) { save(); location.href = '../ai_cuoi/index.html?dao=dao_hat_mam'; } else toast('Phim ải cuối chạy trên máy dạy.'); };
+$('lKe').onclick = () => pipKe(true);
+$('lSimon').onclick = () => { // trò vận động Pip says (Simon says), xong quay lại đúng tiết này
+  if (!PPCT) return; save(); pipThoi(); const dao = { daohatmam: 'dao_hat_mam', daocauvong: 'dao_cau_vong' }[STORE_KEY] || 'dao_3d';
+  location.href = `../tro_choi/pip_says/index.html?dao=${dao}&unit=${encodeURIComponent(unitOf(cur))}&tu=${encodeURIComponent(gameWords(cur).join(','))}`;
+};
 $('lWarm').onclick = () => { // trò nghe hiểu khởi động (không chấm điểm), xong quay lại đúng tiết này
   if (!PPCT) return; save(); const dao = { daohatmam: 'dao_hat_mam', daocauvong: 'dao_cau_vong' }[STORE_KEY] || 'dao_3d';
   location.href = `../tro_choi/nghe_cham/index.html?dao=${dao}&unit=${encodeURIComponent(unitOf(cur))}&tu=${encodeURIComponent(gameWords(cur).join(','))}`;
