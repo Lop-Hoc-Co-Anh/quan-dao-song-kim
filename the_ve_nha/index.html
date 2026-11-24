@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thẻ mang về nhà</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Thẻ mang về nhà: mỗi bé một thẻ (2 thẻ một trang A4) gồm từ vựng có hình, mẫu câu, gợi ý cho ba mẹ, mã QR nghe phát âm */
+:root { --ink: #1F2D4A; --soft: #56637F; --teal: #14998F; --paper: #FFFDF6; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #DCE7EE; color: var(--ink); font-family: 'Nunito', Arial, sans-serif; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--paper); padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; box-shadow: 0 4px 0 rgba(31, 45, 74, .08); }
+.bar h1 { margin: 0 14px 0 0; font: 800 26px 'Baloo 2'; }
+.bar select, .bar input { font: 700 17px 'Nunito'; border: 2px solid #CBD6E2; border-radius: 10px; padding: 5px 8px; }
+.bar button { font: 800 17px 'Baloo 2'; border: 0; border-radius: 12px; padding: 8px 14px; cursor: pointer; background: #fff; box-shadow: 0 3px 0 rgba(31, 45, 74, .16); }
+.bar button.go { background: var(--teal); color: #fff; }
+.tip { width: 100%; font-size: 14px; color: var(--soft); }
+.pages { padding: 20px 0 60px; }
+.page { width: 210mm; height: 297mm; margin: 0 auto 16px; background: #fff; padding: 8mm; display: flex; flex-direction: column; gap: 6mm; box-shadow: 0 4px 16px rgba(0, 0, 0, .12); }
+.card { flex: 1; border: 1.2mm solid #F5B82E; border-radius: 8mm; padding: 6mm 7mm; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(#FFFDF4, #FFF7DE); }
+.top { display: flex; align-items: center; gap: 4mm; }
+.top h2 { margin: 0; font: 800 9mm/1 'Baloo 2'; flex: 1; } .top h2 small { display: block; font: 700 4mm 'Nunito'; color: var(--soft); margin-top: 1mm; }
+.top .qr { width: 26mm; height: 26mm; } .top .qr img, .top .qr canvas { width: 26mm !important; height: 26mm !important; }
+.qrnote { font: 700 3mm 'Nunito'; color: var(--soft); text-align: center; width: 26mm; }
+.ws { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5mm; margin: 3mm 0; }
+.ws div { background: #fff; border-radius: 4mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border: .4mm solid #EFE3BD; }
+.ws img { height: 17mm; max-width: 100%; object-fit: contain; } .ws b { font: 800 6.2mm 'Baloo 2'; }
+.cau { font: 800 5.4mm 'Baloo 2'; color: #0D7068; margin-top: auto; } .home { font: 600 3.4mm/1.4 'Nunito'; color: var(--ink); margin-top: 1.5mm; }
+@media print { .bar { display: none; } body { background: #fff; } .pages { padding: 0; } .page { margin: 0; box-shadow: none; page-break-after: always; } @page { size: A4; margin: 0; } }
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>Thẻ mang về nhà</h1>
+  <label>Đảo <select id="selDao"></select></label>
+  <label>Unit <select id="selUnit"></select></label>
+  <label>Lớp <input type="text" id="inLop" placeholder="VD: Lớp Mầm Xanh" style="width:170px"></label>
+  <button class="go" id="bPrint">In thẻ (Ctrl + P)</button>
+  <button id="bBack">Về quần đảo</button>
+  <div class="tip">Mỗi bé một thẻ, 2 thẻ một trang A4. Ba mẹ quét mã QR bằng điện thoại để nghe phát âm từng từ (mã QR cần máy có mạng khi in).</div>
+</div>
+<div class="pages" id="pages"></div>
+<script src="../tro_choi/chung/kho_tu.js"></script>
+<script src="../tro_choi/chung/cau_mau.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const WEB = 'https://lop-hoc-co-anh.github.io/quan-dao-song-kim/nghe/index.html'; // trang nghe trên mạng cho điện thoại ba mẹ
+const DAOS = [
+  { key: 'daohatmam', name: 'Đảo Hạt Mầm', book: 'Amanda and Friends 1', ppct: '../dao_hat_mam/ppct_amanda1.json' },
+  { key: 'daocauvong', name: 'Đảo Cầu Vồng', book: 'Amanda and Friends 2', ppct: '../dao_cau_vong/ppct_amanda2.json' },
+  { key: 'daosongkim3d', name: 'Đảo Song Kim', book: 'Amanda and Friends 3', ppct: '../dao_3d/ppct_amanda3.json' },
+];
+const BASE = new URL('../tro_choi/goi_do_choi/', location.href);
+const imgOf = W => /^data:/.test(W.img) ? W.img : new URL(W.img, BASE).href;
+const inKho = w => KHO_TU.find(W => [w, w.replace(/s$/, ''), w.split(' ')[0]].includes(W.w.toLowerCase()));
+let D = DAOS.find(d => d.key === localStorage.getItem('quandao_dang_o')) || DAOS[2], PPCT = [];
+$('selDao').innerHTML = DAOS.map(d => `<option value="${d.key}">${d.name}</option>`).join(''); $('selDao').value = D.key;
+try { const a = JSON.parse(localStorage.getItem('songkim_aicuoi') || '{}'); $('inLop').value = a.lop || ''; } catch (e) {}
+const kids = () => { const k = (localStorage.getItem('trochoi_names') || '').split('\n').map(s => s.replace(/\*+\s*$/, '').trim()).filter(Boolean); return k.length ? k : ['']; };
+function load() { fetch(D.ppct).then(r => r.json()).then(p => { PPCT = p; const us = [...new Set(p.map(r => r.unit))].filter(u => !/review|assessment|consolidation/i.test(u)); $('selUnit').innerHTML = us.map(u => `<option>${esc(u)}</option>`).join('');
+  const st = JSON.parse(localStorage.getItem(D.key) || 'null'), cu = st && PPCT[st.cur] ? PPCT[st.cur].unit : us[0]; if (us.includes(cu)) $('selUnit').value = cu; draw(); }); }
+function draw() {
+  const u = $('selUnit').value, seen = new Set(), ws = [];
+  PPCT.filter(r => r.unit === u).forEach(r => String(r.tu).split(/[;,]/).forEach(w => { const K = inKho(w.trim().toLowerCase()); if (K && !seen.has(K.w) && ws.length < 6 && CauMau.of(K.w, u)) { seen.add(K.w); ws.push(K); } }));
+  const q = CauMau.question(ws.map(W => W.w), u), S = ws.map(W => CauMau.of(W.w, u)).find(x => x && x.q === q), cau = S ? `${S.q} – ${S.a}` : '';
+  const url = `${WEB}?u=${encodeURIComponent(u)}&w=${encodeURIComponent(ws.map(W => W.w).join(','))}`;
+  const card = n => `<div class="card"><div class="top"><h2>${n ? esc(n) + ' học tiếng Anh' : 'Bé học tiếng Anh'}<small>${esc(D.book)} · ${esc(u)}${$('inLop').value ? ' · ' + esc($('inLop').value) : ''}</small></h2><div><div class="qr"></div><div class="qrnote">Quét để nghe</div></div></div>
+    <div class="ws">${ws.map(W => `<div><img src="${imgOf(W)}" alt=""><b>${esc(W.w)}</b></div>`).join('')}</div>
+    ${cau ? `<div class="cau">Mẫu câu: ${esc(cau)}</div>` : ''}
+    <div class="home">Ba mẹ chỉ vào từng hình và hỏi <b>"${esc(q)}"</b>, bé trả lời. Quét mã để nghe rồi cùng bé nói theo 5 phút mỗi ngày. Khen bé thật nhiều nhé!</div></div>`;
+  const ks = kids(), pages = []; for (let i = 0; i < ks.length; i += 2) pages.push(`<div class="page">${card(ks[i])}${ks[i + 1] !== undefined ? card(ks[i + 1]) : ''}</div>`);
+  $('pages').innerHTML = pages.join('');
+  document.querySelectorAll('.qr').forEach(q => { if (window.QRCode) new QRCode(q, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); else q.innerHTML = '<div style="font-size:2.5mm;word-break:break-all">' + esc(url) + '</div>'; });
+}
+$('selDao').onchange = () => { D = DAOS.find(d => d.key === $('selDao').value); load(); };
+$('selUnit').onchange = draw; $('inLop').onchange = draw;
+$('bPrint').onclick = () => print(); $('bBack').onclick = () => location.href = '../quan_dao/index.html';
+load();
+</script>
+</body>
+</html>
