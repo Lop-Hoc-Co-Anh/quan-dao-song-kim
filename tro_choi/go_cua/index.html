@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gõ cửa tìm mèo</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Gõ cửa tìm mèo" – Làng nhà xinh, Unit 1 Home */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.door { position: absolute; pointer-events: none; }
+.door .hole { position: absolute; inset: 0; border-radius: 50% 50% 6px 6px / 34% 34% 6px 6px; overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #FFE9B8 0%, #F4C27A 45%, #8A5428 100%); box-shadow: inset 0 0 26px rgba(60, 30, 10, .65); opacity: 0; }
+.door .hole img { position: absolute; left: 50%; bottom: 6px; width: 92%; transform: translateX(-50%); }
+.door .leaf { position: absolute; inset: 0; border-radius: 50% 50% 6px 6px / 34% 34% 6px 6px; transform-origin: 0 50%; opacity: 0;
+  background: repeating-linear-gradient(90deg, #B8682A 0 30px, #A55B22 30px 33px), #B8682A; box-shadow: inset 0 0 0 6px #8E4E1C, 6px 0 14px rgba(0, 0, 0, .35); }
+.door .leaf::after { content: ""; position: absolute; right: 16px; top: 52%; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFF2A8, #E3A51B 60%, #9C6A0A); }
+.door.knock { animation: knock .12s ease-in-out 6 alternate; }
+@keyframes knock { from { transform: translateX(-2px); } to { transform: translateX(2px); } }
+.pop { position: absolute; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 12px 14px rgba(60, 30, 10, .35)); }
+.got { position: absolute; transform: translate(-50%, -100%); text-align: center; pointer-events: none; }
+.got img { display: block; margin: 0 auto; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .25)); }
+.got span { display: inline-block; margin-top: 2px; background: rgba(255, 253, 246, .95); border-radius: 8px; padding: 1px 7px 3px; font: 800 14px/1.1 var(--display); color: var(--ink); white-space: nowrap; }
+.board { position: absolute; left: 1150px; top: 450px; width: 420px; height: 372px; border-radius: 26px; background: rgba(255, 248, 232, .78); box-shadow: 0 8px 0 rgba(120, 70, 30, .18); }
+.board b { position: absolute; left: 0; right: 0; top: 10px; text-align: center; font: 800 20px/1 var(--display); color: #8E4E1C; }
+.cat { position: absolute; transform: translate(-50%, -100%); pointer-events: none; filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .3)); }
+@media (prefers-reduced-motion: reduce) { .door.knock { animation: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const NUMC = { seven: ['7', '#F2675A'], eight: ['8', '#14998F'], nine: ['9', '#5B5FD6'], ten: ['10', '#E58A12'] };
+function numSvg(w) {
+  const [n, c] = NUMC[w], k = +n, dots = [];
+  for (let i = 0; i < k; i++) { const r = i < 5 ? 0 : 1, cI = i % 5; dots.push(`<circle cx="${70 + cI * 40}" cy="${262 + r * 36}" r="14" fill="${c}"/>`); }
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 320"><text x="150" y="215" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial Black, Arial" font-weight="900" font-size="${n.length > 1 ? 200 : 240}" fill="${c}" stroke="#fff" stroke-width="10" paint-order="stroke">${n}</text>${dots.join('')}</svg>`);
+}
+const WORDS = [
+  { w: 'bedroom', img: H('phong_ngu'), alt: ['bedrooms', 'bed room', 'bad room', 'bedrom'] },
+  { w: 'kitchen', img: H('phong_bep'), alt: ['kitchens', 'chicken', 'kitchin', 'kitten'] },
+  { w: 'bathroom', img: H('phong_tam'), alt: ['bathrooms', 'bath room', 'bathrom', 'bat room'] },
+  { w: 'living room', img: H('phong_khach'), alt: ['livingroom', 'living rooms', 'leaving room', 'living'] },
+  { w: 'seven', img: numSvg('seven'), alt: ['sevens', 'heaven', 'severn'] },
+  { w: 'eight', img: numSvg('eight'), alt: ['eights', 'ate', 'hate', 'eat'] },
+  { w: 'nine', img: numSvg('nine'), alt: ['nines', 'night', 'nein', 'mine'] },
+  { w: 'ten', img: numSvg('ten'), alt: ['tens', 'tan', 'tin'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'daddy', img: H('bo'), alt: ['dad', 'dady', 'daddies', 'teddy'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'mummy', img: H('me'), alt: ['mum', 'mommy', 'mammy', 'mom'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'brother', img: H('anh_trai'), alt: ['brothers', 'bruder', 'brother'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'sister', img: H('em_gai'), alt: ['sisters', 'sista', 'sister'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'grandad', img: H('ong'), alt: ['grandpa', 'grand dad', 'granddad', 'grandfather'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'granny', img: H('ba'), alt: ['grandma', 'grannie', 'grandmother', 'granny'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+  { w: 'baby', img: H('em_be'), alt: ['babies', 'bebe', 'baby'], q: 'Who is this?', vn: 'Ai đây nhỉ?', g: 'family' },
+];
+const ROOMS = ['bedroom', 'kitchen', 'bathroom', 'living room'];
+// ba cửa của ba ngôi nhà trên nền (toạ độ khung 1600x900)
+const DOORS = [{ x: 162, y: 170, w: 162, h: 230 }, { x: 706, y: 166, w: 202, h: 234 }, { x: 1282, y: 184, w: 166, h: 216 }];
+let got = [], pop = null, dIdx = 0;
+
+function slot(n, total) {
+  const cols = total > 6 ? 4 : 3, cw = 400 / cols, row = Math.floor(n / cols), rows = Math.ceil(total / cols);
+  const rh = Math.min(150, 320 / Math.max(2, rows));
+  return { x: 1160 + cw * (n % cols) + cw / 2, y: 500 + rh * (row + 1) - 18, h: Math.min(96, rh - 34) };
+}
+
+TroChoi.run({
+  id: 'go_cua', title: 'Gõ cửa tìm mèo', unit: 'Unit 1 Home', icon: H('thu_meo'), progressLabel: 'cánh cửa',
+  story: 'Bạn mèo con của làng nhà xinh đi lạc rồi! Cô Anh và cả lớp gõ từng cánh cửa. Cửa mở ra căn phòng nào, con số nào, bé đọc đúng thì cả lớp đi tiếp. Gõ hết các cửa là tìm được mèo con.',
+  doneSmall: 'Cả lớp đã gõ hết các cánh cửa', doneTitle: 'Tìm được mèo con rồi!',
+  words: WORDS, defaultWords: ['bedroom', 'kitchen', 'bathroom', 'living room'], guessFirst: true,
+  cardPos: { x: 800, y: 420 }, micPos: { x: 800, y: 700 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_lang.jpg" alt="">
+      ${DOORS.map((d, i) => `<div class="door" id="door${i}" style="left:${d.x}px;top:${d.y}px;width:${d.w}px;height:${d.h}px"><div class="hole"><img alt=""></div><div class="leaf"></div></div>`).join('')}
+      <div class="board"><b>Các phòng đã ghé</b></div><div id="gotBox"></div><div id="popLayer"></div>`;
+    api.sprite('anh', C('co_anh_vay_tay'), 130, 870, 300);
+    api.sprite('ben', C('ben_three_quarter'), 290, 862, 165);
+    api.sprite('mia', C('mia_three_quarter'), 395, 866, 158);
+    api.sprite('pip', C('pip_hoi'), 480, 540, 100, 'bob');
+    api.say('Mèo con trốn ở nhà nào nhỉ? Mình gõ cửa thử nhé!', 30, 430);
+  },
+  onStart(api) {
+    got = []; dIdx = 0; api.$('gotBox').innerHTML = ''; api.$('popLayer').innerHTML = '';
+    DOORS.forEach((_, i) => { const d = api.$('door' + i); d.querySelector('.hole').style.opacity = 0; d.querySelector('.leaf').style.opacity = 0; });
+    const c = api.$('s_cat'); if (c) c.remove();
+  },
+  progress(api) { return [got.length, api.kids.length]; },
+  async onTurn(api, ctx) {
+    const di = ctx.i % DOORS.length, D = DOORS[di], door = api.$('door' + di), hole = door.querySelector('.hole'), leaf = door.querySelector('.leaf');
+    const isRoom = ROOMS.includes(ctx.word.w) || !!ctx.word.q;
+    hole.querySelector('img').src = ctx.word.img; hole.style.opacity = 0; leaf.style.opacity = 1; leaf.style.transform = 'perspective(700px) rotateY(0deg)';
+    api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
+    api.say(`${ctx.kid} ơi, gõ cửa nào! Cốc cốc cốc!`, 30, 430);
+    await api.wait(300);
+    for (let k = 0; k < 3; k++) { api.sfx.thunk(); door.classList.remove('knock'); void door.offsetWidth; door.classList.add('knock'); await api.wait(330); }
+    await api.speak('Knock, knock!', .9);
+    hole.style.opacity = 1;
+    await api.tween(900, (k, e) => { leaf.style.transform = `perspective(700px) rotateY(${-82 * e}deg)`; leaf.style.filter = `brightness(${1 - .35 * e})`; });
+    // hình trong cửa bay ra giữa cho cả lớp nhìn rõ
+    const sx = D.x + D.w / 2, sy = D.y + D.h * .62, tx = 800, ty = 300, h0 = D.w * .8, h1 = isRoom ? 300 : 260;
+    api.$('popLayer').innerHTML = `<img class="pop" id="pop" src="${ctx.word.img}" alt="" style="left:${sx}px;top:${sy}px;height:${h0}px">`;
+    pop = api.$('pop'); api.sfx.pop();
+    await api.tween(800, (k, e) => { pop.style.left = sx + (tx - sx) * e + 'px'; pop.style.top = sy + (ty - sy) * e - Math.sin(Math.PI * k) * 60 + 'px'; pop.style.height = h0 + (h1 - h0) * e + 'px'; });
+    pop.dataset.x = tx; pop.dataset.y = ty; pop.dataset.h = h1;
+    api.pose('anh', C('co_anh_lang_nghe'));
+    api.say(ctx.word.vn || (isRoom ? 'Đây là phòng gì nhỉ?' : 'Số mấy đây các con?'), 30, 430);
+    await api.speak(ctx.word.q || (isRoom ? 'What room is this?' : 'What number is it?'), .9);
+    await api.wait(1400);
+    // thu hình nhỏ lại để thẻ từ hiện ra
+    await api.tween(450, (k, e) => { pop.style.top = ty - 120 * e + 'px'; pop.style.height = h1 - (h1 - 150) * e + 'px'; pop.style.opacity = 1 - e; });
+    dIdx = di;
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
+    api.say(`${praise} ${ctx.kid} giỏi quá!`, 30, 430);
+    const n = got.length, s = slot(n, api.kids.length);
+    const card = api.$('card'), r = card.getBoundingClientRect(), st = api.stage.getBoundingClientRect(), sc = st.width / 1600;
+    const x0 = (r.left + r.width / 2 - st.left) / sc, y0 = (r.top + 100 - st.top) / sc;
+    api.hideCard();
+    api.$('popLayer').innerHTML = `<img class="pop" id="pop" src="${ctx.word.img}" alt="" style="left:${x0}px;top:${y0}px;height:160px">`;
+    pop = api.$('pop');
+    await api.tween(900, (k, e) => { pop.style.left = x0 + (s.x - x0) * e + 'px'; pop.style.top = y0 + (s.y - s.h / 2 - y0) * e - Math.sin(Math.PI * k) * 120 + 'px'; pop.style.height = 160 + (s.h - 160) * e + 'px'; });
+    api.$('popLayer').innerHTML = ''; api.sparkle(s.x, s.y - s.h / 2);
+    got.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'got'; d.style.left = s.x + 'px'; d.style.top = s.y + 18 + 'px';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${s.h}px"><span>${api.esc(ctx.kid)}</span>`; api.$('gotBox').appendChild(d);
+    await closeDoor(api, dIdx);
+    api.pose('ben', C('ben_three_quarter'));
+  },
+  async onSkip(api) { api.$('popLayer').innerHTML = ''; await closeDoor(api, dIdx); },
+  async onFinish(api) {
+    // mèo con nhảy ra từ cửa giữa
+    const D = DOORS[1], door = api.$('door1'), hole = door.querySelector('.hole'), leaf = door.querySelector('.leaf');
+    api.say('Nghe tiếng meo meo ở nhà giữa kìa!', 30, 430); api.pose('anh', C('co_anh_chi_duong'));
+    hole.querySelector('img').src = ''; hole.style.opacity = 1; leaf.style.opacity = 1;
+    for (let k = 0; k < 3; k++) { api.sfx.thunk(); await api.wait(300); }
+    await api.tween(800, (k, e) => { leaf.style.transform = `perspective(700px) rotateY(${-82 * e}deg)`; });
+    const cat = api.sprite('cat', H('thu_meo'), D.x + D.w / 2, D.y + D.h - 6, 90, 'cat');
+    api.sfx.boing(); await api.speak('Meow!', 1.1);
+    const x0 = D.x + D.w / 2, y0 = D.y + D.h - 6, x1 = 560, y1 = 870;
+    await api.tween(1300, (k, e) => { cat.style.left = x0 + (x1 - x0) * e + 'px'; cat.style.top = y0 + (y1 - y0) * e - Math.sin(Math.PI * k) * 160 + 'px'; cat.style.height = 90 + 50 * e + 'px'; });
+    api.say('Tìm được mèo con rồi! Cả lớp giỏi quá!', 30, 430);
+    api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('mia', C('mia_reo')); api.pose('pip', C('pip_reo'));
+    api.sparkle(560, 760, 40);
+    await api.wait(1800);
+  },
+});
+
+async function closeDoor(api, di) {
+  const door = api.$('door' + di), hole = door.querySelector('.hole'), leaf = door.querySelector('.leaf');
+  if (!+getComputedStyle(leaf).opacity) return;
+  await api.tween(500, (k, e) => { leaf.style.transform = `perspective(700px) rotateY(${-82 * (1 - e)}deg)`; leaf.style.filter = `brightness(${.65 + .35 * e})`; });
+  hole.style.opacity = 0; leaf.style.opacity = 0;
+}
+</script>
+</body>
+</html>
