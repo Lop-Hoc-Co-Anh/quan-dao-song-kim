@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đêm hội hải đăng</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Ải cuối Đảo Song Kim: phim "Đêm hội hải đăng" + bảng vinh danh, ghi được thành video */
+:root { --ink: #1F2D4A; --gold: #F5B82E; --teal: #14998F; --coral: #F2675A; --paper: #FFFDF6; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #050A1C; overflow: hidden; font-family: 'Nunito', Arial, sans-serif; color: var(--ink); }
+canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #050A1C; }
+.ov { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, rgba(40, 60, 120, .75), rgba(5, 10, 28, .92)); z-index: 5; }
+.ov[hidden] { display: none; }
+.panel { width: min(1080px, 94vw); max-height: 94vh; overflow: auto; background: var(--paper); border-radius: 28px; padding: 26px 32px 24px; box-shadow: 0 18px 60px rgba(0, 0, 0, .45); }
+h1 { margin: 0 0 4px; font: 800 40px/1.1 'Baloo 2', sans-serif; }
+h1 small { display: block; font: 800 15px/1.4 'Nunito', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); }
+p { margin: 6px 0 14px; font-size: 17px; line-height: 1.5; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+label.t { display: block; font: 800 15px/1.3 'Nunito', sans-serif; margin: 0 0 6px; }
+input[type=text], textarea { width: 100%; font: 700 18px/1.4 'Nunito', sans-serif; border: 2px solid #D5DCE6; border-radius: 14px; padding: 8px 12px; color: var(--ink); background: #fff; }
+textarea { height: 230px; resize: vertical; }
+.opt { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-top: 12px; }
+.row { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
+.note { margin-right: auto; font-size: 14px; color: #5A6680; max-width: 520px; }
+button { font: 800 22px/1 'Baloo 2', sans-serif; border: 0; border-radius: 16px; padding: 14px 24px 16px; cursor: pointer; background: var(--teal); color: #fff; box-shadow: 0 5px 0 #0D7068; }
+button.sec { background: #E6EBF2; color: var(--ink); box-shadow: 0 5px 0 #C3CCD9; }
+button.gold { background: var(--gold); color: var(--ink); box-shadow: 0 5px 0 #C08A12; }
+button:focus-visible { outline: 4px solid #5B5FD6; outline-offset: 3px; }
+.rec { position: absolute; right: 18px; top: 14px; z-index: 6; background: rgba(220, 40, 40, .9); color: #fff; font: 800 16px/1 'Nunito', sans-serif; padding: 8px 14px 9px; border-radius: 999px; }
+.rec[hidden] { display: none; }
+.hint { position: absolute; left: 18px; bottom: 12px; z-index: 6; color: rgba(255, 255, 255, .45); font: 700 13px/1 'Nunito', sans-serif; }
+.stat { font-size: 14px; color: #5A6680; margin-top: 6px; }
+</style>
+</head>
+<body>
+<canvas id="cv" width="1920" height="1080" aria-label="Phim ải cuối Đảo Song Kim"></canvas>
+<div class="rec" id="rec" hidden>● Đang ghi video</div>
+<div class="hint" id="hint" hidden>Esc: dừng</div>
+
+<div class="ov" id="ovSetup">
+  <div class="panel">
+    <h1><small>Đảo Song Kim · Ải cuối</small>Đêm hội hải đăng</h1>
+    <p>Cả lớp mang 70 viên đá sáng từ Trại Song Kim lên thắp ngọn hải đăng, rồi xem <b>bảng vinh danh</b> có tên từng bé. Bấm <b>Ghi video</b> để vừa chiếu vừa lưu thành file video gửi phụ huynh (file nằm trong thư mục Downloads).</p>
+    <div class="grid">
+      <div>
+        <label class="t" for="lop">Tên lớp</label><input type="text" id="lop" placeholder="VD: Lớp Mầm Xanh">
+        <label class="t" for="nam" style="margin-top:12px">Khóa / năm học</label><input type="text" id="nam">
+        <label class="opt"><input type="checkbox" id="optCount" checked> Hiện lời khen dưới tên mỗi bé</label>
+        <div class="stat">Muốn khen riêng: viết sau tên, cách bằng dấu |, VD <b>Bé An | Bạn chào to nhất</b>. Không viết thì máy chọn lời khen chung.</div>
+        <div class="stat" id="stat"></div>
+      </div>
+      <div><label class="t" for="names">Danh sách các bé (mỗi dòng một tên)</label><textarea id="names" spellcheck="false"></textarea></div>
+    </div>
+    <div class="row"><span class="note">Video ghi theo thời gian thật (khoảng 1 phút). Thu nhỏ cửa sổ thì phim tạm dừng, mở lại sẽ chạy tiếp.</span>
+      <button class="sec" id="bBack">Về đảo</button><button class="gold" id="bRec">Ghi video</button><button id="bPlay">Chiếu ải cuối</button></div>
+  </div>
+</div>
+<div class="ov" id="ovEnd" hidden>
+  <div class="panel" style="width:min(720px,94vw);text-align:center">
+    <h1><small>Ải cuối hoàn thành</small>Đảo Song Kim bừng sáng!</h1>
+    <p id="endMsg">Chúc mừng cả lớp!</p>
+    <div class="row" style="justify-content:center"><button class="sec" id="bAgain">Chiếu lại</button><button id="bSetup">Đổi thông tin</button><button class="sec" id="bBack2">Về đảo</button></div>
+  </div>
+</div>
+
+<script src="dao_moi.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const cv = $('cv'), W = 1920, H = 1080; let g = cv.getContext('2d');
+const fitCv = () => { const k = Math.min(innerWidth / W, innerHeight / H); cv.style.width = W * k + 'px'; cv.style.height = H * k + 'px'; };
+addEventListener('resize', fitCv); fitCv();
+const HD = '../dao_3d/hinh/', TH = '../tro_choi/hinh/', CH = '../tro_choi/chung/hinh/';
+const IMGS = { map: HD + 'ban_do_dao.jpg', gem: HD + 'da_phat_sang.webp', chestFull: HD + 'ruong_day.webp', lhOff: HD + 'hai_dang_tat.webp', lhMid: HD + 'hai_dang_sang_vua.webp', lhOn: HD + 'hai_dang_sang_ruc.webp',
+  anh: HD + 'co_anh_reo.webp', anhVay: HD + 'co_anh_vay_tay.webp', anhChi: HD + 'co_anh_chi_duong.webp', ben: HD + 'ben_reo.webp', mia: HD + 'mia_reo.webp', benF: HD + 'ben_front.webp', miaF: HD + 'mia_front.webp',
+  pip: HD + 'pip_bay.webp', pipReo: HD + 'pip_reo.webp', pipSang: HD + 'pip_da_sang.webp', fire: HD + 'lua_trai.webp', tent: HD + 'leu_trai.webp', flag: HD + 'cot_co_do.webp',
+  meo: HD + 'thu_meo.webp', gau: HD + 'thu_gau.webp', cho: HD + 'thu_cho.webp', cuu: HD + 'thu_cuu.webp', sutu: HD + 'thu_su_tu.webp', khi: HD + 'thu_khi.webp', chim: HD + 'thu_chim.webp', rua: HD + 'thu_rua.webp' };
+if (window.ISL) Object.assign(IMGS, ISL.imgs); // phim ải cuối của Đảo Hạt Mầm / Đảo Cầu Vồng
+const IM = {};
+const loaded = Promise.all(Object.entries(IMGS).map(([k, src]) => new Promise(r => { const im = new Image(); im.onload = r; im.onerror = () => { console.error('thiếu ảnh', src); r(); }; im.src = src; IM[k] = im; })))
+  .then(() => document.fonts.load('800 60px "Baloo 2"').catch(() => {}));
+
+// ---------- tiện ích ----------
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k;
+const ss = k => { k = clamp(k); return k * k * (3 - 2 * k); }, seg = (t, a, b) => clamp((t - a) / (b - a));
+const eout = k => 1 - Math.pow(1 - clamp(k), 3), back = k => { k = clamp(k); const c = 1.7; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+const rnd = s => { const x = Math.sin(s * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+function spr(n, x, y, h, o = {}) { const im = IM[n]; if (!im || !im.width) return; const w = h * im.width / im.height; g.save(); g.globalAlpha *= (o.al ?? 1); g.translate(x, y); if (o.rot) g.rotate(o.rot); g.scale(o.flip ? -1 : 1, 1); g.drawImage(im, -w / 2, -h, w, h); g.restore(); } // (x,y) = giữa chân
+function text(s, x, y, size, fill, stroke, o = {}) { g.save(); g.globalAlpha *= (o.al ?? 1); g.translate(x, y); if (o.k != null) g.scale(o.k, o.k); g.font = `${o.w || 800} ${size}px "Baloo 2", Arial, sans-serif`; g.textAlign = o.align || 'center'; g.textBaseline = 'middle'; if (stroke) { g.lineJoin = 'round'; g.lineWidth = o.lw || size * .16; g.strokeStyle = stroke; g.strokeText(s, 0, 0); } g.fillStyle = fill; g.fillText(s, 0, 0); g.restore(); }
+function star(x, y, r, col, rot = 0) { g.save(); g.translate(x, y); g.rotate(rot); g.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); g.fillStyle = col; g.fill(); g.restore(); }
+function glow(x, y, r, col, al = 1) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col.replace('A', al)); gr.addColorStop(1, col.replace('A', 0)); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
+function rrect(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+
+// ---------- toạ độ trên ảnh bản đồ (3344 x 1882) ----------
+const MAPW = 3344, MAPH = 1882;
+const LAMP = { x: 420, y: 146 }, CHEST = { x: 1885, y: 1046 }, CAMP = { x: 1620, y: 1032 };
+const ROUTE = [[230, 724], [300, 700], [400, 700], [500, 708], [600, 732], [700, 745], [800, 742], [900, 748], [1000, 737], [1100, 722], [1200, 705], [1310, 692], [1410, 650], [1462, 588], [1466, 528], [1432, 472], [1372, 437], [1350, 392], [1374, 342], [1386, 296], [1322, 262], [1200, 246], [1100, 243], [1000, 250], [900, 252], [800, 254], [700, 242], [600, 238], [500, 231], [420, 234], [340, 236], [282, 216], [236, 202]].map(([x, y]) => ({ x: x * 2, y: y * 2 }));
+let cam = { x: MAPW / 2, y: MAPH / 2, z: W / MAPW };
+function setCam(x, y, z) { z = Math.max(z, W / MAPW); x = clamp(x, W / 2 / z, MAPW - W / 2 / z); y = clamp(y, H / 2 / z, MAPH - H / 2 / z); cam = { x, y, z }; }
+const toS = p => ({ x: (p.x - cam.x) * cam.z + W / 2, y: (p.y - cam.y) * cam.z + H / 2 });
+function camKeys(t, keys) { let i = 0; while (i < keys.length - 2 && t > keys[i + 1][0]) i++; const [t0, x0, y0, z0] = keys[i], [t1, x1, y1, z1] = keys[i + 1]; const k = ss(seg(t, t0, t1)); setCam(lerp(x0, x1, k), lerp(y0, y1, k), Math.exp(lerp(Math.log(z0), Math.log(z1), k))); }
+function drawMap(night, lights) {
+  g.setTransform(cam.z, 0, 0, cam.z, W / 2 - cam.x * cam.z, H / 2 - cam.y * cam.z);
+  g.drawImage(IM.map, 0, 0);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  if (night > 0) { // màn đêm, khoét sáng quanh nguồn sáng
+    const off = darkBuf(); const o = off.getContext('2d'); o.globalCompositeOperation = 'source-over'; o.clearRect(0, 0, W, H);
+    o.fillStyle = `rgba(8,16,52,${.72 * night})`; o.fillRect(0, 0, W, H); o.globalCompositeOperation = 'destination-out';
+    lights.forEach(L => { const s = toS(L), r = L.r * cam.z; const gr = o.createRadialGradient(s.x, s.y, 0, s.x, s.y, r); gr.addColorStop(0, `rgba(0,0,0,${L.a})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); o.fillStyle = gr; o.fillRect(s.x - r, s.y - r, r * 2, r * 2); });
+    g.drawImage(off, 0, 0);
+    g.globalCompositeOperation = 'lighter'; lights.forEach(L => { if (!L.col) return; const s = toS(L); glow(s.x, s.y, L.r * cam.z * .55, L.col, L.a * .5); }); g.globalCompositeOperation = 'source-over';
+  }
+}
+let _db = null; const darkBuf = () => _db || (_db = Object.assign(document.createElement('canvas'), { width: W, height: H }));
+function campOnMap(t, full = 1) { // trại Song Kim vẽ lên bản đồ: lều, cờ đỏ sao vàng, lửa trại, rương
+  const at = (n, x, y, h, o) => { const p = toS({ x, y }); spr(n, p.x, p.y, h * cam.z, o); };
+  at('tent', CAMP.x - 150, CAMP.y + 10, 190); at('flag', CAMP.x + 60, CAMP.y - 40, 240);
+  at('fire', CAMP.x + 40, CAMP.y + 70, 80 * (1 + .06 * Math.sin(t * 13)));
+  at('chestFull', CHEST.x, CHEST.y + 40, 120 * (.75 + .25 * full));
+}
+function skyStars(t, al) { for (let i = 0; i < 90; i++) { const x = rnd(i) * W, y = rnd(i + 99) * H * .9, tw = .5 + .5 * Math.sin(t * (1 + rnd(i + 7) * 2) + i); g.globalAlpha = al * tw * .9; g.fillStyle = '#FFF6D0'; g.fillRect(x, y, 2 + (i % 3), 2 + (i % 3)); } g.globalAlpha = 1; }
+// pháo hoa: tính thẳng theo thời gian, ghi video lúc nào cũng giống nhau
+function fireworks(t, list) {
+  g.save(); g.globalCompositeOperation = 'lighter';
+  list.forEach(([t0, x, y, hue, n = 46]) => {
+    const u = t - t0; if (u < -0.8 || u > 2.4) return;
+    if (u < 0) { const k = u / -0.8; g.fillStyle = `hsla(${hue},100%,75%,.9)`; g.beginPath(); g.arc(x + 6 * Math.sin(u * 20), y + 420 * k * k, 5, 0, 7); g.fill(); return; }
+    glow(x, y, 160 * clamp(1 - u * 2), `hsla(${hue},100%,80%,A)`, .5);
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + rnd(t0 + i) * .2, v = 260 + rnd(i + t0 * 3) * 140, px = x + Math.cos(a) * v * eout(u / 1.6), py = y + Math.sin(a) * v * eout(u / 1.6) + 60 * u * u; const al = clamp(1 - u / 2.2); g.fillStyle = `hsla(${hue + (i % 3) * 20},100%,${65 + (i % 2) * 15}%,${al})`; g.beginPath(); g.arc(px, py, 4.5 * (1 - u / 3), 0, 7); g.fill(); }
+  });
+  g.restore();
+}
+function beam(x, y, t, len, al, spin = .9) { // chùm sáng hải đăng quay
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const off of [0, Math.PI]) { const a = t * spin + off, w = .2; const gr = g.createRadialGradient(x, y, 0, x, y, len); gr.addColorStop(0, `rgba(255,245,190,${.55 * al})`); gr.addColorStop(1, 'rgba(255,245,190,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(x, y); g.arc(x, y, len, a - w, a + w); g.closePath(); g.fill(); }
+  glow(x, y, len * .22, 'rgba(255,240,170,A)', al); g.restore();
+}
+
+// ---------- dữ liệu lớp ----------
+let KIDS = [], STATS = {}, CFG = { lop: '', nam: '', khen: true };
+// lời khen chung (không so sánh, không đếm điểm); cô có thể viết lời khen riêng sau tên: "Bé An | Bạn chào to nhất"
+const KHEN = ['Đọc to và rõ ràng', 'Hăng hái giơ tay', 'Chăm chỉ, đi học đều', 'Hay giúp đỡ bạn', 'Luôn tươi cười', 'Nhớ từ thật nhanh', 'Mạnh dạn, tự tin', 'Lắng nghe rất giỏi', 'Vận động thật vui', 'Kiên trì cố gắng'];
+function loadData() {
+  let names = 'Bé An\nBé Bin\nBé Na\nBé Tôm\nBé Su\nBé Bơ\nBé Mít\nBé Cốm';
+  try { names = localStorage.getItem('trochoi_names') || names; STATS = JSON.parse(localStorage.getItem('songkim_vinhdanh') || '{}'); Object.assign(CFG, JSON.parse(localStorage.getItem('songkim_aicuoi') || '{}')); } catch (e) {}
+  const y = new Date().getFullYear(), m = new Date().getMonth();
+  $('names').value = CFG.names || names; $('lop').value = CFG.lop || ''; $('nam').value = CFG.nam || `Amanda and Friends 3 · Năm học ${m >= 7 ? y : y - 1}–${m >= 7 ? y + 1 : y}`; $('optCount').checked = CFG.khen !== false;
+  const n = Object.keys(STATS).length; $('stat').textContent = n ? `Máy đã ghi kết quả trò chơi của ${n} bé.` : 'Chưa có kết quả trò chơi nào được ghi, bảng vinh danh sẽ chỉ hiện tên.';
+}
+function readForm(keep) {
+  CFG = { lop: $('lop').value.trim(), nam: $('nam').value.trim(), khen: $('optCount').checked, names: $('names').value };
+  if (keep) try { localStorage.setItem('songkim_aicuoi', JSON.stringify(CFG)); } catch (e) {}
+  KIDS = $('names').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 24).map((line, i) => { const [name, rieng] = line.split('|').map(x => x.trim()); return { name, khen: rieng || KHEN[i % KHEN.length] }; });
+}
+
+// ---------- kịch bản phim ----------
+let T = {};
+function plan() {
+  const n = Math.max(1, KIDS.length), per = n > 16 ? .38 : .5;
+  T = { s1: 0, s2: 6, s3: 11.5, gem0: 12.6, gemGap: .14, s4: 0, s5: 0, s6: 0, s7: 0, end: 0 };
+  T.gemEnd = T.gem0 + 69 * T.gemGap + 1.6; T.s4 = T.gemEnd + .4; T.ign = T.s4 + 2.2; T.s5 = T.s4 + 8.5; T.s6 = T.s5 + 6; T.per = per;
+  T.boardIn = T.s6 + 2.2; T.s7 = T.boardIn + n * per + 5.5; T.end = T.s7 + 9;
+  T.fw4 = [0, .5, 1.1, 1.6, 2.4, 3.1, 3.7, 4.5].map((d, i) => [T.ign + .6 + d, 300 + rnd(i) * 1320, 160 + rnd(i + 5) * 260, (i * 47) % 360]);
+  T.fw5 = [0, .7, 1.4, 2.1, 2.9, 3.6, 4.4].map((d, i) => [T.s5 + .4 + d, 260 + rnd(i + 20) * 1400, 140 + rnd(i + 30) * 300, (i * 61 + 30) % 360]);
+  T.fw7 = [0, .6, 1.3, 2, 2.6, 3.4, 4.1, 4.9, 5.6, 6.3].map((d, i) => [T.s7 + .5 + d, 200 + rnd(i + 40) * 1520, 120 + rnd(i + 50) * 280, (i * 53 + 10) % 360]);
+}
+const gemsArrived = t => clamp(Math.floor((t - T.gem0 - 1.6) / T.gemGap) + 1, 0, 70);
+const camp = () => ({ x: CHEST.x, y: CHEST.y });
+function gemPos(i, t) { const t0 = T.gem0 + i * T.gemGap, u = (t - t0) / 1.6; if (u < 0 || u > 1) return null; const e = ss(u), a = CHEST, b = LAMP, cx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - 110; const x = (1 - e) * (1 - e) * a.x + 2 * (1 - e) * e * cx + e * e * b.x, y = (1 - e) * (1 - e) * (a.y - 40) + 2 * (1 - e) * e * cy + e * e * b.y; return { x, y, u }; }
+
+function sceneNightIsland(t, d) { // S1: hoàng hôn -> đêm, cả đảo
+  camKeys(t, [[0, 1672, 941, .58], [d, 1700, 960, .66]]);
+  const night = ss(seg(t, .5, 4.5)); drawMap(night, [{ x: CAMP.x, y: CAMP.y, r: 260, a: .9, col: 'rgba(255,170,80,A)' }]); campOnMap(t);
+  g.fillStyle = `rgba(255,140,60,${.18 * (1 - night)})`; g.fillRect(0, 0, W, H);
+  skyStars(t, night * .9);
+  const k = back(seg(t, 1, 1.6)); text('Đêm hội hải đăng', W / 2, 420, 150, '#FFD84D', '#7A3A10', { k, al: clamp(seg(t, 1, 1.3)) * clamp((d - .3 - t) / .5) });
+  text(CFG.lop ? `${CFG.lop} · Đảo Song Kim` : 'Đảo Song Kim', W / 2, 560, 60, '#FFFFFF', '#1F2D4A', { al: clamp(seg(t, 1.8, 2.3)) * clamp((d - .3 - t) / .5) });
+}
+function sceneCamp(t, d) { // S2: trại Song Kim, rương đầy đá
+  camKeys(t, [[0, CAMP.x + 120, CAMP.y - 40, 1.3], [d, CAMP.x + 160, CAMP.y - 30, 1.55]]);
+  drawMap(1, [{ x: CAMP.x, y: CAMP.y, r: 420, a: .95, col: 'rgba(255,170,80,A)' }, { x: CHEST.x, y: CHEST.y, r: 300, a: .9, col: 'rgba(255,220,110,A)' }]);
+  g.fillStyle = 'rgba(8,16,52,.25)'; g.fillRect(0, 0, W, H); skyStars(t, .5);
+  // tiền cảnh: rương sáng, Cô Anh, Ben, Mia, Pip
+  const flick = 1 + .05 * Math.sin(t * 13) + .03 * Math.sin(t * 29);
+  glow(1000, 820, 420 * flick, 'rgba(255,200,90,A)', .55);
+  spr('chestFull', 1000, 960, 330 * back(seg(t, .2, .9)));
+  for (let i = 0; i < 10; i++) { const a = t * 1.3 + i * .63, r = 210 + 30 * Math.sin(t * 2 + i); star(1000 + Math.cos(a) * r, 760 + Math.sin(a) * r * .45, 9 + (i % 3) * 3, '#FFE9A0', t * 2 + i); }
+  spr('anhChi', 420, 1040, 640 * eout(seg(t, .4, 1.1)));
+  spr('benF', 1460, 1040, 470 * eout(seg(t, .6, 1.3)));
+  spr('miaF', 1700, 1040, 460 * eout(seg(t, .7, 1.4)));
+  spr('pipSang', 1530, 380 + 18 * Math.sin(t * 3), 230 * eout(seg(t, .9, 1.5)));
+  cap(t, d, 'Rương ở Trại Song Kim đã đầy 70 viên đá sáng!', 1.2);
+}
+function sceneGems(t, d) { // S3: dòng đá sáng bay từ trại lên hải đăng
+  const tt = T.s3 + t, n = gemsArrived(tt);
+  camKeys(t, [[0, CHEST.x - 100, CHEST.y - 160, 1.0], [2.6, 1672, 941, .574], [d, 1672, 941, .574]]); // lùi xa thấy toàn cảnh đảo
+  const lk = n / 70;
+  drawMap(1, [{ x: CAMP.x, y: CAMP.y, r: 380, a: .9, col: 'rgba(255,170,80,A)' }, { x: CHEST.x, y: CHEST.y, r: 260 * (1 - lk * .6), a: .9, col: 'rgba(255,220,110,A)' }, { x: LAMP.x, y: LAMP.y, r: 120 + 520 * lk, a: .5 + .5 * lk, col: 'rgba(255,235,150,A)' }]); campOnMap(t, 1 - lk);
+  skyStars(t, .55);
+  // vệt và đá
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 70; i++) { const p = gemPos(i, tt); if (!p) continue; const s = toS(p), sz = Math.max(34, 60 * cam.z); glow(s.x, s.y, sz * 1.6, 'rgba(255,230,120,A)', .55); for (let k = 1; k < 6; k++) { const q = gemPos(i, tt - k * .05); if (!q) break; const sq = toS(q); g.fillStyle = `rgba(255,240,170,${.35 - k * .06})`; g.beginPath(); g.arc(sq.x, sq.y, sz * (.35 - k * .05), 0, 7); g.fill(); } }
+  g.restore();
+  for (let i = 0; i < 70; i++) { const p = gemPos(i, tt); if (!p) continue; const s = toS(p), sz = Math.max(34, 60 * cam.z); g.save(); g.translate(s.x, s.y); g.rotate(p.u * 6); g.drawImage(IM.gem, -sz / 2, -sz / 2, sz, sz); g.restore(); }
+  const L = toS(LAMP); beamIf(L, tt, lk);
+  // bộ đếm
+  g.fillStyle = 'rgba(10,18,50,.7)'; rrect(W - 470, 36, 430, 110, 30); g.fill(); g.drawImage(IM.gem, W - 450, 50, 82, 80);
+  text(`${n} / 70`, W - 230, 92, 70, '#FFD84D', '#5A3A06', { k: 1 + .08 * Math.exp(-((tt - T.gem0 - 1.6) % T.gemGap) * 20) });
+  cap(t, d, n < 70 ? 'Từng viên đá sáng bay lên ngọn hải đăng…' : 'Đủ 70 viên rồi!', .6);
+}
+function beamIf(L, tt, lk) { if (lk > .2) { g.save(); g.globalCompositeOperation = 'lighter'; glow(L.x, L.y, 80 + 160 * lk * cam.z, 'rgba(255,240,170,A)', .4 + .5 * lk); g.restore(); } }
+function sceneIgnite(t, d) { // S4: cảnh cận hải đăng bừng sáng
+  const tt = T.s4 + t, ig = T.ign - T.s4, on = ss(seg(t, ig, ig + .4));
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#060B24'); sky.addColorStop(.62, '#17245A'); sky.addColorStop(.63, '#0E3B5C'); sky.addColorStop(1, '#06223A'); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  skyStars(t, 1); g.fillStyle = '#FFF4D0'; g.beginPath(); g.arc(1600, 190, 70, 0, 7); g.fill(); g.fillStyle = '#17245A'; g.beginPath(); g.arc(1630, 175, 62, 0, 7); g.fill();
+  for (let i = 0; i < 26; i++) { const y = 690 + i * 15, x = (i * 173 + t * 40 * (1 + i % 3)) % (W + 200) - 100; g.fillStyle = `rgba(150,210,255,${.08 + .05 * (i % 2)})`; g.fillRect(x, y, 160 + (i % 4) * 40, 3); }
+  // đảo nhỏ và hải đăng
+  g.fillStyle = '#123A2A'; g.beginPath(); g.ellipse(960, 1010, 620, 190, 0, Math.PI, 0); g.fill(); g.fillStyle = '#1D5A3C'; g.beginPath(); g.ellipse(960, 1020, 560, 150, 0, Math.PI, 0); g.fill();
+  const lx = 960, base = 930, lh = 640, lampY = base - lh * .8;
+  if (on > 0) beam(lx, lampY, tt * 1.1, 1500, on);
+  spr(on > .5 ? 'lhOn' : 'lhOff', lx, base, lh); if (on > 0 && on < 1) spr('lhOn', lx, base, lh, { al: on });
+  if (on > 0) { g.save(); g.globalCompositeOperation = 'lighter'; glow(lx, lampY, 260 + 40 * Math.sin(tt * 5), 'rgba(255,240,170,A)', on); g.restore(); }
+  // đá sáng bay vào đèn trước khi bật
+  for (let i = 0; i < 12; i++) { const u = seg(t, i * .14, i * .14 + .9); if (u <= 0 || u >= 1) continue; const a = i * 2.1, r = 600 * (1 - ss(u)); g.drawImage(IM.gem, lx + Math.cos(a) * r - 26, lampY + Math.sin(a) * r * .6 - 26, 52, 52); }
+  const fl = clamp(1 - Math.abs(t - ig - .15) / .35); if (fl > 0) { g.fillStyle = `rgba(255,255,240,${fl * .85})`; g.fillRect(0, 0, W, H); }
+  fireworks(tt, T.fw4);
+  // nhân vật reo
+  const ck = eout(seg(t, ig + .5, ig + 1.3));
+  spr('anh', 300, 1080 + 40 * (1 - ck), 560 * ck); spr('ben', 1560, 1085 - 30 * Math.abs(Math.sin(t * 5)) * ck, 430 * ck); spr('mia', 1780, 1085 - 30 * Math.abs(Math.sin(t * 5 + 1)) * ck, 420 * ck);
+  spr('pipReo', 560, 330 + 20 * Math.sin(t * 3), 200 * ck);
+  text('Hải đăng bừng sáng!', W / 2, 140, 120, '#FFD84D', '#7A3A10', { k: back(seg(t, ig + .6, ig + 1.2)), al: clamp(seg(t, ig + .6, ig + .8)) });
+}
+function sceneLitIsland(t, d) { // S5: cả đảo sáng đèn, các bạn thú ra mừng
+  const tt = T.s5 + t;
+  camKeys(t, [[0, 900, 600, .85], [d, 1672, 941, .6]]);
+  const lights = [{ x: LAMP.x, y: LAMP.y, r: 900, a: 1, col: 'rgba(255,235,150,A)' }, { x: CAMP.x, y: CAMP.y, r: 380, a: .9, col: 'rgba(255,170,80,A)' }];
+  ROUTE.forEach((p, i) => { const k = seg(t, i * .07, i * .07 + .4); if (k > 0) lights.push({ x: p.x, y: p.y, r: 130 * k, a: .85, col: 'rgba(255,225,140,A)' }); });
+  drawMap(1, lights); campOnMap(t, 0);
+  const L = toS(LAMP); beam(L.x, L.y, tt * 1.1, 1700 * cam.z, 1);
+  skyStars(t, .7); fireworks(tt, T.fw5);
+  const fr = ['meo', 'gau', 'cho', 'cuu', 'sutu', 'khi', 'chim', 'rua'];
+  fr.forEach((n, i) => { const k = back(seg(t, 1 + i * .25, 1.5 + i * .25)); if (k <= 0) return; const x = 330 + i * 180, y = 1060 - 26 * Math.abs(Math.sin(t * 5 + i)); g.save(); g.globalCompositeOperation = 'lighter'; glow(x, y - 60, 120, 'rgba(255,220,140,A)', .25); g.restore(); spr(n, x, y, 150 * k); });
+  cap(t, d, 'Cả Đảo Song Kim bừng sáng! Các bạn thú cùng ra mừng!', .8);
+}
+function sceneBoard(t, d) { // S6: bảng vinh danh
+  const tt = T.s6 + t, bg = g.createRadialGradient(W / 2, 380, 100, W / 2, 540, 1200); bg.addColorStop(0, '#2B3F8F'); bg.addColorStop(1, '#070D28'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 14; i++) { const a = t * .12 + i * Math.PI / 7; g.fillStyle = 'rgba(255,215,120,.05)'; g.beginPath(); g.moveTo(W / 2, 330); g.arc(W / 2, 330, 1500, a, a + .1); g.fill(); } g.restore();
+  skyStars(t, .6);
+  const fk = eout(seg(t, 0, .8));
+  g.save(); g.globalAlpha = fk; g.lineWidth = 10; g.strokeStyle = '#F5B82E'; rrect(80, 70, W - 160, H - 140, 46); g.stroke(); g.lineWidth = 3; g.strokeStyle = 'rgba(255,230,160,.7)'; rrect(100, 90, W - 200, H - 180, 38); g.stroke(); g.restore();
+  // ruy băng tiêu đề
+  const rk = back(seg(t, .3, .9));
+  g.save(); g.translate(W / 2, 170); g.scale(rk, rk); g.fillStyle = '#C0392B'; g.beginPath(); g.moveTo(-520, -60); g.lineTo(520, -60); g.lineTo(470, 0); g.lineTo(520, 60); g.lineTo(-520, 60); g.lineTo(-470, 0); g.closePath(); g.fill(); g.fillStyle = '#E04A3A'; rrect(-450, -70, 900, 140, 20); g.fill(); g.restore();
+  text('BẢNG VINH DANH', W / 2, 172, 96, '#FFE27A', '#7A1E12', { k: rk });
+  text([CFG.lop, CFG.nam].filter(Boolean).join(' · ') || 'Đảo Song Kim', W / 2, 282, 42, '#FFFFFF', '#1F2D4A', { al: clamp(seg(t, .8, 1.3)) });
+  // thẻ tên
+  const n = KIDS.length, cols = n <= 8 ? 4 : n <= 12 ? 4 : n <= 16 ? 4 : n <= 20 ? 5 : 6, rows = Math.ceil(n / cols);
+  const gx = 250, gw = W - 500, cw = gw / cols, chh = Math.min(180, 600 / rows), gy = 340 + (600 - chh * rows) / 2;
+  KIDS.forEach((kd, i) => {
+    const t0 = T.boardIn - T.s6 + i * T.per, k = back(seg(t, t0, t0 + .45)); if (k <= 0) return;
+    const c = i % cols, r = Math.floor(i / cols), x = gx + c * cw + cw / 2, y = gy + r * chh + chh / 2;
+    g.save(); g.translate(x, y); g.scale(k, k);
+    g.fillStyle = 'rgba(0,0,0,.25)'; rrect(-cw / 2 + 14, -chh / 2 + 18, cw - 28, chh - 22, 26); g.fill();
+    g.fillStyle = '#FFFDF4'; rrect(-cw / 2 + 12, -chh / 2 + 10, cw - 24, chh - 22, 26); g.fill(); g.lineWidth = 5; g.strokeStyle = '#F5B82E'; g.stroke();
+    const sh = Math.min(86, chh - 44); g.drawImage(IM.gem, -cw / 2 + 28, -sh / 2 - 6, sh, sh);
+    const shine = Math.max(0, Math.sin((t - t0) * 2 - i * .3)); star(-cw / 2 + 28 + sh * .8, -sh / 2 + 4, 10 + 6 * shine, '#FFF3B0', t * 2);
+    const fs = Math.min(46, (cw - sh - 70) / Math.max(4, kd.name.length) * 1.9), showN = CFG.khen && !!kd.khen;
+    text(kd.name, -cw / 2 + sh + 48, showN ? -18 : -4, fs, '#1F2D4A', null, { align: 'left' });
+    if (showN) text(kd.khen, -cw / 2 + sh + 48, 26, Math.min(26, fs * .62), '#B4740A', null, { align: 'left', w: 700 });
+    g.restore();
+  });
+  const all = T.boardIn - T.s6 + n * T.per;
+  if (t > all) { const k = back(seg(t, all, all + .6)); text(window.ISL ? ISL.D.star : 'Ngôi sao Song Kim', W / 2, H - 112, 60, '#FFD84D', '#7A3A10', { k }); }
+  // nhân vật hai góc
+  const ck = eout(seg(t, .6, 1.4));
+  spr('anhVay', 128, H + 40, 330 * ck); spr('ben', W - 128, H + 40, 280 * ck); spr('mia', W - 150, 380 + 10 * Math.sin(t * 2.4), 250 * ck, { flip: true });
+  spr('pip', 260, 330 + 16 * Math.sin(t * 3), 150 * ck, { flip: true });
+}
+function sceneFinal(t, d) { // S7: lời chúc kết
+  const tt = T.s7 + t;
+  camKeys(t, [[0, 1672, 941, .6], [d, 1500, 860, .66]]);
+  drawMap(1, [{ x: LAMP.x, y: LAMP.y, r: 900, a: 1, col: 'rgba(255,235,150,A)' }, { x: CAMP.x, y: CAMP.y, r: 380, a: .9, col: 'rgba(255,170,80,A)' }, ...ROUTE.map(p => ({ x: p.x, y: p.y, r: 130, a: .85, col: 'rgba(255,225,140,A)' }))]); campOnMap(t, 0);
+  const L = toS(LAMP); beam(L.x, L.y, tt * 1.1, 1700 * cam.z, 1); skyStars(t, .7); fireworks(tt, T.fw7);
+  g.fillStyle = 'rgba(5,10,30,.35)'; g.fillRect(0, 0, W, H);
+  text('Chúc mừng cả lớp!', W / 2, 360, 140, '#FFD84D', '#7A3A10', { k: back(seg(t, .3, .9)), al: clamp(seg(t, .3, .5)) });
+  text('Cảm ơn các con đã cùng Cô Anh, Ben, Mia và Pip', W / 2, 500, 50, '#FFFFFF', '#1F2D4A', { al: clamp(seg(t, 1.2, 1.7)) });
+  text('thắp sáng ngọn hải đăng Đảo Song Kim.', W / 2, 568, 50, '#FFFFFF', '#1F2D4A', { al: clamp(seg(t, 1.5, 2)) });
+  text('Hẹn gặp lại ở chuyến phiêu lưu tiếp theo!', W / 2, 680, 56, '#9FF0E6', '#0D4D48', { al: clamp(seg(t, 2.6, 3.1)) });
+  const ck = eout(seg(t, .8, 1.6));
+  spr('anh', 330, H + 20, 430 * ck); spr('ben', W - 420, H + 20 - 24 * Math.abs(Math.sin(t * 5)), 330 * ck); spr('mia', W - 240, H + 20 - 24 * Math.abs(Math.sin(t * 5 + 1)), 320 * ck); spr('pipReo', W / 2, 250 + 14 * Math.sin(t * 3), 150 * ck);
+  const fo = seg(t, d - 1.4, d); if (fo > 0) { g.fillStyle = `rgba(0,0,0,${fo})`; g.fillRect(0, 0, W, H); }
+}
+function cap(t, d, s, t0) { const al = clamp(seg(t, t0, t0 + .4)) * clamp((d - .2 - t) / .4); if (al <= 0) return; g.save(); g.globalAlpha = al; g.font = '700 46px "Baloo 2", Arial'; const w = g.measureText(s).width + 80; g.fillStyle = 'rgba(10,18,50,.72)'; rrect(W / 2 - w / 2, H - 150, w, 86, 43); g.fill(); g.restore(); text(s, W / 2, H - 106, 46, '#FFFFFF', null, { al, w: 700 }); }
+
+const SCENES = () => [[T.s1, T.s2, sceneNightIsland], [T.s2, T.s3, sceneCamp], [T.s3, T.s4, sceneGems], [T.s4, T.s5, sceneIgnite], [T.s5, T.s6, sceneLitIsland], [T.s6, T.s7, sceneBoard], [T.s7, T.end, sceneFinal]];
+let _buf = null; const buf = () => _buf || (_buf = Object.assign(document.createElement('canvas'), { width: W, height: H }));
+function render(t) {
+  const S = SCENES(); let i = S.findIndex(([a, b]) => t >= a && t < b); if (i < 0) i = t < 0 ? 0 : S.length - 1;
+  const [a, b, f] = S[i];
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; f(t - a, b - a);
+  const x = t - a; // hoà cảnh trước trong 0,7 giây đầu
+  if (i > 0 && x < .7) { const [pa, pb, pf] = S[i - 1]; const save = g; const bc = buf(), bg = bc.getContext('2d'); g = bg; g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, W, H); pf(Math.min(t - pa, pb - pa - .001), pb - pa); g = save; g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1 - ss(x / .7); g.drawImage(bc, 0, 0); g.globalAlpha = 1; }
+  if (t < .6) { g.fillStyle = `rgba(0,0,0,${1 - t / .6})`; g.fillRect(0, 0, W, H); }
+}
+
+// ---------- âm thanh: nhạc + hiệu ứng, ghép được vào video ----------
+let AC = null, OUT = null, REC_DEST = null;
+function audioStart(recording) {
+  AC = new (window.AudioContext || window.webkitAudioContext)(); OUT = AC.createGain(); OUT.gain.value = .9; OUT.connect(AC.destination);
+  if (recording) { REC_DEST = AC.createMediaStreamDestination(); OUT.connect(REC_DEST); }
+  const t0 = AC.currentTime + .05, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  const note = (m, at, dur, type = 'triangle', v = .12, dec = 3) => { const o = AC.createOscillator(), gg = AC.createGain(); o.type = type; o.frequency.value = hz(m); gg.gain.setValueAtTime(0, t0 + at); gg.gain.linearRampToValueAtTime(v, t0 + at + .015); gg.gain.exponentialRampToValueAtTime(.0008, t0 + at + dur); o.connect(gg).connect(OUT); o.start(t0 + at); o.stop(t0 + at + dur + .05); };
+  const noise = (at, dur, v, f = 800) => { const n = AC.createBufferSource(), b = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2); n.buffer = b; const fl = AC.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = f; const gg = AC.createGain(); gg.gain.value = v; n.connect(fl).connect(gg).connect(OUT); n.start(t0 + at); };
+  // nhạc nền: C G Am F, nhịp 96
+  const beat = 60 / 96, bar = beat * 4, prog = [[48, [60, 64, 67]], [43, [59, 62, 67]], [45, [57, 60, 64]], [41, [57, 60, 65]]];
+  const mel = [[72, 76, 79, 76], [74, 79, 83, 79], [72, 76, 81, 76], [72, 77, 81, 84]];
+  for (let b = 0; b * bar < T.end; b++) {
+    const at = b * bar, [bs, ch] = prog[b % 4], quiet = at < T.s2 ? .5 : 1, big = at >= T.ign - .5 ? 1.25 : 1;
+    ch.forEach(m => note(m, at, bar * .95, 'sine', .035 * quiet * big, 1));
+    note(bs, at, beat * 1.8, 'triangle', .16 * quiet); note(bs + 7, at + beat * 2, beat * 1.8, 'triangle', .12 * quiet);
+    if (at >= T.s2) mel[b % 4].forEach((m, k) => note(m + (at >= T.ign ? 12 : 0), at + k * beat, beat * .9, 'triangle', .07 * big));
+  }
+  for (let i = 0; i < 70; i++) note(84 + (i % 5) * 2, T.gem0 + 1.6 + i * T.gemGap, .25, 'sine', .035);
+  noise(T.ign, 1.6, .5, 400); [0, 4, 7, 12].forEach((d, k) => note(72 + d, T.ign + .1 + k * .12, 1.4, 'square', .05));
+  [...T.fw4, ...T.fw5, ...T.fw7].forEach(([at]) => { noise(at, .9, .32, 1200); noise(at + .25, .5, .12, 4000); });
+  KIDS.forEach((_, i) => { const at = T.boardIn + i * T.per; note(88, at, .5, 'sine', .07); note(95, at + .06, .4, 'sine', .05); });
+  [[72, 0], [76, .2], [79, .4], [84, .7]].forEach(([m, d]) => note(m, T.s7 + .3 + d, 1, 'square', .06));
+}
+
+// ---------- chạy / ghi ----------
+let playing = false, recorder = null, chunks = [], tStart = 0, raf = 0;
+async function play(recording) {
+  readForm(true); if (!KIDS.length) { $('names').focus(); return; }
+  await loaded; plan();
+  $('ovSetup').hidden = true; $('ovEnd').hidden = true; $('hint').hidden = false;
+  if (document.documentElement.requestFullscreen && !document.fullscreenElement) await document.documentElement.requestFullscreen().catch(() => {});
+  audioStart(recording); playing = true;
+  if (recording) {
+    const vs = cv.captureStream(30), st = new MediaStream([...vs.getVideoTracks(), ...REC_DEST.stream.getAudioTracks()]);
+    const mt = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+    chunks = []; recorder = new MediaRecorder(st, { mimeType: mt, videoBitsPerSecond: 5e6 }); recorder.ondataavailable = e => e.data.size && chunks.push(e.data); recorder.start(1000); $('rec').hidden = false;
+  }
+  tStart = performance.now();
+  const step = now => { if (!playing) return; const t = (now - tStart) / 1000; render(t); if (t >= T.end) return done(); raf = requestAnimationFrame(step); };
+  raf = requestAnimationFrame(step);
+}
+function stopAudio() { try { AC && AC.close(); } catch (e) {} AC = null; }
+function done(cancel) {
+  playing = false; cancelAnimationFrame(raf); $('hint').hidden = true; $('rec').hidden = true;
+  const finish = msg => { stopAudio(); $('endMsg').innerHTML = msg; $('ovEnd').hidden = !!cancel; if (cancel) $('ovSetup').hidden = false; };
+  if (recorder && recorder.state !== 'inactive') {
+    recorder.onstop = () => {
+      const mime = recorder.mimeType || 'video/webm', ext = /mp4/.test(mime) ? 'mp4' : 'webm', blob = new Blob(chunks, { type: mime }); recorder = null;
+      if (cancel) return finish('');
+      const name = `Dem-hoi-hai-dang${CFG.lop ? '-' + CFG.lop.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9]+/g, '-') : ''}.${ext}`;
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      finish(`Đã lưu video <b>${name}</b> (${(blob.size / 1048576).toFixed(1)} MB) vào thư mục <b>Downloads</b>.${ext === 'webm' ? ' File .webm mở được bằng Chrome, Edge hoặc VLC; gửi qua Zalo thì nên đổi sang mp4.' : ''}`);
+    };
+    recorder.stop();
+  } else finish('Chúc mừng cả lớp đã thắp sáng ngọn hải đăng!');
+}
+const back2 = () => { location.href = '../dao_3d/dao-song-kim-3d.html'; };
+$('bPlay').onclick = () => play(false); $('bRec').onclick = () => play(true);
+$('bAgain').onclick = () => play(false); $('bSetup').onclick = () => { $('ovEnd').hidden = true; $('ovSetup').hidden = false; };
+$('bBack').onclick = $('bBack2').onclick = back2;
+addEventListener('keydown', e => { if (e.key === 'Escape' && playing) done(true); });
+// Esc lúc toàn màn hình bị trình duyệt dùng để thoát toàn màn hình: coi như bấm dừng
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && playing) done(true); });
+// cửa sổ bị ẩn / thu nhỏ: tạm dừng cả hình, tiếng và ghi video, mở lại thì chạy tiếp (không lệch tiếng)
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (!playing) return;
+  if (document.hidden) { hiddenAt = performance.now(); cancelAnimationFrame(raf); try { AC && AC.suspend(); } catch (e) {} try { recorder && recorder.state === 'recording' && recorder.pause(); } catch (e) {} }
+  else if (hiddenAt) { tStart += performance.now() - hiddenAt; hiddenAt = 0; try { AC && AC.resume(); } catch (e) {} try { recorder && recorder.state === 'paused' && recorder.resume(); } catch (e) {}
+    const step = now => { if (!playing) return; const t = (now - tStart) / 1000; render(t); if (t >= T.end) return done(); raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); }
+});
+loadData(); if (window.ISL) ISL.apply();
+loaded.then(() => { readForm(); plan(); render(T.s6 + 4.5); }); // ảnh nền phía sau bảng cài đặt
+window.__aicuoi = { render, plan: () => { readForm(); plan(); return T; }, get T() { return T; } };
+</script>
+</body>
+</html>
