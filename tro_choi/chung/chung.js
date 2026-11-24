@@ -13,7 +13,8 @@
   // ---------- khung trang ----------
   const ISLAND_NAME = { dao_hat_mam: 'Đảo Hạt Mầm', dao_cau_vong: 'Đảo Cầu Vồng' }[QS.get('dao')] || 'Đảo Song Kim';
   function scaffold(G) {
-    G.story = String(G.story).replace(/Đảo Song Kim/g, ISLAND_NAME);
+    G.story = QS.get('ke') || String(G.story).replace(/Đảo Song Kim/g, ISLAND_NAME);
+    const TK = { dao_hat_mam: ['1 giọt nước', 'tưới Cây Thần', '../hinh/giot_nuoc.webp'], dao_cau_vong: ['1 mảnh màu', 'ghép vào Cổng Cầu Vồng', '../hinh/manh_mau.webp'] }[QS.get('dao')] || ['1 viên đá sáng', 'mang về rương ở Trại Song Kim', '../chung/hinh/da_phat_sang.webp'];
     document.body.insertAdjacentHTML('afterbegin', `
 <div id="stage">
   <div id="scene"></div>
@@ -66,8 +67,8 @@
   </div>
   <div class="ov" id="ovDone" hidden>
     <div class="panel done"><h1><small>${esc(G.doneSmall || 'Hoàn thành thử thách')}</small>${esc(G.doneTitle || 'Giỏi quá!')}</h1>
-      <img class="gem" src="../chung/hinh/da_phat_sang.webp" alt="Đá sáng">
-      <p>Cả lớp nhận <b>1 viên đá sáng</b> mang về rương ở Trại Song Kim.</p>
+      <img class="gem" src="${TK[2]}" alt="">
+      <p>Cả lớp nhận <b>${TK[0]}</b> ${TK[1]}.</p>
       <div class="names" id="doneNames"></div>
       <div class="row" style="justify-content:center"><button class="big sec" id="bAgain">Chơi lại</button><button class="big" id="bNext">${FROM_ISLAND ? 'Về đảo, đi tiếp' : 'Đổi danh sách'}</button></div>
     </div>
@@ -107,12 +108,15 @@
     scaffold(G);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const KEY = 'trochoi_' + G.id;
-    let cfg = { words: G.defaultWords.slice(), speak: true, auto: true, mic: true, shuffle: false, chorus: true, cau: false, doi: false, nhom: 1, max: 0 };
+    let cfg = { words: G.defaultWords.slice(), speak: true, auto: true, mic: true, shuffle: false, chorus: true, cau: false, doi: false, nhom: QS.get('dao') === 'dao_hat_mam' ? 2 : 1, max: 0 };
     try { Object.assign(cfg, JSON.parse(localStorage.getItem(KEY) || 'null') || {}); } catch (e) {}
     let names = 'Bé An\nBé Bin\nBé Na\nBé Tôm\nBé Su\nBé Bơ\nBé Mít\nBé Cốm';
     try { names = localStorage.getItem('trochoi_names') || localStorage.getItem('ghepvancau') && JSON.parse(localStorage.getItem('ghepvancau')).names || names; } catch (e) {}
     const baseWords = cfg.words.slice(); // lựa chọn riêng của cô; từ của tiết trên đảo chỉ dùng cho lần chơi này
     const saveCfg = () => { try { localStorage.setItem(KEY, JSON.stringify(FROM_ISLAND ? { ...cfg, words: baseWords } : cfg)); localStorage.setItem('trochoi_names', names); } catch (e) {} };
+    // từ của tiết mà trò này chưa có: lấy từ kho từ chung (chung/kho_tu.js) để trò nào cũng chơi được bài nào
+    if (FROM_ISLAND && window.KHO_TU) { const have = new Set(G.words.map(W => W.w.toLowerCase()));
+      TU.forEach(t => { const K = KHO_TU.find(W => [t, t.replace(/s$/, ''), t.split(' ')[0]].includes(W.w.toLowerCase())); if (K && !have.has(K.w.toLowerCase())) { G.words.push(Object.assign({}, K, { g: 'kho' })); have.add(K.w.toLowerCase()); } }); }
     if (FROM_ISLAND) { const TU2 = TU.flatMap(t => [t, t.replace(/s$/, ''), t.split(' ')[0]]), lw = W => W.w.toLowerCase(), m = G.words.filter(W => TU2.includes(lw(W)) || TU2.includes(lw(W).replace(/s$/, ''))).map(W => W.w); if (m.length >= 1) { // thiếu thì lấy thêm từ đứng cạnh (cùng nhóm bài) trong danh sách của trò
         const grp = W => W.g || 'goc', gs = new Set(m.map(w => grp(G.words.find(W => W.w === w)))), same = G.words.filter(W => gs.has(grp(W))), idx = m.map(w => same.findIndex(W => W.w === w)), lo = Math.min(...idx), hi = Math.max(...idx), near = [];
         for (let d = 1; d < same.length && m.length + near.length < 4; d++) { [hi + d, lo - d].forEach(k => { const W = same[k]; if (W && !m.includes(W.w) && !near.includes(W.w) && m.length + near.length < 4) near.push(W.w); }); }
@@ -123,33 +127,19 @@
     // ---- mẫu câu của tiết (từ đảo gửi sang) -> câu hỏi + câu trả lời có chứa từ ----
     const CAU = (QS.get('cau') || '').trim(), DAO = QS.get('dao') || 'dao_3d';
     const NOART = /^(red|yellow|blue|green|orange|brown|purple|pink|black|white|grey|gray|one|two|three|four|five|six|seven|eight|nine|ten|long|short|big|little|fast|slow|happy|sad)$/i;
-    function sentence(W) {
-      const w = W.w, plural = /s$/i.test(w) && !/ss$/i.test(w), art = NOART.test(w) || plural || /^(mother|father|brother|sister|grandma|grandpa|mum|dad|baby)$/i.test(w) ? '' : (/^[aeiou]/i.test(w) ? 'an ' : 'a ');
-      const fam = /^(mother|father|brother|sister|grandma|grandpa|mum|dad|baby|grandmother|grandfather)$/i.test(w);
-      let q = W.q || '', a = '';
-      const m = CAU.match(/([^\/–\-?]*\?)\s*[–-]\s*([^\/]*)/); // "What's this? – It's a …"
-      if (m) { q = m[1].trim(); a = m[2].trim(); }
-      else { const qs = CAU.split('/').map(x => x.trim()).filter(x => /\?$/.test(x)); if (qs.length) q = qs[0]; }
-      if (!fam && /^who/i.test(q)) { q = ''; a = ''; } // câu hỏi về người mà từ không phải người
-      if (!/\?$/.test(q)) q = fam ? "Who's this?" : NOART.test(w) && /^(red|yellow|blue|green|orange|brown|purple|pink|black|white)$/i.test(w) ? 'What colour is it?' : "What's this?";
-      a = a.replace(/\b(An\/A|A\/An)\b/i, 'a');
-      if (a && !fam && /\bmy\s*(…|\.\.\.)/i.test(a)) a = '';
-      if (a && /…|\.\.\./.test(a)) a = a.replace(/\b(a|an)\s*(…|\.\.\.)/i, art + w).replace(/(…|\.\.\.)/, (/my\s*$/i.test(a.split(/…|\.\.\./)[0]) ? '' : '') + w);
-      else a = fam ? 'This is my ' + w : (NOART.test(w) ? "It's " + w : "It's " + art + w);
-      a = a.replace(/\s+/g, ' ').replace(/[.!]*$/, '.').replace(/^./, c => c.toUpperCase());
-      return { q: q.replace(/’/g, "'"), a: a.replace(/’/g, "'") };
-    }
+    function sentence(W) { const S = window.CauMau && CauMau.of(W.w, QS.get('unit') || G.unit); return S && W.q && /^who/i.test(W.q) && !/^who/i.test(S.q) ? null : S; }
     // ---- gọi công bằng: đếm số lần mỗi bé được gọi trong 7 ngày ----
     const K_GOI = 'songkim_goi', DAY = 864e5;
     const goiCount = n => { try { const g = JSON.parse(localStorage.getItem(K_GOI) || '{}'); return (g[n] || []).filter(t => Date.now() - t < 7 * DAY).length; } catch (e) { return 0; } };
     const goiMark = list => { try { const g = JSON.parse(localStorage.getItem(K_GOI) || '{}'); list.forEach(n => { g[n] = (g[n] || []).filter(t => Date.now() - t < 14 * DAY).concat(Date.now()); }); localStorage.setItem(K_GOI, JSON.stringify(g)); } catch (e) {} };
     const api = {
-      G, sfx, $, esc, get kids() { return kids; }, get words() { return words; }, get results() { return results; }, get turnIdx() { return turnIdx; },
+      G, sfx, $, esc, island: ISLAND_NAME, get kids() { return kids; }, get words() { return words; }, get results() { return results; }, get turnIdx() { return turnIdx; },
       stage: $('stage'), scene: $('scene'),
       sprite(id, img, x, y, h, cls = '') { let e = $('s_' + id); if (!e) { e = document.createElement('img'); e.id = 's_' + id; e.alt = ''; api.scene.appendChild(e); } e.className = 'spr ' + cls; e.src = img; Object.assign(e.style, { left: x + 'px', top: y + 'px', height: h + 'px' }); return e; },
       pose(id, img) { const e = $('s_' + id); if (e) e.src = img; },
       say(t, x, y) { const s = $('say'); if (!t) { s.hidden = true; return; } s.hidden = false; s.textContent = t; if (x != null) { s.style.left = x + 'px'; s.style.top = y + 'px'; } },
-      speak(text, rate = .85) { return new Promise(res => { if (!cfg.speak || !('speechSynthesis' in window) || !hasEnVoice()) return res(); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.voice = VOICE; u.rate = rate; u.pitch = 1.1; let d = false; const f = () => { if (!d) { d = true; res(); } }; u.onend = f; u.onerror = f; setTimeout(f, Math.min(4500, 1500 + text.length * 110)); speechSynthesis.speak(u); }); },
+      speak(text, rate = .85) { if (cfg.speak && window.GiongCo && GiongCo.has(text)) { try { speechSynthesis.cancel(); } catch (e) {} return GiongCo.play(text).then(() => {}); } // giọng cô đã ghi
+        return new Promise(res => { if (!cfg.speak || !('speechSynthesis' in window) || !hasEnVoice()) return res(); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.voice = VOICE; u.rate = rate; u.pitch = 1.1; let d = false; const f = () => { if (!d) { d = true; res(); } }; u.onend = f; u.onerror = f; setTimeout(f, Math.min(4500, 1500 + text.length * 110)); speechSynthesis.speak(u); }); },
       wait: ms => new Promise(r => setTimeout(r, ms)),
       sparkle, confetti, progress() { const [a, b] = G.progress ? G.progress(api) : [results.filter(r => r.ok).length, kids.length]; $('prog').textContent = `${a} / ${b}`; },
       showCard(W) { $('cardImg').src = W.img; $('cardImg').alt = W.w; $('cardWord').textContent = W.w; const c = $('card'); c.hidden = false; c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); sfx.pop(); },
@@ -186,13 +176,15 @@
           await api.speak("Let's say it together! " + cur.word.w, .9); if (cur !== me || state !== 'turn') return;
           heard('ĐỌC LẠI NÀO', 'Bé đọc lại (phím cách) hoặc cô bấm Enter.'); showPeek(); } });
     }
+    let modelTok = 0;
     async function model() {
-      const me = cur; api.showCard(cur.word); heard('NGHE MẪU', 'Nghe mẫu, cả lớp nghe…');
-      if (cfg.cau) { const S = sentence(cur.word); $('cardCau').hidden = false; $('cardCau').innerHTML = `<b>${esc(S.q)}</b> ${esc(S.a)}`;
-        await api.speak(S.q, .85); await api.wait(300); if (cur !== me) return; await api.speak(S.a, .8); }
+      const me = cur, tk = ++modelTok, gone = () => cur !== me || state !== 'turn' || tk !== modelTok; api.showCard(cur.word); heard('NGHE MẪU', 'Nghe mẫu, cả lớp nghe…');
+      const S = cfg.cau ? sentence(cur.word) : null;
+      if (S) { $('cardCau').hidden = false; $('cardCau').innerHTML = `<b>${esc(S.q)}</b> ${esc(S.a)}`;
+        await api.speak(S.q, .85); await api.wait(300); if (gone()) return; await api.speak(S.a, .8); }
       else { $('cardCau').hidden = true; await api.speak(cur.word.w); }
-      await api.wait(350); if (cur !== me) return;
-      await api.speak(cfg.cau && cfg.doi ? 'Ask and answer!' : 'Your turn!', .95); if (cur !== me) return;
+      await api.wait(350); if (gone()) return;
+      await api.speak(cfg.cau && cfg.doi ? 'Ask and answer!' : 'Your turn!', .95); if (gone()) return;
       if (cfg.auto) listen(); else heard('SẴN SÀNG', 'Bấm micro hoặc phím cách để máy nghe.');
     }
     async function nextTurn() {
@@ -203,55 +195,58 @@
       const pair = cfg.cau && cfg.doi && +cfg.nhom <= 1 && kids.length > 1 ? `${nextName[turnIdx]} hỏi · ${kids[turnIdx]} đáp` : '';
       $('turnName').textContent = pair || cur.kid;
       const shy = shyOf[turnIdx]; $('shy').hidden = !shy;
-      if (shy) $('shy').innerHTML = `<b>${esc(cur.kid)}</b> có thể nói cùng một bạn thân, thì thầm với Pip, hoặc chỉ vào hình.<br>Bé làm được thì cô bấm <kbd>Enter</kbd>.`; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
+      if (shy) $('shy').innerHTML = `Bạn chọn cách nào cũng được: nói to, nói cùng bạn, hay chỉ vào hình!`; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
       if (G.guessFirst) { api.hideCard(); heard('ĐOÁN XEM', 'Cả lớp đoán xem nào…'); }
       const me = cur; if (G.onTurn) await G.onTurn(api, cur); if (cur !== me || state !== 'intro') return;
       state = 'turn'; model();
     }
-    let chorusSkip = null;
-    async function chorus(W) {
-      if (!cfg.chorus) return;
-      state = 'chorus'; $('shy').hidden = true; const box = $('chorus');
-      $('chWord').textContent = cfg.cau ? sentence(W).a : W.w; $('chCmd').textContent = W.cmd || ''; $('chD0').className = $('chD1').className = '';
+    let chorusSkip = null, runId = 0, invited = false;
+    const LAN = QS.get('dao') === 'dao_hat_mam' ? 1 : 2; // số lần cả lớp đọc lại
+    async function chorus(W, my) {
+      if (!cfg.chorus || my !== runId || state !== 'anim') return;
+      state = 'chorus'; $('shy').hidden = true; const box = $('chorus'), S = cfg.cau ? sentence(W) : null, txt = S ? S.a : W.w;
+      $('chWord').textContent = txt; $('chCmd').textContent = W.cmd || '👏 Vỗ tay và nói theo!'; $('chD0').className = $('chD1').className = ''; $('chD1').hidden = LAN < 2;
       box.hidden = false; let skipped = false; const skipP = new Promise(r => chorusSkip = () => { skipped = true; r(); });
       const step = async () => {
-        await api.speak('Everyone, say it with me!', .95); if (skipped) return;
-        for (let k = 0; k < 2 && !skipped; k++) {
+        if (!invited) { invited = true; await api.speak('Everyone, say it with me!', .95); if (skipped) return; }
+        for (let k = 0; k < LAN && !skipped; k++) {
           $('chD' + k).className = 'on'; sfx.pop();
-          await api.speak(cfg.cau ? sentence(W).a : W.w, .85); if (skipped) return;
+          await api.speak(txt, .85); if (skipped) return;
           await api.wait(1700); // cả lớp đọc theo
           $('chD' + k).className = 'done';
         }
       };
-      await Promise.race([step(), skipP]); chorusSkip = null; box.hidden = true; try { speechSynthesis.cancel(); } catch (e) {}
+      await Promise.race([step(), skipP]); chorusSkip = null; box.hidden = true; hush();
     }
+    function hush() { try { speechSynthesis.cancel(); } catch (e) {} window.GiongCo && GiongCo.stop(); }
     async function correct() {
-      if (state !== 'turn' && state !== 'intro') return; state = 'anim'; stopListen();
+      if (state !== 'turn' && state !== 'intro') return; state = 'anim'; stopListen(); const my = runId;
       $('micBtn').classList.remove('no'); $('micBtn').classList.add('ok'); heard('ĐÚNG RỒI!', cur.word.w);
       sfx.good(); const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; api.speak(praise, .95);
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: true };
-      if (G.onCorrect) await G.onCorrect(api, cur, praise); api.progress();
-      await api.wait(500); await chorus(cur.word); if (state === 'setup' || state === 'bye') return; turnIdx++; nextTurn();
+      if (G.onCorrect) await G.onCorrect(api, cur, praise); if (my !== runId || state !== 'anim') return; api.progress();
+      await api.wait(500); await chorus(cur.word, my); if (my !== runId || (state !== 'anim' && state !== 'chorus')) return; turnIdx++; nextTurn();
     }
     async function skip() {
-      if (state !== 'turn' && state !== 'intro') return; stopListen(); state = 'anim';
+      if (state !== 'turn' && state !== 'intro') return; stopListen(); state = 'anim'; const my = runId;
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: false };
-      if (G.onSkip) await G.onSkip(api, cur); api.progress(); await chorus(cur.word); if (state === 'setup' || state === 'bye') return; turnIdx++; nextTurn();
+      if (G.onSkip) await G.onSkip(api, cur); if (my !== runId || state !== 'anim') return; api.progress(); await chorus(cur.word, my); if (my !== runId || (state !== 'anim' && state !== 'chorus')) return; turnIdx++; nextTurn();
     }
     async function finish() {
-      state = 'finish'; ['turn', 'card', 'micRow', 'shy', 'chorus'].forEach(i => $(i).hidden = true); stopListen();
+      const my0 = runId; state = 'finish'; ['turn', 'card', 'micRow', 'shy', 'chorus'].forEach(i => $(i).hidden = true); stopListen();
       try { const K = 'songkim_vinhdanh', v = JSON.parse(localStorage.getItem(K) || '{}'); kids.forEach((k, i) => (members[i] || [k]).forEach(n => { const r = v[n] || (v[n] = { dung: 0, luot: 0 }); r.luot++; if (results[i] && results[i].ok) r.dung++; })); localStorage.setItem(K, JSON.stringify(v)); } catch (e) {} // ghi cho bảng vinh danh
       sfx.fanfare(); api.speak("Hooray! Well done, everyone!", .95);
-      if (G.onFinish) await G.onFinish(api);
+      if (G.onFinish) await G.onFinish(api); if (my0 !== runId || state !== 'finish') return;
       confetti(); sfx.fanfare();
       $('doneNames').innerHTML = kids.map(k => `<span>${esc(k)}</span>`).join(''); // mọi bé như nhau, không đánh dấu bé bỏ lượt
-      setTimeout(() => { $('ovDone').hidden = false; $('bNext').focus(); state = 'done'; }, 800);
+      const my = runId; setTimeout(() => { if (my !== runId || state !== 'finish') return; $('ovDone').hidden = false; $('bNext').focus(); state = 'done'; }, 800);
     }
     function start() {
+      runId++; invited = false; hush();
       names = $('names').value; saveCfg();
       let roster = names.split('\n').map(s => s.trim()).filter(Boolean).map(s => ({ name: s.replace(/\s*\*+\s*$/, '').trim(), shy: /\*\s*$/.test(s) })).filter(k => k.name);
       if (!roster.length) { $('names').focus(); return; }
-      const lim = +cfg.max > 0 ? +cfg.max : 20 * (+cfg.nhom || 1);
+      const lim = +cfg.max > 0 ? +cfg.max : Infinity;
       if (roster.length > lim) { const idx = roster.map((k, i) => [goiCount(k.name), i]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, lim).map(x => x[1]).sort((a, b) => a - b); roster = idx.map(i => roster[i]); } // ưu tiên bé ít được gọi
       if (cfg.shuffle) for (let i = roster.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [roster[i], roster[j]] = [roster[j], roster[i]]; }
       const n = Math.max(1, +cfg.nhom || 1), groups = []; for (let i = 0; i < roster.length; i += n) groups.push(roster.slice(i, i + n));
@@ -263,15 +258,15 @@
       $('ovSetup').hidden = true; $('ovDone').hidden = true; $('keys').hidden = false;
       ac(); if (G.onStart) G.onStart(api); api.progress(); nextTurn();
     }
-    function goIsland(res) { stopListen(); try { speechSynthesis.cancel(); } catch (e) {} location.href = `${ISLAND}?ve=thu_thach&ket_qua=${res}`; }
+    function goIsland(res) { stopListen(); hush(); location.href = `${ISLAND}?ve=thu_thach&ket_qua=${res}`; }
     function quit() {
       if (FROM_ISLAND) return goIsland(state === 'done' ? 'xong' : 'bo_do');
-      stopListen(); try { speechSynthesis.cancel(); } catch (e) {} state = 'bye';
+      stopListen(); hush(); runId++; state = 'bye';
       ['ovSetup', 'ovDone'].forEach(i => $(i).hidden = true); ['keys', 'turn', 'card', 'micRow'].forEach(i => $(i).hidden = true); $('ovBye').hidden = false;
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       fetch('/quit', { method: 'POST' }).catch(() => {}); setTimeout(() => { try { window.close(); } catch (e) {} }, 400);
     }
-    function openSetup() { stopListen(); try { speechSynthesis.cancel(); } catch (e) {} state = 'setup'; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
+    function openSetup() { stopListen(); hush(); runId++; state = 'setup'; $('chorus').hidden = true; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
     function buildSetup() {
       $('names').value = names;
       $('wordPick').innerHTML = G.words.map(W => `<label class="wpick ${cfg.words.includes(W.w) ? 'on' : ''}"><input type="checkbox" value="${W.w}" ${cfg.words.includes(W.w) ? 'checked' : ''}><img src="${W.img}" alt=""><span>${W.w}</span></label>`).join('');

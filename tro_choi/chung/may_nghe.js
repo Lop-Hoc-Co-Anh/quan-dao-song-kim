@@ -17,7 +17,9 @@
   // others: các từ khác trong bài; nghe ra đúng một từ khác thì không nới (hand ≠ head)
   function matches(text, W, others = []) {
     const t = norm(text); if (!t) return false;
-    const own = new Set([W.w, ...(W.alt || [])].map(norm)), ban = new Set(others.map(norm).filter(o => o && !own.has(o)));
+    // cách đọc gần đúng (alt) mà trùng một từ khác trong bài thì bỏ (daddy ≠ teddy, tree ≠ three)
+    const oth = new Set(others.map(norm).filter(Boolean)), me = norm(W.w);
+    const own = new Set([me, ...(W.alt || []).map(norm).filter(a => a && (a === me || !oth.has(a)))]), ban = new Set([...oth].filter(o => !own.has(o)));
     const toks = t.split(' ');
     return [...own].filter(Boolean).some(g => {
       const gt = g.split(' '), gj = gt.join('');
