@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đua thuyền về hải đăng</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Đua thuyền về hải đăng" – Ôn tập, Kiểm tra, Củng cố */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.card img { height: 112px; }
+.card .w { font-size: 52px; }
+.card { width: 340px; padding: 10px 16px 8px; }
+.boat { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
+.boat img { position: absolute; }
+.boat .hull { left: 0; bottom: 0; filter: drop-shadow(0 10px 8px rgba(10, 60, 90, .3)); }
+.boat .hull.front { clip-path: inset(60% 0 0 0); filter: none; }
+.boat .kid { bottom: 66px; }
+.boat .tag { position: absolute; left: 50%; bottom: -34px; transform: translateX(-50%); white-space: nowrap; font: 800 18px/1 var(--display); color: #fff; padding: 5px 12px 7px; border-radius: 12px; box-shadow: 0 4px 0 rgba(0, 0, 0, .18); }
+.boat.go .tag { animation: pulse .5s ease-in-out 2; }
+@keyframes pulse { 50% { transform: translateX(-50%) scale(1.15); } }
+.splash { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; background: radial-gradient(ellipse, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); }
+.finish { position: absolute; left: 1196px; top: 300px; width: 16px; height: 520px; pointer-events: none; background: repeating-linear-gradient(180deg, #fff 0 22px, #F2675A 22px 44px); border-radius: 8px; opacity: .85; box-shadow: 0 0 0 3px rgba(255, 255, 255, .5); }
+.finishLbl { position: absolute; left: 1204px; top: 268px; transform: translateX(-50%); background: #F2675A; color: #fff; font: 800 18px/1 var(--display); padding: 5px 12px 7px; border-radius: 10px; white-space: nowrap; }
+.team { position: absolute; left: 24px; display: flex; gap: 6px; flex-wrap: wrap; max-width: 220px; pointer-events: none; }
+.team span { font: 800 13px/1 var(--display); padding: 3px 7px 4px; border-radius: 8px; background: rgba(255, 255, 255, .85); color: var(--ink); }
+.team span.ok { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .boat.go .tag { animation: none; } }
+</style>
+</head>
+<body>
+<script>
+// từ của cả năm, chia theo bài để chọn đúng phần cần ôn
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp', A = n => '../ban_thu_tron/hinh/' + n + '.webp', F = n => '../ghep_van_cau/hinh/' + n + '.webp';
+const UNITS = {
+  home: [['bedroom', H('phong_ngu'), ['bed room', 'bedrooms']], ['kitchen', H('phong_bep'), ['chicken', 'kitchens']], ['bathroom', H('phong_tam'), ['bath room']], ['living room', H('phong_khach'), ['livingroom', 'living']]],
+  toys: [['car', H('xe_o_to'), ['cars', 'ka']], ['ball', H('qua_bong'), ['balls', 'bowl']], ['doll', H('bup_be'), ['dolls', 'dull']], ['teddy', H('gau_bong'), ['teddy bear', 'teddies']], ['train', H('tau_hoa'), ['trains', 'rain']]],
+  body: [['head', H('ben_cham_dau'), ['heads', 'had']], ['arm', H('ben_gio_tay'), ['arms', 'am']], ['hand', H('ben_vay_ban_tay'), ['hands', 'and']], ['finger', H('ben_gio_ngon'), ['fingers']], ['leg', H('ben_co_chan'), ['legs', 'lag']], ['foot', H('ben_giam_chan'), ['feet', 'food']]],
+  clothes: [['T-shirt', H('ao_phong_do'), ['t shirt', 'tshirt', 'shirt']], ['socks', H('tat_vang'), ['sock', 'sox']], ['skirt', H('vay_tim'), ['skirts']], ['shorts', H('quan_short_xanh'), ['short', 'shots']], ['scarf', H('khan_quang'), ['scarves', 'scar']], ['boots', H('ung_vang'), ['boot', 'boats']]],
+  animals: [['elephant', A('voi_phun_nuoc'), ['elephants']], ['lion', A('su_tu'), ['lions', 'lyon']], ['monkey', A('khi_an_chuoi'), ['monkeys']], ['snake', A('con_ran'), ['snakes', 'snack']], ['dog', A('thu_cho'), ['dogs', 'dock']], ['snail', A('oc_sen'), ['snails', 'nail']], ['fly', A('con_ruoi'), ['flies', 'fry']]],
+  food: [['fruit', F('trai_cay'), ['fruits', 'flute']], ['cake', F('banh_kem'), ['cakes', 'kate']], ['sandwiches', F('banh_sandwich'), ['sandwich', 'sand which']], ['juice', F('nuoc_cam'), ['juices']], ['milk', F('sua'), ['milks', 'mill']], ['bread', F('banh_mi'), ['bred']], ['cookies', F('banh_quy'), ['cookie']]],
+  festivals: [['ghost', H('con_ma'), ['ghosts', 'goat']], ['pumpkin', H('bi_ngo'), ['pumpkins']], ['Santa', H('ong_noel'), ['santa claus']], ['tree', H('cay_thong'), ['trees', 'three']], ['presents', H('hop_qua_noel'), ['present']]],
+};
+// bộ từ Amanda 1 (Đảo Hạt Mầm) và Amanda 2 (Đảo Cầu Vồng)
+const SCH = [['bag', H('cap_sach'), ['bags', 'back']], ['book', H('quyen_sach'), ['books', 'look']], ['crayon', H('but_sap'), ['crayons', 'crown']], ['pencil', H('but_chi'), ['pencils']]];
+const FAM = [['daddy', H('bo'), ['dad']], ['mummy', H('me'), ['mum', 'mommy']], ['brother', H('anh_trai'), ['brothers']], ['sister', H('em_gai'), ['sisters']]];
+const A1 = {
+  school: SCH, family: FAM, toys: UNITS.toys.slice(0, 4),
+  body: [['ear', H('mia_chi_tai'), ['ears', 'year']], ['eye', H('mia_chi_mat'), ['eyes', 'i']], ['mouth', H('mia_chi_mieng'), ['mouths']], ['nose', H('mia_chi_mui'), ['noses', 'knows']]],
+  pets: [['cat', H('thu_meo'), ['cats', 'cut']], ['dog', A('thu_cho'), ['dogs', 'dock']], ['fish', H('ca_vang'), ['fishes']], ['mouse', H('chuot'), ['mice']]],
+  food: [['apple', H('qua_tao'), ['apples']], ['banana', H('qua_chuoi'), ['bananas']], ['orange', H('qua_cam'), ['oranges']], ['pear', H('qua_le'), ['pears', 'pair']]],
+  festivals: [['witch', H('phu_thuy'), ['which']], ['spider', H('nhen'), ['spiders']], ['Santa', H('ong_noel'), ['santa claus']], ['tree', H('cay_thong'), ['trees']], ['gift', H('hop_qua'), ['gifts']], ['candy', H('keo'), ['candies']]],
+};
+const A2 = {
+  school: [['chair', H('cai_ghe'), ['chairs', 'share']], ['table', H('cai_ban'), ['tables']], ['window', H('cua_so'), ['windows']], ['door', H('cai_cua'), ['doors']], ...SCH],
+  family: [...FAM, ['grandad', H('ong'), ['grandpa']], ['granny', H('ba'), ['grandma']]],
+  body: [['head', H('ben_cham_dau'), ['heads']], ['shoulders', H('ben_cham_vai'), ['shoulder']], ['arm', H('ben_gio_tay'), ['arms']], ['hand', H('ben_vay_ban_tay'), ['hands']], ['leg', H('ben_co_chan'), ['legs']], ['toes', H('ben_ngon_chan'), ['toe']]],
+  clothes: [['T-shirt', H('ao_phong_do'), ['t shirt', 'shirt']], ['trousers', H('quan_dai'), ['trouser']], ['skirt', H('vay_tim'), ['skirts']], ['dress', H('vay_lien'), ['dresses']], ['shoes', H('doi_giay'), ['shoe']]],
+  animals: [['elephant', A('voi_phun_nuoc'), ['elephants']], ['lion', A('su_tu'), ['lions']], ['monkey', A('khi_an_chuoi'), ['monkeys']], ['horse', H('ngua'), ['horses']], ['fish', H('ca_vang'), ['fishes']], ['mouse', H('chuot'), ['mice']]],
+  transport: [['car', H('xe_o_to'), ['cars']], ['bus', H('xe_buyt'), ['buses']], ['train', H('tau_hoa'), ['trains']], ['bike', H('xe_dap'), ['bikes']], ['plane', H('may_bay'), ['planes']], ['boat', H('thuyen'), ['boats']]],
+  festivals: UNITS.festivals,
+};
+const DAO = new URLSearchParams(location.search).get('dao');
+const BOOK = DAO === 'dao_hat_mam' ? A1 : DAO === 'dao_cau_vong' ? A2 : UNITS;
+const ORDER = DAO === 'dao_hat_mam' ? ['school', 'family', 'toys', 'body', 'pets', 'food'] : DAO === 'dao_cau_vong' ? ['school', 'family', 'body', 'clothes', 'animals', 'transport'] : ['home', 'toys', 'body', 'clothes', 'animals', 'food'];
+const seen = new Set(), WORDS = Object.values(BOOK).flat().filter(([w]) => !seen.has(w) && seen.add(w)).map(([w, img, alt]) => ({ w, img, alt }));
+// đọc phần ôn tập từ đảo: "Home + Toys", "Units 1–3", "All key vocabulary"...
+(function () {
+  const QS = new URLSearchParams(location.search); if (!QS.has('tu_dao')) return;
+  const t = (QS.get('tu') || '').toLowerCase(); let keys = Object.keys(BOOK).filter(k => t.includes(k));
+  if (!keys.length && /1.{0,3}3/.test(t)) keys = ORDER.slice(0, 3);
+  if (!keys.length && /4.{0,3}6/.test(t)) keys = ORDER.slice(3).concat(t.includes('festival') ? ['festivals'] : []);
+  const pick = [...new Set(keys.length ? keys.flatMap(k => BOOK[k].map(x => x[0])) : Object.values(BOOK).flatMap(u => u.slice(0, 2).map(x => x[0])))];
+  window.__PICK = pick;
+  try { const k = 'trochoi_dua_thuyen', c = JSON.parse(localStorage.getItem(k) || '{}'); c.words = pick; localStorage.setItem(k, JSON.stringify(c)); } catch (e) {}
+})();
+</script>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const LANES = [{ y: 506, h: 200, name: 'Đội Ben', col: '#14998F', boat: 'thuyen_xanh', kid: 'ben' }, { y: 786, h: 214, name: 'Đội Mia', col: '#F08A24', boat: 'thuyen_cam', kid: 'mia' }];
+const START = 260, FIN = 1205;
+let pos = [0, 0], size = [1, 1], score = [0, 0];
+const teamOf = i => i % 2;
+
+TroChoi.run({
+  id: 'dua_thuyen', title: 'Đua thuyền về hải đăng', unit: 'Ôn tập', icon: H('thuyen_xanh'), progressLabel: 'lượt đúng',
+  story: 'Hai đội Ben và Mia đua thuyền về ngọn hải đăng! Các bé lần lượt thay phiên cho hai đội: bé thứ nhất đội Ben, bé thứ hai đội Mia… Bé đọc đúng từ thì thuyền lao lên phía trước. Cả lớp cùng chèo để hai thuyền cùng về tới hải đăng!',
+  doneSmall: 'Cuộc đua kết thúc', doneTitle: 'Cả hai đội đều giỏi!',
+  words: WORDS, defaultWords: window.__PICK || ['bedroom', 'car', 'head', 'socks', 'lion', 'cake', 'ghost'],
+  cardPos: { x: 800, y: 132 }, micPos: { x: 1330, y: 590 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_duong_dua.jpg" alt=""><div class="finish"></div><div class="finishLbl">Đích</div>
+      <div class="team" id="tm0" style="top:330px"></div><div class="team" id="tm1" style="top:600px"></div>
+      ${LANES.map((L, i) => `<div class="splash" id="sp${i}" style="width:0;height:0"></div><div class="boat" id="b${i}" style="width:${L.h * .95}px;height:${L.h}px">
+        <img class="hull" src="${H(L.boat)}" alt="" style="height:${L.h}px"><img class="kid" src="${C(L.kid + '_three_quarter')}" alt="" style="left:${L.h * .17}px;height:${L.h * .36}px"><img class="hull front" src="${H(L.boat)}" alt="" style="height:${L.h}px">
+        <div class="tag" style="background:${L.col}">${L.name}<b id="sc${i}" hidden>0</b></div></div>`).join('')}`;
+    api.sprite('pip', C('pip_bay'), 1420, 420, 96, 'bob');
+    api.say('Hai đội sẵn sàng chưa? Đua thôi!', 40, 110);
+    place(api); bob(api);
+  },
+  onStart(api) {
+    const n = api.kids.length; size = [Math.ceil(n / 2), Math.floor(n / 2) || 1]; pos = [0, 0]; score = [0, 0];
+    [0, 1].forEach(t => { api.$('sc' + t).textContent = 0; api.$('tm' + t).innerHTML = api.kids.map((k, i) => teamOf(i) === t ? `<span id="kn${i}">${api.esc(k)}</span>` : '').join(''); });
+    api.$('b0').querySelector('.kid').src = C('ben_three_quarter'); api.$('b1').querySelector('.kid').src = C('mia_three_quarter');
+    place(api);
+  },
+  progress(api) { return [score[0] + score[1], api.kids.length]; },
+  async onTurn(api, ctx) {
+    const t = teamOf(ctx.i), L = LANES[t];
+    api.pose('pip', C('pip_hoi'));
+    api.say(`${L.name} ơi, tới lượt ${ctx.kid}!`, 40, 110);
+    const b = api.$('b' + t); b.classList.remove('go'); void b.offsetWidth; b.classList.add('go'); api.sfx.pop();
+    await api.wait(500);
+  },
+  async onCorrect(api, ctx, praise) {
+    const t = teamOf(ctx.i), L = LANES[t];
+    api.pose('pip', C('pip_reo')); api.say(`${praise} ${L.name} lao lên nào!`, 40, 110);
+    api.$('b' + t).querySelector('.kid').src = C(L.kid + '_reo');
+    score[t]++; api.$('sc' + t).textContent = score[t];
+    const kn = api.$('kn' + ctx.i); if (kn) { kn.classList.add('ok'); kn.style.background = L.col; }
+    await api.wait(300); api.hideCard();
+    const p0 = pos[t], p1 = Math.min(1, p0 + 1 / size[t]), sp = api.$('sp' + t); api.sfx.rustle();
+    await api.tween(1100, (k, e) => { pos[t] = p0 + (p1 - p0) * e; place(api); const x = START + (FIN - START) * pos[t]; sp.style.left = x - L.h * .45 + 'px'; sp.style.top = L.y - 10 + 'px'; sp.style.width = 160 * Math.sin(Math.PI * k) + 'px'; sp.style.height = 40 * Math.sin(Math.PI * k) + 'px'; });
+    pos[t] = p1; place(api); api.sparkle(START + (FIN - START) * p1, L.y - L.h * .7, 20);
+    api.$('b' + t).querySelector('.kid').src = C(L.kid + '_three_quarter');
+  },
+  async onSkip(api, ctx) { const kn = api.$('kn' + ctx.i), L = LANES[teamOf(ctx.i)]; if (kn) { kn.classList.add('ok'); kn.style.background = L.col; } }, // bé nào cũng được tô màu như nhau
+  async onFinish(api) {
+    // hai thuyền cùng lướt về đích, không phân thắng thua
+    const p0 = pos.slice(); api.sfx.rustle();
+    await api.tween(1400, (k, e) => { [0, 1].forEach(t => pos[t] = p0[t] + (1 - p0[t]) * e); place(api); });
+    pos = [1, 1]; place(api);
+    api.say('Hai thuyền cùng về tới hải đăng! Cả lớp giỏi quá!', 40, 110); api.pose('pip', C('pip_reo'));
+    [0, 1].forEach(t => { api.$('b' + t).querySelector('.kid').src = C(LANES[t].kid + '_reo'); });
+    api.sparkle(1300, 200, 50);
+    await api.wait(2200);
+  },
+});
+
+function place(api) { LANES.forEach((L, t) => { const b = api.$('b' + t); b.dataset.x = START + (FIN - START) * pos[t]; b.style.left = b.dataset.x + 'px'; }); }
+function bob(api) { (function f(ms) { const s = ms / 1000; LANES.forEach((L, t) => { const b = api.$('b' + t); b.style.top = L.y + Math.sin(s * 1.6 + t * 2) * 4 + 'px'; b.style.transform = `translate(-50%, -100%) rotate(${Math.sin(s * 1.3 + t) * 2}deg)`; }); requestAnimationFrame(f); })(0); }
+</script>
+</body>
+</html>
