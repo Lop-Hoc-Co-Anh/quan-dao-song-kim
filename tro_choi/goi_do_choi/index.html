@@ -79,7 +79,7 @@ TroChoi.run({
   progress(api) { return [onShelf.length, api.kids.length]; },
   async onTurn(api, ctx) {
     const h1 = SIZE[ctx.word.w] || 200, x0 = 730, y0 = 330, x1 = 800, y1 = 660;
-    api.$('toyLayer').innerHTML = `<div class="shadow" id="tsh"></div><img class="toy" id="toy" src="${ctx.word.img}" alt="" style="left:${x0}px;top:${y0}px;height:40px;filter:brightness(0) opacity(.92)"><div class="eyes" id="eyes"><i></i><i></i></div>`;
+    api.$('toyLayer').innerHTML = `<div class="shadow" id="tsh"></div><img class="toy" id="toy" src="${ctx.word.img}" alt="" style="left:${x0}px;top:${y0}px;height:40px;filter:brightness(.5) saturate(.7)"><div class="eyes" id="eyes"><i></i><i></i></div>`;
     toy = { el: api.$('toy'), sh: api.$('tsh'), eyes: api.$('eyes'), x: x1, y: y1, h: h1 };
     api.pose('anh', C('co_anh_lang_nghe')); api.pose('pip', C('pip_hoi'));
     api.say(`Suỵt! ${ctx.kid} ơi, có tiếng lạch cạch trong hang…`, 30, 250);
@@ -102,7 +102,7 @@ TroChoi.run({
     api.say(`${praise} ${ctx.kid} gọi đúng rồi!`, 30, 250);
     api.hideCard(); toy.eyes.remove();
     // bật đèn: bóng đen hiện màu thật
-    await api.tween(700, (k, e) => { toy.el.style.filter = `brightness(${e}) drop-shadow(0 0 ${30 * (1 - e)}px rgba(255,230,140,${1 - e}))`; });
+    await api.tween(700, (k, e) => { toy.el.style.filter = `brightness(${.5 + .5 * e}) drop-shadow(0 0 ${30 * (1 - e)}px rgba(255,230,140,${1 - e}))`; });
     api.sparkle(toy.x, toy.y - toy.h / 2, 40); api.sfx.boing();
     await api.tween(450, (k) => { toy.el.style.top = toy.y - Math.sin(Math.PI * k) * 60 + 'px'; });
     const n = onShelf.length, s = slot(n, api.kids.length), h0 = toy.h;
