@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghi âm giọng cô</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Cô ghi âm giọng mình đọc từng từ / câu; trò chơi sẽ phát giọng cô thay giọng máy */
+:root { --ink: #1F2D4A; --soft: #56637F; --paper: #FFFDF6; --teal: #14998F; --coral: #F2675A; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #EAF4F8; color: var(--ink); font-family: 'Nunito', Arial, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--paper); box-shadow: 0 4px 0 rgba(31, 45, 74, .08); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+h1 { margin: 0; font: 800 30px/1.1 'Baloo 2'; } h1 small { display: block; font: 700 15px 'Nunito'; color: var(--soft); }
+.sp { flex: 1; }
+select, input[type=text] { font: 700 18px 'Nunito'; border: 2px solid #CBD6E2; border-radius: 12px; padding: 6px 10px; background: #fff; color: var(--ink); }
+button { font: 800 17px/1 'Baloo 2'; border: 0; border-radius: 12px; padding: 9px 14px 11px; cursor: pointer; background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(31, 45, 74, .16); }
+button.go { background: var(--teal); color: #fff; box-shadow: 0 4px 0 #0D7068; } button.rec { background: var(--coral); color: #fff; box-shadow: 0 4px 0 #B5463B; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 4px solid #2E6FD8; outline-offset: 2px; }
+main { max-width: 1240px; margin: 16px auto 60px; padding: 0 16px; }
+.note { font-size: 17px; color: var(--soft); line-height: 1.5; margin: 0 0 14px; } .note b { color: var(--ink); }
+h2 { font: 800 24px 'Baloo 2'; margin: 20px 0 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.it { background: var(--paper); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; border: 3px solid transparent; }
+.it.done { border-color: #3CC46A; } .it.recording { border-color: var(--coral); }
+.it img { height: 90px; max-width: 100%; object-fit: contain; }
+.it b { font: 800 24px 'Baloo 2'; text-align: center; } .it .st { font: 700 14px 'Nunito'; color: var(--soft); }
+.it .bt { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.msg { font: 800 17px 'Nunito'; color: #0D7068; min-height: 22px; }
+.msg.bad { color: #B5463B; }
+</style>
+</head>
+<body>
+<header>
+  <h1><small>Trò chơi phát giọng cô thay giọng máy</small>Ghi âm giọng cô</h1>
+  <div class="sp"></div>
+  <label>Từ của <select id="selDao"></select></label>
+  <select id="selUnit"></select>
+  <input type="text" id="find" placeholder="Tìm từ…" style="width:150px">
+  <span id="count" style="font:800 18px 'Baloo 2'"></span>
+  <button id="bExp">Sao lưu giọng</button><button id="bImp">Nhập giọng</button><input type="file" id="fImp" accept=".json" hidden>
+  <button id="bBack">Về quần đảo</button>
+</header>
+<main>
+  <p class="note">Bấm <b>Ghi</b>, đọc to rõ từ đó (máy tự dừng sau 2,5 giây hoặc bấm <b>Dừng</b>), rồi bấm <b>Nghe</b> để nghe lại. Ghi lại lúc nào cũng được.
+    Giọng cô lưu trong máy tính này, trên trình duyệt này; đổi máy thì bấm <b>Sao lưu giọng</b> rồi <b>Nhập giọng</b> ở máy mới. Từ nào chưa ghi thì trò chơi dùng giọng máy.</p>
+  <div class="msg" id="msg"></div>
+  <h2>Câu thường dùng trong trò chơi</h2>
+  <div class="grid" id="phrases"></div>
+  <h2 id="hWords">Từ vựng</h2>
+  <div class="grid" id="words"></div>
+</main>
+<script src="../tro_choi/chung/kho_tu.js"></script>
+<script src="../tro_choi/chung/giong_co.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const PHRASES = ['Your turn!', 'Everyone, say it with me!', "Let's say it together!", 'Ask and answer!', 'Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!', 'Hooray! Well done, everyone!', 'What is it?', "What's this?", 'What colour is it?', 'What number is it?', 'What room is this?', 'Who is hiding?', 'Knock, knock!'];
+const DAOS = [
+  { key: 'all', name: 'mọi bài (tất cả từ có hình)' },
+  { key: 'daohatmam', name: 'Đảo Hạt Mầm', ppct: '../dao_hat_mam/ppct_amanda1.json' },
+  { key: 'daocauvong', name: 'Đảo Cầu Vồng', ppct: '../dao_cau_vong/ppct_amanda2.json' },
+  { key: 'daosongkim3d', name: 'Đảo Song Kim', ppct: '../dao_3d/ppct_amanda3.json' },
+];
+const BASE = new URL('../tro_choi/goi_do_choi/', location.href); // ảnh trong kho từ tính từ thư mục một trò
+const imgOf = W => /^data:/.test(W.img) ? W.img : new URL(W.img, BASE).href;
+const inKho = w => KHO_TU.find(W => [w, w.replace(/s$/, ''), w.split(' ')[0]].includes(W.w.toLowerCase()));
+let PPCT = [], list = [], recState = null;
+const msg = (t, bad) => { $('msg').textContent = t; $('msg').className = 'msg' + (bad ? ' bad' : ''); };
+$('selDao').innerHTML = DAOS.map(d => `<option value="${d.key}">${d.name}</option>`).join('');
+$('selDao').value = DAOS.some(d => d.key === localStorage.getItem('quandao_dang_o')) ? localStorage.getItem('quandao_dang_o') : 'all';
+
+function card(text, img, id) {
+  const done = GiongCo.has(text);
+  return `<div class="it ${done ? 'done' : ''}" id="${id}">${img ? `<img src="${img}" alt="">` : ''}<b>${esc(text)}</b><span class="st">${done ? '✓ đã có giọng cô' : 'chưa ghi'}</span>
+    <div class="bt"><button class="rec" data-rec="${esc(text)}">Ghi</button><button data-play="${esc(text)}" ${done ? '' : 'disabled'}>Nghe</button><button data-del="${esc(text)}" ${done ? '' : 'disabled'}>Xoá</button></div></div>`;
+}
+function draw() {
+  const q = $('find').value.trim().toLowerCase();
+  $('phrases').innerHTML = PHRASES.filter(t => !q || t.toLowerCase().includes(q)).map((t, i) => card(t, '', 'p' + i)).join('');
+  $('words').innerHTML = list.filter(W => !q || W.w.toLowerCase().includes(q)).map((W, i) => card(W.w, imgOf(W), 'w' + i)).join('');
+  const all = PHRASES.length + list.length, got = PHRASES.filter(GiongCo.has).length + list.filter(W => GiongCo.has(W.w)).length;
+  $('count').textContent = `Đã ghi ${got} / ${all}`;
+  document.querySelectorAll('[data-rec]').forEach(b => b.onclick = () => record(b.dataset.rec, b));
+  document.querySelectorAll('[data-play]').forEach(b => b.onclick = () => GiongCo.play(b.dataset.play));
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { GiongCo.del(b.dataset.del).then(() => { msg('Đã xoá giọng của "' + b.dataset.del + '".'); draw(); }); });
+}
+function pickList() {
+  const d = DAOS.find(x => x.key === $('selDao').value);
+  if (d.key === 'all') { $('selUnit').hidden = true; list = KHO_TU.slice(); $('hWords').textContent = `Từ vựng (${list.length} từ có hình)`; draw(); return; }
+  fetch(d.ppct).then(r => r.json()).then(p => {
+    PPCT = p; const units = [...new Set(p.map(r => r.unit))]; $('selUnit').hidden = false;
+    if (![...$('selUnit').options].some(o => units.includes(o.value))) $('selUnit').innerHTML = units.map(u => `<option>${esc(u)}</option>`).join('');
+    showUnit();
+  }).catch(() => msg('Không đọc được dữ liệu tiết học. Hãy mở bằng file .bat.', true));
+}
+function showUnit() {
+  const u = $('selUnit').value, seen = new Set(); list = [];
+  PPCT.filter(r => r.unit === u).forEach(r => String(r.tu).split(/[;,]/).map(x => x.trim().toLowerCase()).forEach(w => { const K = w && inKho(w); if (K && !seen.has(K.w)) { seen.add(K.w); list.push(K); } }));
+  $('hWords').textContent = `Từ vựng ${u} (${list.length} từ có hình)`; draw();
+}
+// ghi âm: tự dừng sau 2,5 giây
+let stream = null;
+async function record(text, btn) {
+  if (recState) { recState.stop(); return; }
+  try { stream = stream || await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+  catch (e) { msg('Chưa dùng được micro: bấm biểu tượng micro trên thanh địa chỉ, chọn Cho phép.', true); return; }
+  const mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+  const rec = new MediaRecorder(stream, mt ? { mimeType: mt } : {}), chunks = [], box = btn.closest('.it');
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  rec.onstop = async () => { recState = null; box.classList.remove('recording'); btn.textContent = 'Ghi';
+    const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' }); if (blob.size < 1500) { msg('Không nghe thấy tiếng, cô ghi lại nhé.', true); return; }
+    await GiongCo.put(text, blob); msg(`Đã lưu giọng cô: "${text}".`); draw(); GiongCo.play(text); };
+  recState = { stop: () => rec.state !== 'inactive' && rec.stop() };
+  box.classList.add('recording'); btn.textContent = 'Dừng'; msg(`Đang ghi "${text}"… cô đọc to nhé.`);
+  rec.start(); setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, 2500);
+}
+$('selDao').onchange = pickList; $('selUnit').onchange = showUnit; $('find').oninput = draw;
+$('bExp').onclick = async () => { const d = await GiongCo.exportAll(), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: 'application/json' })); a.download = `GiongCo_SongKim_${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 500); msg(`Đã sao lưu ${Object.keys(d.tu).length} bản ghi vào thư mục Downloads.`); };
+$('bImp').onclick = () => $('fImp').click();
+$('fImp').onchange = () => { const f = $('fImp').files[0]; if (!f) return; f.text().then(t => GiongCo.importAll(JSON.parse(t))).then(n => { msg(`Đã nhập ${n} bản ghi giọng cô.`); draw(); }).catch(e => msg('Không đọc được file: ' + e.message, true)); };
+$('bBack').onclick = () => location.href = '../quan_dao/index.html';
+GiongCo.ready.then(pickList);
+</script>
+</body>
+</html>
