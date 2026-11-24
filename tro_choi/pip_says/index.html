@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pip says</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Trò vận động "Pip says" (giống Simon says): Pip ra lệnh, cả lớp đứng lên làm theo. Không chấm điểm ai, không dùng micro. */
+:root { --ink: #1F2D4A; --soft: #56637F; --paper: #FFFDF6; --teal: #14998F; --coral: #F2675A; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0E1A2E; font-family: 'Nunito', Arial, sans-serif; color: var(--ink); }
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 50% 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #FFF3C4, #FFD36E 55%, #F7A440); }
+.top { position: absolute; left: 24px; right: 24px; top: 18px; display: flex; gap: 12px; align-items: center; }
+.chip { background: rgba(255, 253, 246, .95); border-radius: 22px; padding: 9px 20px 11px; font: 800 28px/1 'Baloo 2'; box-shadow: 0 6px 0 rgba(31, 45, 74, .16); }
+.chip small { font: 700 16px 'Nunito'; color: var(--soft); margin-left: 8px; }
+.sp { flex: 1; }
+.pip { position: absolute; left: 60px; top: 150px; height: 230px; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-12px); } }
+.bub { position: absolute; left: 270px; top: 120px; right: 60px; background: var(--paper); border-radius: 36px; padding: 18px 36px 24px; box-shadow: 0 8px 0 rgba(31, 45, 74, .18); text-align: center; }
+.bub .who { font: 800 34px/1.1 'Baloo 2'; color: var(--teal); min-height: 38px; }
+.bub .who.trap { color: var(--soft); }
+.bub .cmd { font: 800 78px/1.1 'Baloo 2'; }
+.pic { position: absolute; left: 50%; top: 330px; transform: translateX(-50%); height: 440px; max-width: 760px; object-fit: contain; filter: drop-shadow(0 14px 18px rgba(31, 45, 74, .25)); }
+.pic.go { animation: wiggle .5s ease-in-out 2; }
+@keyframes wiggle { 30% { transform: translateX(-50%) rotate(-4deg) scale(1.04); } 70% { transform: translateX(-50%) rotate(4deg) scale(1.04); } }
+.freeze { position: absolute; inset: 0; background: rgba(150, 210, 255, .55); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.freeze b { font: 800 120px/1 'Baloo 2'; color: #fff; text-shadow: 0 8px 0 #2E6FD8; }
+.freeze span { margin-top: 18px; background: var(--paper); border-radius: 24px; padding: 14px 30px; font: 800 34px 'Baloo 2'; }
+.keys { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; gap: 10px; justify-content: center; }
+.k { font: 800 19px 'Baloo 2'; border: 0; border-radius: 16px; padding: 10px 16px; background: var(--paper); cursor: pointer; box-shadow: 0 5px 0 rgba(31, 45, 74, .2); color: var(--ink); }
+.k.on { background: var(--teal); color: #fff; }
+.k kbd { font: 700 13px 'Nunito'; background: rgba(31, 45, 74, .1); border-radius: 6px; padding: 3px 6px; margin-left: 6px; }
+.hint { position: absolute; left: 50%; top: 80px; transform: translateX(-50%); padding: 10px 24px; border-radius: 16px; background: rgba(31, 45, 74, .88); color: #fff; font: 800 24px 'Baloo 2'; z-index: 9; }
+.start, .done { position: absolute; inset: 0; background: rgba(14, 26, 46, .55); display: flex; align-items: center; justify-content: center; }
+.start > div, .done > div { background: var(--paper); border-radius: 30px; padding: 30px 50px; text-align: center; font: 800 50px 'Baloo 2'; max-width: 1100px; }
+.start p, .done p { font: 700 24px/1.5 'Nunito'; color: var(--soft); margin: 10px 0; }
+.start button { font: 800 34px 'Baloo 2'; border: 0; border-radius: 22px; padding: 14px 40px; background: var(--teal); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #0D7068; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="top"><div class="chip">Pip says<small id="sub">Vận động</small></div><div class="chip" id="modeChip"></div><div class="sp"></div><div class="chip" id="prog">1 / 10</div></div>
+  <img class="pip" id="pip" src="../chung/hinh/pip_noi.webp" alt="Pip">
+  <div class="bub"><div class="who" id="who"></div><div class="cmd" id="cmd"></div></div>
+  <img class="pic" id="pic" alt="">
+  <div class="freeze" id="freeze" hidden><b>Freeze!</b><span>Pip không nói “<em id="fzName">Pip says</em>”: đứng yên nào!</span></div>
+  <div class="keys">
+    <button class="k" id="kNext">Lệnh tiếp<kbd>Space</kbd></button><button class="k" id="kRep">Nói lại<kbd>R</kbd></button>
+    <button class="k" id="kAuto">Tự chạy<kbd>A</kbd></button><button class="k" id="kTrap">Có bẫy<kbd>B</kbd></button><button class="k" id="kName">Simon / Pip<kbd>N</kbd></button>
+    <button class="k" id="kBack">Về đảo<kbd>Q</kbd></button>
+  </div>
+  <div class="hint" id="hint" hidden></div>
+  <div class="start" id="start"><div>Cả lớp đứng dậy nào!
+    <p>Pip ra lệnh, cả lớp làm theo. Có chữ “<b id="stName">Pip says</b>” thì mới làm.<br>Bật <b>Có bẫy</b> (phím B): thỉnh thoảng Pip không nói “<span id="stName2">Pip says</span>”, các bé phải đứng yên.</p>
+    <p style="font-size:19px">Space: lệnh tiếp · R: nói lại · A: tự chạy · B: có bẫy · N: đổi Pip says / Simon says · Q hai lần: về đảo</p>
+    <button id="bGo">Bắt đầu <small style="font-size:18px">(Enter)</small></button></div></div>
+  <div class="done" id="done" hidden><div>Cả lớp giỏi quá!<p>Ngồi xuống nghỉ một chút nhé. Bấm Enter để về đảo.</p></div></div>
+</div>
+<script src="../chung/kho_tu.js"></script>
+<script src="../chung/giong_co.js"></script>
+<script>
+const $ = id => document.getElementById(id), QS = new URLSearchParams(location.search);
+const stage = $('stage'), fit = () => { const k = Math.min(innerWidth / 1600, innerHeight / 900); stage.style.transform = `translate(-50%, -50%) scale(${k})`; }; addEventListener('resize', fit); fit();
+const DAO = QS.get('dao') || 'dao_3d', ISLAND = '../../' + ({ dao_hat_mam: 'dao_hat_mam/dao-hat-mam.html', dao_cau_vong: 'dao_cau_vong/dao-cau-vong.html' }[DAO] || 'dao_3d/dao-song-kim-3d.html');
+const UNIT = QS.get('unit') || ''; if (UNIT) $('sub').textContent = UNIT;
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+// lệnh vận động: [lệnh, ảnh, từ liên quan trong bài]
+const BODY = [
+  ['Touch your head!', H('ben_cham_dau'), 'head'], ['Touch your nose!', H('mia_chi_mui'), 'nose'], ['Touch your ears!', H('mia_chi_tai'), 'ear'],
+  ['Touch your eyes!', H('mia_chi_mat'), 'eye'], ['Touch your mouth!', H('mia_chi_mieng'), 'mouth'], ['Touch your shoulders!', H('ben_cham_vai'), 'shoulders'],
+  ['Touch your toes!', H('ben_ngon_chan'), 'toes'], ['Clap your hands!', H('ben_vo_tay'), 'clap'], ['Jump, jump, jump!', H('ben_nhay'), 'jump'],
+  ['Stamp your feet!', H('ben_giam_chan'), 'foot'], ['Arms up!', H('ben_gio_tay'), 'arm'], ['Wave your hands!', H('ben_vay_ban_tay'), 'hand'],
+  ['Lift your leg!', H('ben_co_chan'), 'leg'], ['Brush your teeth!', H('ben_danh_rang'), 'teeth'], ['Brush your hair!', H('mia_chai_toc'), 'hair'],
+  ['Point your finger!', H('ben_gio_ngon'), 'finger'], ['Turn around!', C('ben_side'), ''], ['Show me a happy face!', H('mia_khuon_mat'), 'face'],
+];
+const ANIMAL = { frog: 'Jump like a frog!', rabbit: 'Hop like a rabbit!', monkey: 'Jump like a monkey!', bird: 'Fly like a bird!', snake: 'Wiggle like a snake!', elephant: 'Walk like an elephant!', fish: 'Swim like a fish!', penguin: 'Walk like a penguin!', lion: 'Roar like a lion!', dog: 'Wag your tail like a dog!', cat: 'Stretch like a cat!', horse: 'Run like a horse!', giraffe: 'Stand tall like a giraffe!', turtle: 'Walk slowly like a turtle!', plane: 'Fly like a plane!', boat: 'Row, row, row the boat!', train: 'Choo-choo like a train!', bike: 'Ride a bike!', car: 'Drive a car!' };
+const kho = w => KHO_TU.find(W => W.w.toLowerCase() === w);
+const TU = (QS.get('tu') || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+const tuBase = TU.map(w => w.replace(/s$/, ''));
+// lệnh của bài: bộ phận cơ thể / con vật / xe cộ có trong tiết thì đưa lên trước, rồi trộn thêm lệnh chung
+const mine = BODY.filter(c => c[2] && (tuBase.includes(c[2]) || TU.includes(c[2]))).concat(Object.keys(ANIMAL).filter(w => TU.includes(w) || tuBase.includes(w)).map(w => [ANIMAL[w], kho(w) ? kho(w).img : C('ben_reo'), w]));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const SMALL = DAO === 'dao_hat_mam';
+const ROUNDS = SMALL ? 8 : 10;
+const easy = BODY.filter(c => ['Touch your head!', 'Touch your nose!', 'Clap your hands!', 'Jump, jump, jump!', 'Stamp your feet!', 'Arms up!', 'Wave your hands!', 'Turn around!', 'Touch your mouth!', 'Touch your ears!'].includes(c[0]));
+let deck = [];
+function buildDeck() { const rest = shuffle((SMALL ? easy : BODY).filter(c => !mine.includes(c))); deck = shuffle(mine.slice()).concat(rest); const out = []; for (let i = 0; out.length < ROUNDS; i++) out.push(deck[i % deck.length]); deck = out; }
+let opt = { auto: true, trap: false, name: 'Pip' };
+try { Object.assign(opt, JSON.parse(localStorage.getItem('songkim_pipsays') || '{}')); } catch (e) {}
+const saveOpt = () => { try { localStorage.setItem('songkim_pipsays', JSON.stringify(opt)); } catch (e) {} };
+function showOpt() {
+  $('kAuto').classList.toggle('on', opt.auto); $('kTrap').classList.toggle('on', opt.trap);
+  $('modeChip').textContent = (opt.trap ? 'Có bẫy' : 'Làm theo') + ' · ' + (opt.auto ? 'tự chạy' : 'cô bấm Space');
+  ['stName', 'stName2', 'fzName'].forEach(i => $(i).textContent = opt.name + ' says'); $('kName').innerHTML = (opt.name === 'Pip' ? 'Simon says' : 'Pip says') + '<kbd>N</kbd>';
+}
+function say(t, rate = .88) { if (window.GiongCo && GiongCo.has(t)) return GiongCo.play(t); return new Promise(res => { if (!window.speechSynthesis) return res(); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; const v = speechSynthesis.getVoices().find(x => /^en/i.test(x.lang)); if (v) u.voice = v; u.rate = rate; u.pitch = 1.15; let d = 0; const f = () => { if (!d) { d = 1; res(); } }; u.onend = f; u.onerror = f; setTimeout(f, 4500); speechSynthesis.speak(u); }); }
+function hush() { try { speechSynthesis.cancel(); } catch (e) {} window.GiongCo && GiongCo.stop(); }
+let round = 0, cur = null, trapNow = false, run = 0, autoT = 0, state = 'start', lastTrap = -9;
+const wait = (ms, my) => new Promise(r => setTimeout(r, ms)).then(() => my === run);
+async function next() {
+  clearTimeout(autoT); hush(); const my = ++run; $('freeze').hidden = true;
+  if (round >= ROUNDS) { state = 'done'; $('done').hidden = false; $('pip').src = C('pip_reo'); say('Great job, everyone! Sit down, please.'); return; }
+  state = 'play'; cur = deck[round]; round++; $('prog').textContent = `${round} / ${ROUNDS}`;
+  // bẫy: không quá 1/4 số lệnh, không hai lần liền, không ở lệnh đầu
+  trapNow = opt.trap && round > 1 && round - lastTrap > 1 && Math.random() < .3; if (trapNow) lastTrap = round;
+  await show(my);
+}
+async function show(my) {
+  $('who').textContent = trapNow ? '' : opt.name + ' says:'; $('who').className = 'who' + (trapNow ? ' trap' : ''); $('cmd').textContent = cur[0];
+  $('pic').src = cur[1]; $('pic').classList.remove('go'); void $('pic').offsetWidth; $('pic').classList.add('go'); $('pip').src = C('pip_noi');
+  if (!await say((trapNow ? '' : opt.name + ' says, ') + cur[0], .85).then(() => my === run)) return;
+  if (trapNow) { if (!await wait(2200, my)) return; $('freeze').hidden = false; $('pip').src = C('pip_reo'); if (!await say(`Freeze! ${opt.name} didn't say ${opt.name} says!`, .9).then(() => my === run)) return; }
+  else if (round % 3 === 0) { if (!await wait(2200, my)) return; $('pip').src = C('pip_reo'); if (!await say(['Well done!', 'Great!', 'Super!'][round % 3], .95).then(() => my === run)) return; }
+  if (opt.auto) autoT = setTimeout(() => my === run && next(), trapNow ? 2600 : 3400);
+}
+let qAt = -1e9, hintT = 0;
+const hint = t => { $('hint').hidden = false; $('hint').textContent = t; clearTimeout(hintT); hintT = setTimeout(() => $('hint').hidden = true, 1800); };
+const back = () => { run++; clearTimeout(autoT); hush(); location.href = `${ISLAND}?ve=khoi_dong`; };
+function go() { $('start').hidden = true; buildDeck(); round = 0; next(); if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
+$('bGo').onclick = go;
+$('kNext').onclick = () => { if (state === 'play') next(); };
+$('kRep').onclick = () => { if (state !== 'play' || !cur) return; clearTimeout(autoT); hush(); const my = ++run; $('freeze').hidden = true; show(my); };
+$('kAuto').onclick = () => { opt.auto = !opt.auto; saveOpt(); showOpt(); hint(opt.auto ? 'Tự chạy: Pip tự ra lệnh tiếp' : 'Cô bấm Space để ra lệnh tiếp'); if (!opt.auto) clearTimeout(autoT); else if (state === 'play') autoT = setTimeout(next, 1500); };
+$('kTrap').onclick = () => { opt.trap = !opt.trap; saveOpt(); showOpt(); hint(opt.trap ? `Có bẫy: thỉnh thoảng Pip không nói "${opt.name} says"` : 'Làm theo: lệnh nào cũng làm'); };
+$('kName').onclick = () => { opt.name = opt.name === 'Pip' ? 'Simon' : 'Pip'; saveOpt(); showOpt(); hint(`Đổi thành "${opt.name} says"`); };
+$('kBack').onclick = back;
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'q') { const n = performance.now(); if (n - qAt < 1800) back(); else { qAt = n; hint('Bấm Q lần nữa để về đảo'); } return; }
+  if (k === 'f') { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else document.exitFullscreen().catch(() => {}); return; }
+  if (k === 'a') return $('kAuto').onclick(); if (k === 'b') return $('kTrap').onclick(); if (k === 'n') return $('kName').onclick();
+  if (state === 'start') { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } return; }
+  if (state === 'done') { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); } return; }
+  if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); $('kNext').onclick(); }
+  else if (k === 'r') $('kRep').onclick();
+});
+if (SMALL && !localStorage.getItem('songkim_pipsays')) opt.trap = false; // trẻ 3–4 tuổi: mặc định không bẫy
+showOpt();
+</script>
+</body>
+</html>
