@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rương bí mật lễ hội</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../chung/chung.css">
+<style>
+/* Trò "Rương bí mật lễ hội" – Sân lâu đài, Festivals */
+.bg { position: absolute; inset: 0; width: 1600px; height: 900px; object-fit: cover; }
+.chest { position: absolute; left: 800px; top: 850px; transform: translate(-50%, -100%); transform-origin: 50% 100%; pointer-events: none; filter: drop-shadow(0 14px 12px rgba(80, 50, 20, .35)); }
+.chest.shake { animation: shake .1s ease-in-out 10 alternate; }
+@keyframes shake { from { transform: translate(-50%, -100%) rotate(-3deg); } to { transform: translate(-50%, -100%) rotate(3deg); } }
+.beam { position: absolute; left: 800px; top: 690px; width: 320px; height: 420px; transform: translate(-50%, -100%); background: linear-gradient(0deg, rgba(255, 225, 120, .75), rgba(255, 225, 120, 0)); clip-path: polygon(30% 100%, 70% 100%, 100% 0, 0 0); pointer-events: none; opacity: 0; }
+.prize { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+.prize img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(60, 30, 10, .35)); }
+.tiles { position: absolute; inset: -14px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 3px; }
+.tiles i { border-radius: 10px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .55), 0 3px 0 rgba(0, 0, 0, .15); transition: transform .5s cubic-bezier(.5, -0.4, .8, .6), opacity .5s; }
+.tiles i.off { transform: translateY(-60px) rotate(-25deg) scale(.4); opacity: 0; }
+.wallItem { position: absolute; transform: translate(-50%, 0); text-align: center; pointer-events: none; }
+.wallItem img { display: block; margin: 0 auto; filter: drop-shadow(0 5px 4px rgba(80, 50, 20, .35)); }
+.wallItem span { display: inline-block; background: rgba(255, 250, 238, .95); border-radius: 8px; padding: 0 7px 2px; font: 800 13px/1.2 var(--display); color: var(--ink); white-space: nowrap; }
+.wallItem::before { content: ""; position: absolute; left: 50%; top: -12px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFF2A8, #C98A1A); }
+.wallItem.hop img { animation: hop .5s ease-in-out 3; }
+@keyframes hop { 50% { transform: translateY(-12px); } }
+@media (prefers-reduced-motion: reduce) { .chest.shake, .wallItem.hop img { animation: none; } .tiles i { transition: none; } }
+</style>
+</head>
+<body>
+<script src="../chung/may_nghe.js"></script>
+<script src="../chung/chung.js"></script>
+<script>
+const H = n => '../hinh/' + n + '.webp', C = n => '../chung/hinh/' + n + '.webp';
+const STAR = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><defs><radialGradient id="g" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#FFF6B0"/><stop offset=".6" stop-color="#FFD23F"/><stop offset="1" stop-color="#E39A12"/></radialGradient></defs><path d="M150 18 L189 104 L282 112 L211 174 L233 266 L150 218 L67 266 L89 174 L18 112 L111 104 Z" fill="url(#g)" stroke="#C47F0A" stroke-width="8" stroke-linejoin="round"/><ellipse cx="118" cy="110" rx="26" ry="14" fill="#fff" opacity=".6" transform="rotate(-30 118 110)"/></svg>');
+const WORDS = [
+  { w: 'ghost', img: H('con_ma'), alt: ['ghosts', 'goat', 'gost', 'host', 'post'] },
+  { w: 'pumpkin', img: H('bi_ngo'), alt: ['pumpkins', 'pumkin', 'pumping', 'bumpkin'] },
+  { w: 'bat', img: H('con_doi'), alt: ['bats', 'bad', 'bet', 'but', 'pat'] },
+  { w: 'cat', img: H('thu_meo'), alt: ['cats', 'cut', 'cap', 'kat'] },
+  { w: 'witch', img: H('phu_thuy'), alt: ['witches', 'which', 'wish', 'switch', 'rich'] },
+  { w: 'Santa', img: H('ong_noel'), alt: ['santa claus', 'santas', 'center', 'santo', 'santer'] },
+  { w: 'reindeer', img: H('tuan_loc'), alt: ['reindeers', 'rain deer', 'rain dear', 'reindear'] },
+  { w: 'tree', img: H('cay_thong'), alt: ['trees', 'three', 'tea', 'christmas tree'] },
+  { w: 'presents', img: H('hop_qua_noel'), alt: ['present', 'presence', 'president', 'presents'] },
+  { w: 'star', img: STAR, alt: ['stars', 'stop', 'start', 'sta'] },
+  // --- từ Amanda 1, Amanda 2 ---
+  { w: 'spider', img: H('nhen'), alt: ['spiders', 'spy der', 'spyder'], g: 'fest2' },
+  { w: 'gift', img: H('hop_qua'), alt: ['gifts', 'give', 'gif'], g: 'fest2' },
+  { w: 'candy', img: H('keo'), alt: ['candies', 'candi', 'kandy', 'can be'], g: 'fest2' },
+  { w: 'monster', img: H('quai_vat'), alt: ['monsters', 'mons ter', 'master'], g: 'fest2' },
+  { w: 'costume', img: H('quai_vat'), alt: ['costumes', 'costum', 'custom'], g: 'fest2' },
+];
+const TILE = ['#E0483E', '#2E9A4E', '#F3B728', '#5B5FD6', '#E05B8C', '#14998F', '#F08A24', '#7C4DBF', '#3AA0E0'];
+const WALL = { x0: 270, x1: 1330, rows: [128, 300], h: 92 };
+let hung = [], prize = null, peel = null;
+
+function wallSlot(n, total) { const per = Math.max(5, Math.min(10, Math.ceil(total / 2))), row = Math.floor(n / per), x = WALL.x0 + (WALL.x1 - WALL.x0) * ((n % per) + .5) / per; return { x, y: WALL.rows[Math.min(1, row)] + (row > 1 ? 60 : 0), h: Math.min(WALL.h, (WALL.x1 - WALL.x0) / per * .9) }; }
+
+TroChoi.run({
+  id: 'ruong_bi_mat', title: 'Rương bí mật lễ hội', unit: 'Festivals', icon: H('bi_ngo'), progressLabel: 'món quà',
+  story: 'Sân lâu đài sắp mở hội! Trong chiếc rương bí mật có các món đồ lễ hội được gói trong giấy màu. Giấy bóc dần từng ô, cả lớp đoán xem là gì. Bé đọc đúng thì món đồ được treo lên tường lâu đài.',
+  doneSmall: 'Tường lâu đài đã trang trí xong', doneTitle: 'Mở hội thôi!',
+  words: WORDS, defaultWords: ['ghost', 'pumpkin', 'bat', 'witch', 'Santa', 'reindeer', 'tree', 'presents'], guessFirst: true,
+  cardPos: { x: 1290, y: 430 }, micPos: { x: 1290, y: 730 },
+  buildScene(api) {
+    api.scene.innerHTML = `<img class="bg" src="../hinh/nen_lau_dai.jpg" alt=""><div id="wallBox"></div><div class="beam" id="beam"></div>
+      <img class="chest" id="chest" src="${H('ruong_dong')}" alt="" style="height:210px"><div id="prizeLayer"></div>`;
+    api.sprite('anh', C('co_anh_vay_tay'), 140, 880, 300);
+    api.sprite('ben', C('ben_three_quarter'), 290, 870, 160);
+    api.sprite('mia', C('mia_three_quarter'), 390, 874, 152);
+    api.sprite('pip', C('pip_hoi'), 480, 560, 96, 'bob');
+    api.say('Rương bí mật có gì bên trong nhỉ?', 300, 420);
+  },
+  onStart(api) { hung = []; api.$('wallBox').innerHTML = ''; api.$('prizeLayer').innerHTML = ''; api.$('chest').src = H('ruong_dong'); },
+  progress(api) { return [hung.length, api.kids.length]; },
+  async onTurn(api, ctx) {
+    const chest = api.$('chest'), beam = api.$('beam');
+    chest.src = H('ruong_dong'); api.pose('anh', C('co_anh_chi_duong')); api.pose('pip', C('pip_hoi'));
+    api.say(`${ctx.kid} ơi, rương đang rung kìa!`, 300, 420);
+    chest.classList.remove('shake'); void chest.offsetWidth; chest.classList.add('shake'); api.sfx.rustle(); await api.wait(1100);
+    chest.src = H('ruong_trong'); api.sfx.pop();
+    // món đồ bay lên, phủ giấy gói 9 ô
+    const order = [...Array(9).keys()].sort(() => Math.random() - .5);
+    api.$('prizeLayer').innerHTML = `<div class="prize" id="prize" style="left:800px;top:700px;width:250px;height:250px"><img src="${ctx.word.img}" alt=""><div class="tiles">${TILE.map(c => `<i style="background:${c}"></i>`).join('')}</div></div>`;
+    prize = api.$('prize'); prize.style.opacity = 0;
+    await api.tween(800, (k, e) => { prize.style.top = 700 - 160 * e + 'px'; prize.style.opacity = Math.min(1, k * 2.5); prize.style.transform = `translate(-50%, -50%) scale(${.3 + .7 * e})`; beam.style.opacity = e; });
+    await api.speak('What is it?', .9);
+    api.pose('anh', C('co_anh_lang_nghe')); api.say('Giấy đang bóc dần, cả lớp đoán xem!', 300, 420);
+    const tiles = prize.querySelectorAll('.tiles i'); let p = 0;
+    peel = order; for (; p < 5; p++) { await api.wait(650); if (!prize.isConnected) return; tiles[order[p]].classList.add('off'); api.sfx.pop(); }
+    peel = order.slice(p); await api.wait(900);
+  },
+  async onCorrect(api, ctx, praise) {
+    api.pose('anh', C('co_anh_khen')); api.pose('pip', C('pip_reo')); api.pose('ben', C('ben_reo'));
+    api.say(`${praise} ${ctx.kid} đoán đúng rồi!`, 300, 420);
+    api.hideCard();
+    const tiles = prize.querySelectorAll('.tiles i'); (peel || []).forEach((t, i) => setTimeout(() => tiles[t].classList.add('off'), i * 60));
+    await api.wait(500); api.sparkle(800, 540, 40); api.sfx.boing();
+    const n = hung.length, s = wallSlot(n, api.kids.length), x0 = 800, y0 = 540;
+    await api.tween(1000, (k, e) => { const sz = 250 + (s.h - 250) * e; prize.style.width = prize.style.height = sz + 'px'; prize.style.left = x0 + (s.x - x0) * e + 'px'; prize.style.top = y0 + (s.y + s.h / 2 - y0) * e - Math.sin(Math.PI * k) * 100 + 'px'; prize.style.transform = 'translate(-50%, -50%)'; api.$('beam').style.opacity = 1 - e; });
+    api.sfx.thunk(); api.sparkle(s.x, s.y + s.h / 2);
+    hung.push({ kid: ctx.kid, w: ctx.word });
+    const d = document.createElement('div'); d.className = 'wallItem'; d.style.left = s.x + 'px'; d.style.top = s.y + 'px';
+    d.innerHTML = `<img src="${ctx.word.img}" alt="${ctx.word.w}" style="height:${s.h}px"><span>${api.esc(ctx.kid)}</span>`; api.$('wallBox').appendChild(d);
+    api.$('prizeLayer').innerHTML = ''; api.$('chest').src = H('ruong_dong'); api.pose('ben', C('ben_three_quarter'));
+  },
+  async onSkip(api) {
+    if (prize && prize.isConnected) await api.tween(500, (k, e) => { prize.style.top = 540 + 160 * e + 'px'; prize.style.opacity = 1 - e; api.$('beam').style.opacity = 1 - e; });
+    api.$('prizeLayer').innerHTML = ''; api.$('chest').src = H('ruong_dong');
+  },
+  async onFinish(api) {
+    api.say('Tường lâu đài đẹp quá! Mở hội thôi! Cả lớp giỏi quá!', 300, 420);
+    api.pose('anh', C('co_anh_reo')); api.pose('ben', C('ben_reo')); api.pose('mia', C('mia_reo')); api.pose('pip', C('pip_reo'));
+    api.$('chest').src = H('ruong_day');
+    document.querySelectorAll('.wallItem').forEach((f, i) => setTimeout(() => f.classList.add('hop'), i * 100));
+    await api.wait(2200);
+  },
+});
+</script>
+</body>
+</html>
