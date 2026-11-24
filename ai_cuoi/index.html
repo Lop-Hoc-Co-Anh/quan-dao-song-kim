@@ -367,7 +367,7 @@ $('bAgain').onclick = () => play(false); $('bSetup').onclick = () => { $('ovEnd'
 $('bBack').onclick = $('bBack2').onclick = back2;
 addEventListener('keydown', e => { if (e.key === 'Escape' && playing) done(true); });
 // Esc lúc toàn màn hình bị trình duyệt dùng để thoát toàn màn hình: coi như bấm dừng
-document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && playing) done(true); });
+document.addEventListener('fullscreenchange', () => { setTimeout(() => { if (!document.fullscreenElement && playing && !document.hidden) done(true); }, 150); });
 // cửa sổ bị ẩn / thu nhỏ: tạm dừng cả hình, tiếng và ghi video, mở lại thì chạy tiếp (không lệch tiếng)
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
