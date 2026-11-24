@@ -123,7 +123,7 @@
         cfg.words = m.concat(near); } }
 
     let state = 'setup', kids = [], words = [], turnIdx = 0, cur = null, rec = null, results = [];
-    let members = [], shyOf = [], nextName = [];
+    let members = [], shyOf = [], nextName = [], askPh = false; // askPh: đang lượt bạn hỏi
     // ---- mẫu câu của tiết (từ đảo gửi sang) -> câu hỏi + câu trả lời có chứa từ ----
     const CAU = (QS.get('cau') || '').trim(), DAO = QS.get('dao') || 'dao_3d';
     const NOART = /^(red|yellow|blue|green|orange|brown|purple|pink|black|white|grey|gray|one|two|three|four|five|six|seven|eight|nine|ten|long|short|big|little|fast|slow|happy|sad)$/i;
@@ -159,8 +159,26 @@
     setTimeout(() => { if ('speechSynthesis' in window && !hasEnVoice()) { status('Máy chưa có giọng đọc tiếng Anh · cô đọc mẫu giúp', 'warn'); const n = $('micNote'); if (n) { n.textContent = 'Máy tính này chưa có giọng đọc tiếng Anh nên máy sẽ không đọc mẫu, cô đọc mẫu giúp. Cài thêm: Cài đặt Windows > Thời gian và ngôn ngữ > Giọng nói > thêm English (United States).'; n.classList.add('warn'); } } }, 1500);
     // máy nghe: nghe liên tục ~8 giây, so khớp theo âm (chung/may_nghe.js)
     function stopListen() { $('micBtn').classList.remove('on'); window.MayNghe && MayNghe.stop(); }
+    const pairOn = () => cfg.cau && cfg.doi && +cfg.nhom <= 1 && kids.length > 1;
+    // lượt hỏi: bạn hỏi nói câu hỏi; máy nghe thấy tiếng là chuyển sang bạn đáp (không chấm câu hỏi)
+    function askTurn() {
+      if (state !== 'turn' || !cur) return; const me = cur, S = sentence(cur.word), who = nextName[turnIdx];
+      askPh = true; stopListen(); $('turnName').textContent = `${who} hỏi`; heard('BẠN HỎI', `${who}: “${S ? S.q : 'What is it?'}”`);
+      if (!cfg.mic || !SR || !window.MayNghe) { heard('BẠN HỎI', `${who} hỏi: “${S ? S.q : ''}” · hỏi xong cô bấm Enter`); return; }
+      MayNghe.start({ word: cur.word, others: G.words.map(W => W.w), ms: 6000, delay: 600,
+        onStart: () => $('micBtn').classList.add('on'),
+        onAny: () => { if (cur === me && askPh && state === 'turn') setTimeout(() => { if (cur === me && askPh && state === 'turn') answerTurn(); }, 900); },
+        onError: () => { $('micBtn').classList.remove('on'); heard('BẠN HỎI', `${who} hỏi xong cô bấm Enter`); },
+        onFail: async () => { if (cur !== me || !askPh || state !== 'turn') return; $('micBtn').classList.remove('on'); heard('PIP HỎI GIÚP', S ? S.q : ''); if (S) await api.speak(S.q, .85); if (cur === me && askPh && state === 'turn') answerTurn(); } });
+    }
+    function answerTurn() {
+      if (state !== 'turn' || !cur) return; askPh = false; stopListen(); sfx.pop();
+      $('turnName').textContent = `${kids[turnIdx]} đáp`;
+      if (cfg.auto) listen(); else heard('BẠN ĐÁP', `${kids[turnIdx]} trả lời nhé. Bấm micro hoặc phím cách để máy nghe.`);
+    }
     function listen() {
       if (state !== 'turn') return;
+      if (askPh) return askTurn();
       stopListen(); $('micBtn').classList.remove('ok', 'no'); lastHeard = '';
       if (!cfg.mic || !SR || !window.MayNghe) { heard('CÔ CHẤM', SR ? 'Máy nghe đang tắt. Bé đọc đúng thì cô bấm Enter.' : 'Máy này chưa nghe được. Bé đọc đúng thì cô bấm Enter.'); return; }
       const me = cur;
@@ -178,21 +196,22 @@
     }
     let modelTok = 0;
     async function model() {
-      const me = cur, tk = ++modelTok, gone = () => cur !== me || state !== 'turn' || tk !== modelTok; api.showCard(cur.word); heard('NGHE MẪU', 'Nghe mẫu, cả lớp nghe…');
+      const me = cur, tk = ++modelTok, gone = () => cur !== me || state !== 'turn' || tk !== modelTok; askPh = false; api.showCard(cur.word); heard('NGHE MẪU', 'Nghe mẫu, cả lớp nghe…');
       const S = cfg.cau ? sentence(cur.word) : null;
       if (S) { $('cardCau').hidden = false; $('cardCau').innerHTML = `<b>${esc(S.q)}</b> ${esc(S.a)}`;
         await api.speak(S.q, .85); await api.wait(300); if (gone()) return; await api.speak(S.a, .8); }
       else { $('cardCau').hidden = true; await api.speak(cur.word.w); }
       await api.wait(350); if (gone()) return;
       await api.speak(cfg.cau && cfg.doi ? 'Ask and answer!' : 'Your turn!', .95); if (gone()) return;
+      if (pairOn() && S) return askTurn();
       if (cfg.auto) listen(); else heard('SẴN SÀNG', 'Bấm micro hoặc phím cách để máy nghe.');
     }
     async function nextTurn() {
-      stopListen();
+      stopListen(); askPh = false;
       if (turnIdx >= kids.length) return finish();
       const W = words[turnIdx % words.length]; cur = { kid: kids[turnIdx], word: W, i: turnIdx }; state = 'intro';
       goiMark(members[turnIdx]);
-      const pair = cfg.cau && cfg.doi && +cfg.nhom <= 1 && kids.length > 1 ? `${nextName[turnIdx]} hỏi · ${kids[turnIdx]} đáp` : '';
+      const pair = pairOn() ? `${nextName[turnIdx]} hỏi · ${kids[turnIdx]} đáp` : '';
       $('turnName').textContent = pair || cur.kid;
       const shy = shyOf[turnIdx]; $('shy').hidden = !shy;
       if (shy) $('shy').innerHTML = `Bạn chọn cách nào cũng được: nói to, nói cùng bạn, hay chỉ vào hình!`; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
@@ -220,6 +239,7 @@
     }
     function hush() { try { speechSynthesis.cancel(); } catch (e) {} window.GiongCo && GiongCo.stop(); }
     async function correct() {
+      if (state === 'turn' && askPh) return answerTurn(); // Enter lúc bạn đang hỏi: sang lượt bạn đáp
       if (state !== 'turn' && state !== 'intro') return; state = 'anim'; stopListen(); const my = runId;
       $('micBtn').classList.remove('no'); $('micBtn').classList.add('ok'); heard('ĐÚNG RỒI!', cur.word.w);
       sfx.good(); const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; api.speak(praise, .95);
@@ -228,7 +248,7 @@
       await api.wait(500); await chorus(cur.word, my); if (my !== runId || (state !== 'anim' && state !== 'chorus')) return; turnIdx++; nextTurn();
     }
     async function skip() {
-      if (state !== 'turn' && state !== 'intro') return; stopListen(); state = 'anim'; const my = runId;
+      if (state !== 'turn' && state !== 'intro') return; stopListen(); askPh = false; state = 'anim'; const my = runId;
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: false };
       if (G.onSkip) await G.onSkip(api, cur); if (my !== runId || state !== 'anim') return; api.progress(); await chorus(cur.word, my); if (my !== runId || (state !== 'anim' && state !== 'chorus')) return; turnIdx++; nextTurn();
     }

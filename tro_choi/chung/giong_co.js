@@ -18,13 +18,13 @@
   // dừng ngay bản đang phát và báo xong cho nơi đang chờ (không để treo)
   function stop() { tok++; if (audio) { try { audio.pause(); } catch (e) {} audio = null; } if (finCur) { const f = finCur; finCur = null; f(false); } }
   // phát giọng cô; trả về Promise xong khi phát hết, bị dừng hoặc lỗi
-  function play(t) {
+  function play(t, maxMs = 6000) {
     stop(); const my = tok;
     return get(t).then(blob => new Promise(res => {
       if (!blob || my !== tok) return res(false);
       const url = URL.createObjectURL(blob), a = audio = new Audio(url); let done = false;
       const fin = ok => { if (done) return; done = true; if (finCur === fin) finCur = null; if (audio === a) audio = null; URL.revokeObjectURL(url); res(ok); };
-      finCur = fin; a.onended = () => fin(true); a.onerror = () => fin(false); setTimeout(() => fin(true), 6000);
+      finCur = fin; a.onended = () => fin(true); a.onerror = () => fin(false); setTimeout(() => fin(true), maxMs);
       a.play().catch(() => fin(false));
     })).catch(() => false);
   }

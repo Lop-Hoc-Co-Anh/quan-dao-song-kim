@@ -52,6 +52,7 @@
         if (my !== token) return;
         for (let i = e.resultIndex; i < e.results.length; i++) for (let j = 0; j < Math.min(3, e.results[i].length); j++) {
           const res = e.results[i], txt = res[j].transcript, n = norm(txt); if (!n) continue;
+          if (j === 0 && o.onAny) { stop(); o.onAny(txt.trim()); return; }
           if (j === 0 && !ECHO.test(n)) { last = txt.trim(); o.onHeard && o.onHeard(last); }
           const m = n.replace(ECHO, ' ').trim(), exact = [o.word.w, ...(o.word.alt || [])].some(w => norm(w) === m);
           if ((res.isFinal || exact) && matches(m, o.word, o.others || [])) { stop(); o.onMatch && o.onMatch(txt); return; }
