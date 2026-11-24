@@ -64,6 +64,8 @@ html, body { margin: 0; height: 100%; background: #0E1A2E; overflow: hidden; fon
   <div class="bar2">
     <button class="btn go" id="bGo">Vào đảo <kbd>Space</kbd></button>
     <button class="btn" id="bPrev">← Đảo trước</button><button class="btn" id="bNext">Đảo sau →</button>
+    <button class="btn" id="bCards">Thẻ về nhà</button>
+    <button class="btn" id="bVoice">Giọng cô</button>
     <button class="btn" id="bCheck">Kiểm tra <kbd>K</kbd></button>
     <button class="btn quit" id="bQuit">Thoát <kbd>Q</kbd></button>
   </div>
@@ -160,6 +162,8 @@ addEventListener('keydown', e => {
 draw();
 try { BangLop.init({ chipId: 'hLop', parent: stage, onChange: () => { here = Math.max(0, ISLES.findIndex(I => I.key === localStorage.getItem('quandao_dang_o'))); draw(); }, skipAsk: !!new URLSearchParams(location.search).get('di') }); } catch (e) { console.error(e); }
 $('bCheck').onclick = () => BangLop.openCheck();
+$('bVoice').onclick = () => { location.href = '../ghi_am/index.html'; };
+$('bCards').onclick = () => { location.href = '../the_ve_nha/index.html'; };
 // ?di=<khoá đảo vừa xong>: lên đường sang đảo sau
 { const k = new URLSearchParams(location.search).get('di'), i = ISLES.findIndex(I => I.key === k), T = TRIPS.find(T => T.from === i);
   if (T) { history.replaceState(null, '', location.pathname); here = i; draw(); setTimeout(() => travel(T), 900); }

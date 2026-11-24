@@ -50,7 +50,8 @@
       <div class="sep"></div>
       <p><b>Sao lưu</b>: lưu tiến độ, danh sách bé và vinh danh của mọi lớp ra một file (nằm trong thư mục Downloads). Nên sao lưu mỗi tuần, cất file vào USB hoặc Google Drive. Đổi máy hay lỡ xoá dữ liệu trình duyệt thì bấm <b>Nhập bản sao lưu</b> để lấy lại.</p>
       <div class="bar"><button class="go" id="lExp">Sao lưu ra file</button><button id="lImp">Nhập bản sao lưu</button><input type="file" id="lFile" accept=".json,application/json" hidden>
-        <button id="lVinh">Đặt lại bảng vinh danh lớp này</button><button id="lCheck">Kiểm tra trước giờ học <small>K</small></button></div>
+        <button id="lVinh">Đặt lại bảng vinh danh lớp này</button>
+        <label style="font:700 18px Nunito">Từ lễ hội Việt <select id="lLeHoi"><option value="auto">tự động theo tháng</option><option value="trungthu">Trung thu</option><option value="tet">Tết</option><option value="off">không thêm</option></select></label><button id="lCheck">Kiểm tra trước giờ học <small>K</small></button></div>
       <div class="msg" id="lMsg"></div></div>`;
     const ov = $('ovLop');
     $('lClose').onclick = closeAll;
@@ -73,16 +74,17 @@
     $('lFile').onchange = () => { const f = $('lFile').files[0]; if (!f) return; f.text().then(t => { const n = LopHoc.importText(t); onChange(); chip(); openLop(first); msg(`Đã nhập lại ${n} lớp từ file ${f.name}.`); }).catch(e => msg('Không đọc được file: ' + e.message, true)); };
     $('lVinh').onclick = () => { if (!twice('vinh', $('lVinh'), 'Bấm lần nữa để đặt lại')) { msg('Bảng vinh danh của lớp này sẽ về trống (dùng khi sang khoá/năm học mới). Bấm lần nữa để đặt lại.', true); return; } LopHoc.resetVinhDanh(); msg('Đã đặt lại bảng vinh danh của lớp ' + LopHoc.current().ten + '.'); };
     $('lCheck').onclick = openCheck;
+    $('lLeHoi').value = localStorage.getItem('songkim_lehoi') || 'auto'; $('lLeHoi').onchange = () => { localStorage.setItem('songkim_lehoi', $('lLeHoi').value); msg('Unit Festivals sẽ ' + ($('lLeHoi').value === 'off' ? 'không thêm từ lễ hội Việt.' : $('lLeHoi').value === 'auto' ? 'tự thêm từ Trung thu (tháng 8–9) hoặc Tết (tháng 12–2).' : 'thêm từ ' + $('lLeHoi').selectedOptions[0].text + '.')); };
     (ov.querySelector('[data-use]') || $('lClose')).focus();
   }
 
   // ---------- kiểm tra trước giờ học ----------
-  let stream = null, raf = 0;
-  function stopMic() { cancelAnimationFrame(raf); if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+  let stream = null, raf = 0, actx = null, micTok = 0;
+  function stopMic() { micTok++; cancelAnimationFrame(raf); if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } if (actx) { actx.close().catch(() => {}); actx = null; } }
   const row = (id, t, s, extra = '') => `<div class="dot wait" id="d_${id}"></div><div><b>${t}</b><span id="s_${id}">${s}</span></div><div>${extra}</div>`;
   const mark = (id, ok, s) => { $('d_' + id).className = 'dot ' + (ok === null ? 'wait' : ok ? 'ok' : 'bad'); if (s) $('s_' + id).textContent = s; };
   function openCheck() {
-    stopMic(); $('ovLop').hidden = false; 
+    stopMic(); const myMic = micTok; $('ovLop').hidden = false; 
     $('ovLop').innerHTML = `<div class="pn" role="dialog" aria-label="Kiểm tra trước giờ học">
       <button class="close" id="lClose">Đóng <small>Esc</small></button>
       <h2><small>${esc(LopHoc.current().ten)} · làm trước khi học sinh vào lớp</small>Kiểm tra trước giờ học</h2>
@@ -108,7 +110,8 @@
     // micro + mức âm lượng
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) mark('mic', false, 'Trình duyệt không cho dùng micro.');
     else navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
-      stream = s; const ac = new (window.AudioContext || window.webkitAudioContext)(), an = ac.createAnalyser(); ac.createMediaStreamSource(s).connect(an); an.fftSize = 512;
+      if (myMic !== micTok || !$('lvl')) { s.getTracks().forEach(t => t.stop()); return; }
+      stream = s; const ac = actx = new (window.AudioContext || window.webkitAudioContext)(), an = ac.createAnalyser(); ac.createMediaStreamSource(s).connect(an); an.fftSize = 512;
       const buf = new Uint8Array(an.fftSize); let peak = 0, heard = false; mark('mic', null, 'Đã cho phép. Cô nói thử "Hello" thật to…');
       const tick = () => { an.getByteTimeDomainData(buf); let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v - 128)); peak = Math.max(peak * .9, m); const el = $('lvl'); if (!el) { ac.close(); return; } el.style.width = Math.min(100, peak / 64 * 100) + '%';
         if (!heard && m > 18) { heard = true; mark('mic', true, 'Micro nghe tốt.'); } raf = requestAnimationFrame(tick); };

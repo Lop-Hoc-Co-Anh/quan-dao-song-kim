@@ -47,9 +47,10 @@
   function importText(txt) {
     const d = JSON.parse(txt); if (!d || !Array.isArray(d.lop) || !d.lop.length) throw new Error('File không phải bản sao lưu của Quần đảo Song Kim.');
     // giữ các lớp đang có, lớp trùng mã thì thay bằng bản trong file
-    stash(); let ds = list();
+    let ds = list(); const trivial = k => /^quandao_dang_o$|_modau$/.test(k), liveReal = liveKeys().filter(k => !trivial(k)).length;
     // máy mới / vừa xoá dữ liệu: bỏ lớp trống tự tạo, dùng đúng lớp đang dạy trong file
-    const fresh = ds.length === 1 && !d.lop.some(l => l.id === ds[0].id) && !Object.keys(get(K_BOX + ds[0].id, {})).length;
+    const fresh = ds.length === 1 && !d.lop.some(l => l.id === ds[0].id) && !liveReal && !Object.keys(get(K_BOX + ds[0].id, {})).filter(k => !trivial(k)).length;
+    if (!fresh) stash();
     if (fresh) { ls.removeItem(K_BOX + ds[0].id); ds = []; }
     d.lop.forEach(l => { if (!l.id || !l.ten) return; const o = ds.find(x => x.id === l.id); if (o) o.ten = l.ten; else ds.push({ id: l.id, ten: l.ten }); set(K_BOX + l.id, l.duLieu || {}); });
     set(K_DS, ds); if (fresh) ls.setItem(K_CUR, ds.find(l => l.id === d.dangDung) ? d.dangDung : ds[0].id);
