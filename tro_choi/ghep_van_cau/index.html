@@ -225,6 +225,7 @@ button:focus-visible, .wpick:focus-within { outline: 4px solid #2E6FD8; outline-
 <script src="../chung/cau_mau.js"></script>
 <script src="../chung/giong_co.js"></script>
 <script src="../chung/may_nghe.js"></script>
+<script src="../chung/vui.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const WORDS = [
@@ -416,7 +417,7 @@ function start() {
   words = WORDS.filter(W => cfg.words.includes(W.w)); if (!words.length) words = WORDS.slice(0, 5);
   N = kids.length; laid = Array(N).fill(false); turnIdx = 0;
   $('ovSetup').hidden = true; $('ovDone').hidden = true; ['keys', 'turn', 'card', 'micRow'].forEach(i => $(i).hidden = false);
-  drawSprites(); drawBridge(); ac(); nextTurn();
+  drawSprites(); drawBridge(); ac(); window.Vui && Vui.batDau(N); nextTurn();
 }
 function nextTurn() {
   stopListen();
@@ -424,7 +425,7 @@ function nextTurn() {
   if (turnIdx >= N) return finish();
   const W = words[turnIdx % words.length];
   cur = { kid: kids[turnIdx], word: W }; state = 'turn';
-  $('turnName').textContent = cur.kid; goiMark(members[turnIdx] || [cur.kid]);
+  $('turnName').textContent = cur.kid; window.Vui && Vui.luot(turnIdx); goiMark(members[turnIdx] || [cur.kid]);
   $('shy').hidden = !shyOf[turnIdx]; if (shyOf[turnIdx]) $('shy').innerHTML = `Bạn chọn cách nào cũng được: nói to, nói cùng bạn, hay chỉ vào hình!`;
   $('cardImg').src = `${imgOf(W)}`; $('cardImg').alt = W.w; $('cardWord').textContent = W.w;
   const c = $('card'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); sfx.pop();
@@ -443,7 +444,7 @@ async function model() {
 function correct() {
   if (state !== 'turn') return; state = 'anim'; stopListen(); const my = runId, ti = turnIdx, who = cur;
   $('micBtn').classList.remove('no'); $('micBtn').classList.add('ok'); $('heard').firstElementChild.textContent = 'ĐÚNG RỒI!';
-  sfx.good(); pose('anh', 'co_anh_khen'); pose('pip', 'pip_reo');
+  sfx.good(); window.Vui && Vui.dung(turnIdx); pose('anh', 'co_anh_khen'); pose('pip', 'pip_reo');
   const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; setSay(`${praise} ${cur.kid} giỏi quá!`, 90, 150); speak(praise, .95);
   // tấm ván bay từ thẻ từ xuống chỗ trống
   const s = slot(turnIdx), el = document.createElement('img'); el.src = 'hinh/tam_van.webp'; el.className = 'fly'; el.alt = ''; stage.appendChild(el);
@@ -479,7 +480,8 @@ function finish() {
     if (k0 < 1.25) return requestAnimationFrame(step);
     who.forEach(([id]) => { $('s_' + id).style.transform = 'translate(-50%,-100%)'; }); pose('anh', 'co_anh_reo'); pose('ben', 'ben_reo'); pose('mia', 'mia_reo');
     confetti(); sfx.fanfare();
-    $('doneNames').innerHTML = kids.map(k => `<span>${esc(k)}</span>`).join(''); // mọi bé như nhau
+    if (window.Vui) Vui.huyHieu(kids, kids.map((k, i) => ({ word: Object.assign({}, words[i % words.length], { img: imgOf(words[i % words.length]) }) })), $('doneNames')); // mọi bé đều có huy hiệu
+    else $('doneNames').innerHTML = kids.map(k => `<span>${esc(k)}</span>`).join('');
     setTimeout(() => { if (my !== runId || state !== 'cross') return; $('ovDone').hidden = false; $('bAgain').focus(); state = 'done'; }, 900);
   };
   requestAnimationFrame(step);
@@ -507,9 +509,10 @@ function buildSetup() {
   [['selNhom', 'nhom'], ['selMax', 'max']].forEach(([id, k]) => { $(id).value = String(cfg[k] || (k === 'nhom' ? 1 : 0)); $(id).onchange = () => { cfg[k] = +$(id).value; saveCfg(); }; });
   $('cauHint').textContent = CAU && /\?/.test(CAU) ? '(' + CAU.split('/')[0].trim().slice(0, 40) + ')' : '';
   [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle'], ['optChorus', 'chorus'], ['optCau', 'cau']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
+  window.Vui && Vui.ganNut();
   if (!SR) { $('micNote').textContent = 'Trình duyệt này chưa có máy nghe. Hãy mở bằng Chrome hoặc Edge (file "Mo tro choi.bat"). Tạm thời cô bấm Enter khi bé đọc đúng.'; $('micNote').classList.add('warn'); }
 }
-function openSetup() { stopListen(); hush(); runId++; $('chorus').hidden = true; state = 'setup'; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
+function openSetup() { window.Vui && Vui.an(); stopListen(); hush(); runId++; $('chorus').hidden = true; state = 'setup'; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
 function quit() {
   if (FROM_ISLAND) return goIsland(state === 'done' ? 'xong' : 'bo_do');
   stopListen(); hush(); runId++;
