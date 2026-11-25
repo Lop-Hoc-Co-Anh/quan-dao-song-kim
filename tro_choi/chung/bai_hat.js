@@ -55,7 +55,7 @@
   const NUM = /^(one|two|three|four|five|six|seven|eight|nine|ten)$/i, COL = /^(red|yellow|blue|green|orange|pink|purple|brown|black|white)$/i;
   const has = (ws, list) => ws.some(w => list.includes(w));
   // chọn bài: theo từ của tiết (số, màu, lễ hội) rồi theo tên unit; mua = 'trungthu' | 'tet' | ''
-  function chon(unit, ws, mua) {
+  function chon(unit, ws, mua, allUnits) {
     ws = (ws || []).map(w => String(w).toLowerCase().trim());
     if (ws.filter(w => NUM.test(w)).length >= 2) return S.numbers;
     if (ws.filter(w => COL.test(w)).length >= 2) return S.colours;
@@ -67,8 +67,20 @@
       if (has(ws, ['lucky money', 'fireworks']) || mua === 'tet') return S.tet;
       const m = new Date().getMonth() + 1; return m === 10 || m === 11 ? S.halloween : S.christmas;
     }
-    const T = [[/home|house/, 'home'], [/toy/, 'toys'], [/body|face/, 'body'], [/cloth/, 'clothes'], [/animal/, 'animals'], [/pet/, 'pets'], [/food|drink/, 'food'], [/school/, 'school'], [/family/, 'family'], [/transport/, 'transport'], [/welcome|colou?r/, 'colours'], [/number/, 'numbers']];
-    const t = T.find(([r]) => r.test(u)); return t ? S[t[1]] : null;
+    const t = T.find(([r]) => r.test(u)); if (t) return S[t[1]];
+    // tiết ôn tập / kiểm tra / củng cố: nối các bài của những unit được ôn (VD "Home + Toys", "Units 1–3"), không rõ thì lấy ba unit của đảo
+    if (/review|assessment|consolidation/.test(u)) {
+      const txt = ws.join(' '), keys = [];
+      const add = s => T.forEach(([r, k]) => { if (r.test(String(s).toLowerCase()) && !keys.includes(k) && k !== 'colours') keys.push(k); });
+      add(txt);
+      const m = txt.match(/units?\s*(\d)\s*[–-]\s*(\d)/);
+      if (m) (allUnits || []).forEach(x => { const n = +(String(x).match(/unit\s*(\d)/i) || [])[1]; if (n >= +m[1] && n <= +m[2]) add(x); });
+      if (!keys.length) (allUnits || []).filter(x => /^unit/i.test(x)).forEach(add);
+      const pick = keys.length > 3 && !m && !/\+/.test(txt) ? keys.sort(() => Math.random() - .5).slice(0, 3) : keys.slice(0, 3);
+      if (pick.length) return { ten: 'Review Medley', dong: [["Let's sing and remember!"]].concat(...pick.map(k => S[k].dong.slice(0, 3)), [['Great singing, everyone!']]) };
+    }
+    return null;
   }
+  const T = [[/home|house/, 'home'], [/toy/, 'toys'], [/body|face/, 'body'], [/cloth/, 'clothes'], [/animal/, 'animals'], [/pet/, 'pets'], [/food|drink/, 'food'], [/school/, 'school'], [/family/, 'family'], [/transport/, 'transport'], [/welcome|colou?r/, 'colours'], [/number/, 'numbers']];
   window.BAI_HAT = { S, chon };
 })();

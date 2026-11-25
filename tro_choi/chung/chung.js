@@ -294,7 +294,7 @@
       $('wordPick').querySelectorAll('input').forEach(inp => inp.onchange = () => { inp.parentElement.classList.toggle('on', inp.checked); cfg.words = [...$('wordPick').querySelectorAll('input:checked')].map(i => i.value); saveCfg(); });
       [['selNhom', 'nhom'], ['selMax', 'max']].forEach(([id, k]) => { $(id).value = String(cfg[k] || (k === 'nhom' ? 1 : 0)); $(id).onchange = () => { cfg[k] = +$(id).value; saveCfg(); }; });
       $('cauHint').textContent = CAU && /\?/.test(CAU) ? '(' + CAU.split('/')[0].trim().slice(0, 40) + ')' : '';
-      $('lblDoi').hidden = DAO !== 'dao_3d'; // Amanda 3: hai bé hỏi đáp nhau
+      $('lblDoi').hidden = DAO === 'dao_hat_mam'; // Amanda 2–3: hai bé hỏi đáp nhau (Hạt Mầm 3–4 tuổi còn nhỏ)
       [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle'], ['optChorus', 'chorus'], ['optCau', 'cau'], ['optDoi', 'doi']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
       window.Vui && Vui.ganNut();
       if (!SR) { $('micNote').textContent = 'Trình duyệt này chưa có máy nghe. Hãy mở bằng Chrome hoặc Edge. Tạm thời cô bấm Enter khi bé đọc đúng.'; $('micNote').classList.add('warn'); }

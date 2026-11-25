@@ -12,11 +12,13 @@
   const MASS = L('milk,juice,water,bread,fruit,rice,cake,lucky money,chocolate,ice cream,pizza,cheese,food,soup,candy');
   const ROOM = L('bedroom,kitchen,bathroom,living room,garden,dining room,hall');
   const THE = L('moon,sun,sky,sea');
-  const NOT = L('clap,hello,bye,bye-bye,goodbye,sing,dance,jump,run,swim,stamp,wave,touch,hop,three years old,thank you,yes,no,please,count,go,stop');
+  const NOT = L('hello,bye,bye-bye,goodbye,sing,dance,jump,run,swim,stamp,wave,touch,hop,thank you,yes,no,please,count,go,stop');
   const ADJ_PEOPLE = L('happy,sad');
   const BODY = L('head,arm,hand,leg,foot,nose,mouth,ear,eye,finger,toe,shoulder,hair,face,knee,tummy,neck,body'), BODYS = L('arms,hands,legs,feet,ears,eyes,fingers,toes,shoulders,knees,teeth');
   function of(word, unit) {
     const w = String(word || '').trim(), k = w.toLowerCase(); if (!k || NOT.has(k)) return null;
+    if (k === 'three years old') return { q: 'How old are you?', a: "I'm three years old." };
+    if (k === 'clap') return { q: 'Can you clap?', a: 'Yes, I can clap!' };
     const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
     const food = /food|fruit/i.test(unit || '');
     if (FAM.has(k)) return { q: "Who's this?", a: `This is my ${w}.` };
