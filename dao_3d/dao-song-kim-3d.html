@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Đảo Song Kim 3D</title>
+<script src="../tro_choi/chung/am.js"></script>
 <link rel="icon" href="data:,">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -747,7 +748,7 @@ let pendingWalk = false, pendingFinale = false;
 // bài chant theo unit: lấy các từ có hình của cả unit đang học
 function chantWords() {
   const u = unitOf(cur), base = new URL('../tro_choi/goi_do_choi/', location.href), seen = new Set(), list = [];
-  const add = w => { w = w.toLowerCase(); const K = KHO_TU.find(W => [w, w.replace(/s$/, ''), w.split(' ')[0]].includes(W.w.toLowerCase())); if (K && !seen.has(K.w) && CauMau.of(K.w, u)) { seen.add(K.w); list.push({ w: K.w, img: /^data:/.test(K.img) ? K.img : new URL(K.img, base).href }); } };
+  const add = w => { w = w.toLowerCase(); const K = KHO_TU.find(W => [w, w.replace(/s$/, ''), w.split(' ')[0]].includes(W.w.toLowerCase())); if (K && !seen.has(K.w)) { seen.add(K.w); list.push({ w: K.w, img: /^data:/.test(K.img) ? K.img : new URL(K.img, base).href }); } };
   PPCT.forEach((r, j) => { if (r.unit === u) wordsOf(j).forEach(add); });
   if (list.length < 2) gameWords(cur).forEach(add);
   return list;
@@ -759,10 +760,10 @@ const BYE = () => [{ t: 'Goodbye, goodbye!', img: CH('pip_bay') }, { t: 'See you
 const hinhTu = w => { if (!w || !window.KHO_TU) return ''; const K = KHO_TU.find(W => W.w.toLowerCase() === String(w).toLowerCase()); return !K ? '' : /^data:/.test(K.img) ? K.img : new URL(K.img, new URL('../tro_choi/goi_do_choi/', location.href)).href; };
 function openChant() {
   if (!PPCT || busy || !window.Chant || !window.KHO_TU || !window.CauMau) return;
-  const u = unitOf(cur), list = chantWords(), few = STORE_KEY === 'daohatmam', bh = window.BAI_HAT && BAI_HAT.chon(u, wordsOf(cur), muaLeHoi());
+  const u = unitOf(cur), list = chantWords(), few = STORE_KEY === 'daohatmam', bh = window.BAI_HAT && BAI_HAT.chon(u, wordsOf(cur), muaLeHoi(), [...new Set(PPCT.map(r => r.unit))]);
   Chant.menu('Hát và chant', [
     { label: 'Hello', sub: 'Hát chào đầu giờ', fn: () => Chant.song('Hello song', HELLO()) },
-    { label: 'Chant ' + u.replace(/^Unit \d+ /, ''), sub: list.length ? list.slice(0, few ? 4 : 6).map(W => W.w).join(', ') : 'unit này chưa có từ có hình', fn: () => list.length ? Chant.play(list, `Chant ${u}`, w => (CauMau.of(w, u) || {}).a, { max: few ? 4 : 6, rounds: 1 }) : toast('Unit này chưa có từ có hình để chant.') },
+    { label: 'Chant ' + u.replace(/^Unit \d+ /, ''), sub: list.length ? list.slice(0, few ? 4 : 6).map(W => W.w).join(', ') : 'unit này chưa có từ có hình', fn: () => list.length ? Chant.play(list, `Chant ${u}`, w => (CauMau.of(w, u) || {}).a || (w.charAt(0).toUpperCase() + w.slice(1) + '!'), { max: few ? 4 : 6, rounds: 1 }) : toast('Unit này chưa có từ có hình để chant.') },
     ...(bh ? [{ label: 'Bài hát: ' + bh.ten, sub: 'Cả lớp vừa hát vừa làm động tác', fn: () => Chant.song(bh.ten, bh.dong.map(([t, w]) => ({ t, img: hinhTu(w) || CH('pip_reo'), wait: 900 }))) }] : []),
     { label: 'Goodbye', sub: 'Hát chào cuối giờ', fn: () => Chant.song('Goodbye song', BYE()) },
   ]);
