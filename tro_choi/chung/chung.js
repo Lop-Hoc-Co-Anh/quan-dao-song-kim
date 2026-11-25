@@ -212,7 +212,7 @@
       const W = words[turnIdx % words.length]; cur = { kid: kids[turnIdx], word: W, i: turnIdx }; state = 'intro';
       goiMark(members[turnIdx]);
       const pair = pairOn() ? `${nextName[turnIdx]} hỏi · ${kids[turnIdx]} đáp` : '';
-      $('turnName').textContent = pair || cur.kid;
+      $('turnName').textContent = pair || cur.kid; window.Vui && Vui.luot(turnIdx);
       const shy = shyOf[turnIdx]; $('shy').hidden = !shy;
       if (shy) $('shy').innerHTML = `Bạn chọn cách nào cũng được: nói to, nói cùng bạn, hay chỉ vào hình!`; $('turn').hidden = false; $('micRow').hidden = false; $('micBtn').classList.remove('ok', 'no');
       if (G.guessFirst) { api.hideCard(); heard('ĐOÁN XEM', 'Cả lớp đoán xem nào…'); }
@@ -242,7 +242,7 @@
       if (state === 'turn' && askPh) return answerTurn(); // Enter lúc bạn đang hỏi: sang lượt bạn đáp
       if (state !== 'turn' && state !== 'intro') return; state = 'anim'; stopListen(); const my = runId;
       $('micBtn').classList.remove('no'); $('micBtn').classList.add('ok'); heard('ĐÚNG RỒI!', cur.word.w);
-      sfx.good(); const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; api.speak(praise, .95);
+      sfx.good(); window.Vui && Vui.dung(turnIdx); const praise = ['Great job!', 'Well done!', 'Super!', 'Excellent!', 'Good job!'][turnIdx % 5]; api.speak(praise, .95);
       results[turnIdx] = { kid: cur.kid, word: cur.word, ok: true };
       if (G.onCorrect) await G.onCorrect(api, cur, praise); if (my !== runId || state !== 'anim') return; api.progress();
       await api.wait(500); await chorus(cur.word, my); if (my !== runId || (state !== 'anim' && state !== 'chorus')) return; turnIdx++; nextTurn();
@@ -258,7 +258,8 @@
       sfx.fanfare(); api.speak("Hooray! Well done, everyone!", .95);
       if (G.onFinish) await G.onFinish(api); if (my0 !== runId || state !== 'finish') return;
       confetti(); sfx.fanfare();
-      $('doneNames').innerHTML = kids.map(k => `<span>${esc(k)}</span>`).join(''); // mọi bé như nhau, không đánh dấu bé bỏ lượt
+      if (window.Vui) Vui.huyHieu(kids, kids.map((k, i) => results[i] || { word: words[i % words.length] }), $('doneNames')); // mọi bé đều có huy hiệu, không đánh dấu bé bỏ lượt
+      else $('doneNames').innerHTML = kids.map(k => `<span>${esc(k)}</span>`).join('');
       const my = runId; setTimeout(() => { if (my !== runId || state !== 'finish') return; $('ovDone').hidden = false; $('bNext').focus(); state = 'done'; }, 800);
     }
     function start() {
@@ -276,7 +277,7 @@
       words = G.words.filter(W => cfg.words.includes(W.w)); if (words.length < 2) words = G.words.filter(W => G.defaultWords.includes(W.w));
       turnIdx = 0; results = [];
       $('ovSetup').hidden = true; $('ovDone').hidden = true; $('keys').hidden = false;
-      ac(); if (G.onStart) G.onStart(api); api.progress(); nextTurn();
+      ac(); window.Vui && Vui.batDau(kids.length); if (G.onStart) G.onStart(api); api.progress(); nextTurn();
     }
     function goIsland(res) { stopListen(); hush(); location.href = `${ISLAND}?ve=thu_thach&ket_qua=${res}`; }
     function quit() {
@@ -286,7 +287,7 @@
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       fetch('/quit', { method: 'POST' }).catch(() => {}); setTimeout(() => { try { window.close(); } catch (e) {} }, 400);
     }
-    function openSetup() { stopListen(); hush(); runId++; state = 'setup'; $('chorus').hidden = true; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
+    function openSetup() { window.Vui && Vui.an(); stopListen(); hush(); runId++; state = 'setup'; $('chorus').hidden = true; buildSetup(); $('ovDone').hidden = true; $('ovSetup').hidden = false; $('bStart').focus(); }
     function buildSetup() {
       $('names').value = names;
       $('wordPick').innerHTML = G.words.map(W => `<label class="wpick ${cfg.words.includes(W.w) ? 'on' : ''}"><input type="checkbox" value="${W.w}" ${cfg.words.includes(W.w) ? 'checked' : ''}><img src="${W.img}" alt=""><span>${W.w}</span></label>`).join('');
@@ -295,6 +296,7 @@
       $('cauHint').textContent = CAU && /\?/.test(CAU) ? '(' + CAU.split('/')[0].trim().slice(0, 40) + ')' : '';
       $('lblDoi').hidden = DAO !== 'dao_3d'; // Amanda 3: hai bé hỏi đáp nhau
       [['optSpeak', 'speak'], ['optAuto', 'auto'], ['optMic', 'mic'], ['optShuffle', 'shuffle'], ['optChorus', 'chorus'], ['optCau', 'cau'], ['optDoi', 'doi']].forEach(([id, k]) => { $(id).checked = cfg[k]; $(id).onchange = () => { cfg[k] = $(id).checked; saveCfg(); }; });
+      window.Vui && Vui.ganNut();
       if (!SR) { $('micNote').textContent = 'Trình duyệt này chưa có máy nghe. Hãy mở bằng Chrome hoặc Edge. Tạm thời cô bấm Enter khi bé đọc đúng.'; $('micNote').classList.add('warn'); }
     }
     $('bStart').onclick = () => { start(); if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); };
